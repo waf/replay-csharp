@@ -3,10 +3,45 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Replay"
+        xmlns:local="clr-namespace:Replay.UI"
+        xmlns:model="clr-namespace:Replay.Model"
+        xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
-        
-    </Grid>
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="{StaticResource BackgroundColor}"
+        FontFamily="Consolas"
+        FontSize="14pt"
+        Foreground="White"
+        Title="Replay" Height="500" Width="810">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="{Binding ActualHeight,ElementName=TitleBar}"/>
+    </WindowChrome.WindowChrome>
+    <DockPanel>
+        <DockPanel x:Name="TitleBar" DockPanel.Dock="Top">
+            <Button x:Name="CloseButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
+                    Content=" X " Click="CloseButton_Click" />
+            <Button x:Name="MaxButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
+                    Content=" O " Click="MaxButton_Click" />
+            <Button x:Name="MinButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
+                    Content=" - " Click="MinButton_Click" />
+            <TextBlock Foreground="LightGray" FontSize="10pt" Padding="0, 5, 0, 0" HorizontalAlignment="Center">Replay</TextBlock>
+        </DockPanel>
+        <ItemsControl x:Name="ReplEntries" Padding="20, 0, 20, 20" ItemsSource="{Binding Path=Entries}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel>
+                        <avalonEdit:TextEditor
+                            PreviewKeyDown="TextEditor_PreviewKeyDown"
+                            Initialized="TextEditor_Initialized"
+                            local:FocusExtension.IsFocused="{Binding Path=IsFocused}"
+                            Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
+                        <TextBlock Tag="stdout" Foreground="LightGray"></TextBlock>
+                        <TextBlock Tag="result"></TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </DockPanel>
 </Window>
