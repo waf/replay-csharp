@@ -20,14 +20,7 @@ namespace Replay.Model
                 if(!focusIndex.HasValue)
                 {
                     Entries[value].IsFocused = true;
-                    SetField(ref focusIndex, value);
-                    focusIndex = value;
-                    OnPropertyChanged(nameof(FocusIndex));
-                    return;
-                }
-
-                if (focusIndex == value)
-                {
+                    SetField(ref focusIndex, value, updateOnlyWhenChanged: false);
                     return;
                 }
 
@@ -37,8 +30,7 @@ namespace Replay.Model
                 oldFocusedItem.IsFocused = false;
                 newFocusedItem.IsFocused = true;
 
-                focusIndex = value;
-                OnPropertyChanged(nameof(FocusIndex));
+                SetField(ref focusIndex, value, updateOnlyWhenChanged: false);
             }
         }
 
@@ -48,9 +40,9 @@ namespace Replay.Model
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null, bool updateOnlyWhenChanged = true)
         {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            if (updateOnlyWhenChanged && EqualityComparer<T>.Default.Equals(field, value)) return false;
             field = value;
             OnPropertyChanged(propertyName);
             return true;

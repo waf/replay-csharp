@@ -188,6 +188,7 @@
     <Compile Include="Services\ScriptEvaluator.cs" />
     <Compile Include="Services\SyntaxHighlighter.cs" />
     <Compile Include="UI\FocusExtension.cs" />
+    <Compile Include="UI\PromptAdorner.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

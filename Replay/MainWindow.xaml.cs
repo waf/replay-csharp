@@ -38,8 +38,14 @@ namespace Replay
             Task.Run(WarmpUp);
         }
 
-        private void TextEditor_Initialized(object sender, EventArgs e) =>
-            AvalonSyntaxHighlightTransformer.Register((TextEditor)sender, syntaxHighlighter);
+        private void TextEditor_Initialized(object sender, EventArgs e)
+        {
+            var editor = (TextEditor)sender;
+            AvalonSyntaxHighlightTransformer.Register(editor, syntaxHighlighter);
+            var promptLayer = AdornerLayer.GetAdornerLayer(editor);
+            promptLayer.Add(new PromptAdorner(editor));
+        }
+
 
         private async void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -63,18 +69,18 @@ namespace Replay
                 var exception = evaluatorException ?? result.Exception;
                 string output = console.HasOutput ? console.GetStringBuilder().ToString() : null;
                 Output(repl, result, output, exception);
-                if(exception == null)
+                if(exception == null && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
                 {
                     int currentIndex = Model.Entries.IndexOf((ReplResult)repl.DataContext);
                     if(currentIndex == Model.Entries.Count - 1)
                     {
                         Model.Entries.Add(new ReplResult());
+                        this.index = currentIndex + 1;
                     }
-                    else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
+                    else
                     {
-                        Model.Entries.Insert(currentIndex + 1, new ReplResult());
+                        Model.FocusIndex = currentIndex + 1;
                     }
-                    this.index = currentIndex + 1;
                 }
             }
         }
@@ -118,19 +124,10 @@ namespace Replay
         private void MinButton_Click(object sender, RoutedEventArgs e) =>
             this.WindowState = WindowState.Minimized;
 
-        private void MaxButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (this.WindowState == WindowState.Maximized)
-            {
-                this.WindowState = WindowState.Normal;
-                MaxButton.Content = "O";
-            }
-            else
-            {
-                this.WindowState = WindowState.Maximized;
-                MaxButton.Content = "o";
-            }
-        }
+        private void MaxButton_Click(object sender, RoutedEventArgs e) =>
+            this.WindowState = this.WindowState == WindowState.Maximized
+                ? WindowState.Normal
+                : WindowState.Maximized;
 
         private async Task WarmpUp()
         {

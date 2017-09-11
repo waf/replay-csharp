@@ -19,16 +19,21 @@
         <WindowChrome CaptionHeight="{Binding ActualHeight,ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>
     <DockPanel>
-        <DockPanel x:Name="TitleBar" DockPanel.Dock="Top">
-            <Button x:Name="CloseButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
-                    Content=" X " Click="CloseButton_Click" />
-            <Button x:Name="MaxButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
-                    Content=" O " Click="MaxButton_Click" />
-            <Button x:Name="MinButton" DockPanel.Dock="Right" WindowChrome.IsHitTestVisibleInChrome="True"
-                    Content=" - " Click="MinButton_Click" />
-            <TextBlock Foreground="LightGray" FontSize="10pt" Padding="0, 5, 0, 0" HorizontalAlignment="Center">Replay</TextBlock>
-        </DockPanel>
-        <ItemsControl x:Name="ReplEntries" Padding="20, 0, 20, 20" ItemsSource="{Binding Path=Entries}">
+        <Grid x:Name="TitleBar" DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="1"
+                Foreground="White" FontSize="10pt" Padding="0, 5, 0, 0" HorizontalAlignment="Center">Replay</TextBlock>
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal">
+                <Button x:Name="MinButton" DockPanel.Dock="Right" Foreground="LightGreen" Content="┄" Click="MinButton_Click" Style="{DynamicResource WindowButton}" />
+                <Button x:Name="MaxButton" DockPanel.Dock="Right" Foreground="LightGoldenrodYellow" Content="▢" Click="MaxButton_Click" Style="{DynamicResource WindowButton}" />
+                <Button x:Name="CloseButton" DockPanel.Dock="Right" Foreground="PaleVioletRed" Content="⨉" Click="CloseButton_Click" Style="{DynamicResource WindowButton}" />
+            </StackPanel>
+        </Grid>
+        <ItemsControl x:Name="ReplEntries" Padding="24, 0, 24, 0" ItemsSource="{Binding Path=Entries}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <StackPanel>
