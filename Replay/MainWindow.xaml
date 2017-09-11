@@ -36,9 +36,10 @@
                             PreviewKeyDown="TextEditor_PreviewKeyDown"
                             Initialized="TextEditor_Initialized"
                             local:FocusExtension.IsFocused="{Binding Path=IsFocused}"
+                            Loaded="TextEditor_Loaded"
                             Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
-                        <TextBlock Tag="stdout" Foreground="LightGray"></TextBlock>
-                        <TextBlock Tag="result"></TextBlock>
+                        <TextBlock Tag="stdout" Foreground="LightGray" FontStyle="Italic" Visibility="Collapsed"></TextBlock>
+                        <TextBlock Tag="result" Visibility="Collapsed"></TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

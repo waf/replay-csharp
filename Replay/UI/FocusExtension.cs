@@ -1,10 +1,13 @@
-﻿using System;
+﻿using ICSharpCode.AvalonEdit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Replay.UI
 {
@@ -33,7 +36,6 @@ namespace Replay.UI
             if ((bool)e.NewValue)
             {
                 element.Focus();
-                Keyboard.Focus(element);
             }
         }
     }

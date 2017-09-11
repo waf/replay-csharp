@@ -29,12 +29,12 @@ namespace Replay
         private SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
         private ScriptEvaluator scriptEvaluator = new ScriptEvaluator();
         private ReplModel Model = new ReplModel();
+        private int index = 0;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = Model;
-            Model.FocusIndex = 0;
             Task.Run(WarmpUp);
         }
 
@@ -65,16 +65,16 @@ namespace Replay
                 Output(repl, result, output, exception);
                 if(exception == null)
                 {
-                    int index = Model.Entries.IndexOf((ReplResult)repl.DataContext);
-                    if(index == Model.Entries.Count - 1)
+                    int currentIndex = Model.Entries.IndexOf((ReplResult)repl.DataContext);
+                    if(currentIndex == Model.Entries.Count - 1)
                     {
                         Model.Entries.Add(new ReplResult());
                     }
                     else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Alt))
                     {
-                        Model.Entries.Insert(index + 1, new ReplResult());
+                        Model.Entries.Insert(currentIndex + 1, new ReplResult());
                     }
-                    Model.FocusIndex = index + 1;
+                    this.index = currentIndex + 1;
                 }
             }
         }
@@ -97,14 +97,17 @@ namespace Replay
             {
                 resultPanel.Text = exception.Message;
                 resultPanel.Foreground = Brushes.Red;
+                resultPanel.Visibility = Visibility.Visible;
             }
             else if (result.ReturnValue != null)
             {
                 resultPanel.Text = result.ReturnValue.ToString();
                 resultPanel.Foreground = Brushes.White;
+                resultPanel.Visibility = Visibility.Visible;
             }
             else
             {
+                resultPanel.Visibility = Visibility.Collapsed;
                 resultPanel.Text = null;
             }
         }
@@ -134,6 +137,11 @@ namespace Replay
             const string code = @"""Hello World""";
             syntaxHighlighter.Highlight(code);
             await scriptEvaluator.Evaluate(code);
+        }
+
+        private void TextEditor_Loaded(object sender, RoutedEventArgs e)
+        {
+            Model.FocusIndex = index;
         }
     }
 }
