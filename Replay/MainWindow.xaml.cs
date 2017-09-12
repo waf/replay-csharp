@@ -1,5 +1,4 @@
 ﻿using ICSharpCode.AvalonEdit;
-using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;
@@ -11,13 +10,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Replay
 {
@@ -41,9 +36,11 @@ namespace Replay
         private void TextEditor_Initialized(object sender, EventArgs e)
         {
             var editor = (TextEditor)sender;
-            AvalonSyntaxHighlightTransformer.Register(editor, syntaxHighlighter);
-            var promptLayer = AdornerLayer.GetAdornerLayer(editor);
-            promptLayer.Add(new PromptAdorner(editor));
+            AvalonSyntaxHighlightTransformer
+                .Register(editor, syntaxHighlighter);
+            AdornerLayer
+                .GetAdornerLayer(editor)
+                .Add(new PromptAdorner(editor));
             editor.TextArea.MouseWheel += TextArea_MouseWheel;
         }
 
@@ -55,76 +52,89 @@ namespace Replay
         /// </summary>
         private void TextArea_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (!e.Handled)
+            if (e.Handled) return;
+            e.Handled = true;
+            this.Scroll.RaiseEvent(new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
             {
-                e.Handled = true;
-                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
-                eventArg.RoutedEvent = MouseWheelEvent;
-                eventArg.Source = sender;
-                this.Scroll.RaiseEvent(eventArg);
-            }
+                RoutedEvent = MouseWheelEvent,
+                Source = sender
+            });
         }
 
         private async void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            // enter evaluates the script, but shift-enter is for a soft newline within the textarea
             if (e.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
                 e.Handled = true;
                 var repl = (TextEditor)sender;
-                ScriptState<object> result = null;
-                Exception evaluatorException = null;
-                var console = new ConsoleOutputWriter();
-                try
+                // read
+                string text = repl.Text;
+                // eval
+                var result = await Evaluate(text);
+                // print
+                Output(repl, result);
+                // loop
+                if(result.Exception == null
+                    && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) //ctrl-enter stays on the current line
                 {
-                    Console.SetOut(console);
-                    result = await scriptEvaluator.Evaluate(repl.Text);
-                }
-                catch (Exception evalException)
-                {
-                    evaluatorException = evalException;
-                }
-                var exception = evaluatorException ?? result.Exception;
-                string output = console.HasOutput ? console.GetStringBuilder().ToString() : null;
-                Output(repl, result, output, exception);
-                if(exception == null && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                {
-                    int currentIndex = Model.Entries.IndexOf((ReplResult)repl.DataContext);
-                    if(currentIndex == Model.Entries.Count - 1)
-                    {
-                        Model.Entries.Add(new ReplResult());
-                        this.index = currentIndex + 1;
-                    }
-                    else
-                    {
-                        Model.FocusIndex = currentIndex + 1;
-                    }
+                    MoveToNextLine(repl);
                 }
             }
         }
 
-        private static void Output(TextEditor repl, ScriptState<object> result, String stdout, Exception exception)
+        /// <summary>
+        /// Run the script and return the result, capturing any exceptions or standard output.
+        /// </summary>
+        private async Task<EvaluationResult> Evaluate(string text)
+        {
+            var result = new EvaluationResult();
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                return result;
+            }
+
+            var stdout = new ConsoleOutputWriter();
+            Console.SetOut(stdout);
+            try
+            {
+                result.ScriptResult = await scriptEvaluator.Evaluate(text);
+                if(result.ScriptResult.Exception != null)
+                {
+                    result.Exception = result.ScriptResult.Exception;
+                }
+            }
+            catch (Exception exception)
+            {
+                result.Exception = exception;
+            }
+            result.StandardOutput = stdout.GetOutputOrNull();
+            return result;
+        }
+
+        private static void Output(TextEditor repl, EvaluationResult result)
         {
             var outputs = ((Panel)repl.Parent).Children.OfType<TextBlock>().ToList();
             var resultPanel = outputs.Single(text => (string)text.Tag == "result");
             var stdoutPanel = outputs.Single(text => (string)text.Tag == "stdout");
-            if(stdout == null)
+            if(result.StandardOutput == null)
             {
                 stdoutPanel.Visibility = Visibility.Collapsed;
             }
             else
             {
-                stdoutPanel.Text = stdout;
+                stdoutPanel.Text = result.StandardOutput;
                 stdoutPanel.Visibility = Visibility.Visible;
             }
-            if (exception != null)
+            if (result.Exception != null)
             {
-                resultPanel.Text = exception.Message;
+                resultPanel.Text = result.Exception.Message;
                 resultPanel.Foreground = Brushes.Red;
                 resultPanel.Visibility = Visibility.Visible;
             }
-            else if (result.ReturnValue != null)
+            else if (result.ScriptResult.ReturnValue != null)
             {
-                resultPanel.Text = result.ReturnValue.ToString();
+                resultPanel.Text = result.ScriptResult.ReturnValue.ToString();
                 resultPanel.Foreground = Brushes.White;
                 resultPanel.Visibility = Visibility.Visible;
             }
@@ -135,9 +145,22 @@ namespace Replay
             }
         }
 
+        private void MoveToNextLine(TextEditor repl)
+        {
+            int currentIndex = Model.Entries.IndexOf((ReplResult)repl.DataContext);
+            if (currentIndex == Model.Entries.Count - 1)
+            {
+                Model.Entries.Add(new ReplResult());
+                this.index = currentIndex + 1;
+            }
+            else
+            {
+                Model.FocusIndex = currentIndex + 1;
+            }
+        }
+
         private async Task WarmpUp()
         {
-            // import system (useful), and run something that both prints to stdout and returns a value.
             const string code = @"using System; Console.WriteLine(""Hello""); ""Hello""";
             syntaxHighlighter.Highlight(code);
             await scriptEvaluator.Evaluate(code);

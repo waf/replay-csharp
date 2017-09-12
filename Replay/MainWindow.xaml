@@ -21,7 +21,7 @@
     </WindowChrome.WindowChrome>
     <DockPanel>
         <local:TitleBar x:Name="TitleBar" DockPanel.Dock="Top" WindowState="{Binding WindowState, Mode=TwoWay}" />
-        <ScrollViewer Padding="0, 0, 0, 8" x:Name="Scroll">
+        <ScrollViewer Padding="0, 0, 0, 8" x:Name="Scroll" Template="{DynamicResource ScrollViewerControlTemplate}">
             <ItemsControl x:Name="ReplEntries" Padding="24, 0, 24, 0" ItemsSource="{Binding Path=Entries}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
