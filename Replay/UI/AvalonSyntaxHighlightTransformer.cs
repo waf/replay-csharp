@@ -25,7 +25,6 @@ namespace Replay.UI
 
         protected override void ColorizeLine(DocumentLine line)
         {
-            int lineStartOffset = line.Offset;
             string text = CurrentContext.Document.GetText(line);
             var spans = highlighter.Highlight(text);
             foreach (var span in spans)

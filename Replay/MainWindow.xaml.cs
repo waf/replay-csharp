@@ -26,9 +26,9 @@ namespace Replay
     /// </summary>
     public partial class MainWindow : Window
     {
-        private SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
-        private ScriptEvaluator scriptEvaluator = new ScriptEvaluator();
-        private ReplModel Model = new ReplModel();
+        readonly SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
+        readonly ScriptEvaluator scriptEvaluator = new ScriptEvaluator();
+        readonly ReplModel Model = new ReplModel();
         private int index = 0;
 
         public MainWindow()
@@ -44,8 +44,26 @@ namespace Replay
             AvalonSyntaxHighlightTransformer.Register(editor, syntaxHighlighter);
             var promptLayer = AdornerLayer.GetAdornerLayer(editor);
             promptLayer.Add(new PromptAdorner(editor));
+            editor.TextArea.MouseWheel += TextArea_MouseWheel;
         }
 
+        /// <summary>
+        /// We want the scroll wheel to scroll the entire window.
+        /// However, the textarea used for input can be multiline, and it
+        /// swallows scroll events by default. So we listen for scroll events
+        /// on the textarea, and re-raise them on our window's scrollview.
+        /// </summary>
+        private void TextArea_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (!e.Handled)
+            {
+                e.Handled = true;
+                var eventArg = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+                eventArg.RoutedEvent = MouseWheelEvent;
+                eventArg.Source = sender;
+                this.Scroll.RaiseEvent(eventArg);
+            }
+        }
 
         private async void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -55,7 +73,6 @@ namespace Replay
                 var repl = (TextEditor)sender;
                 ScriptState<object> result = null;
                 Exception evaluatorException = null;
-                StringBuilder consoleOutput = new StringBuilder();
                 var console = new ConsoleOutputWriter();
                 try
                 {
@@ -118,20 +135,10 @@ namespace Replay
             }
         }
 
-        private void CloseButton_Click(object sender, RoutedEventArgs e) =>
-            Application.Current.Shutdown();
-
-        private void MinButton_Click(object sender, RoutedEventArgs e) =>
-            this.WindowState = WindowState.Minimized;
-
-        private void MaxButton_Click(object sender, RoutedEventArgs e) =>
-            this.WindowState = this.WindowState == WindowState.Maximized
-                ? WindowState.Normal
-                : WindowState.Maximized;
-
         private async Task WarmpUp()
         {
-            const string code = @"""Hello World""";
+            // import system (useful), and run something that both prints to stdout and returns a value.
+            const string code = @"using System; Console.WriteLine(""Hello""); ""Hello""";
             syntaxHighlighter.Highlight(code);
             await scriptEvaluator.Evaluate(code);
         }
@@ -139,6 +146,11 @@ namespace Replay
         private void TextEditor_Loaded(object sender, RoutedEventArgs e)
         {
             Model.FocusIndex = index;
+        }
+
+        private void TextEditor_Unloaded(object sender, RoutedEventArgs e)
+        {
+            ((TextEditor)sender).TextArea.MouseWheel -= TextArea_MouseWheel;
         }
     }
 }

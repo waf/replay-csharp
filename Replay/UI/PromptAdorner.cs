@@ -12,6 +12,9 @@ using System.Windows.Media;
 
 namespace Replay.UI
 {
+    /// <summary>
+    /// Draws the ">" at the beginning of each prompt.
+    /// </summary>
     public class PromptAdorner : Adorner
     {
         private readonly FormattedText prompt;

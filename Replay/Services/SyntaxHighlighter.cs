@@ -30,8 +30,9 @@ namespace Replay.Services
             document = document.WithText(source);
             //document = await Formatter.FormatAsync(document);
             document.TryGetText(out SourceText text);
-            IEnumerable<ClassifiedSpan> classified =
-                Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length)).Result;
+            IEnumerable<ClassifiedSpan> classified = 
+                Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length))
+                .Result;
 
             return classified
                 .Select(span => new ColorSpan(

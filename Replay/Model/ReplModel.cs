@@ -2,11 +2,19 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace Replay.Model
 {
     public class ReplModel : INotifyPropertyChanged
     {
+        private WindowState windowState;
+        public WindowState WindowState
+        {
+            get => windowState;
+            set => SetField(ref windowState, value);
+        }
+
         public ObservableCollection<ReplResult> Entries { get; } =
             new ObservableCollection<ReplResult> { new ReplResult() };
 

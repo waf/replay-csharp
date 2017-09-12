@@ -13,41 +13,32 @@
         FontFamily="Consolas"
         FontSize="14pt"
         Foreground="White"
+        WindowState="{Binding WindowState, Mode=TwoWay}"
         Title="Replay" Height="500" Width="810">
 
     <WindowChrome.WindowChrome>
         <WindowChrome CaptionHeight="{Binding ActualHeight,ElementName=TitleBar}"/>
     </WindowChrome.WindowChrome>
     <DockPanel>
-        <Grid x:Name="TitleBar" DockPanel.Dock="Top">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="1"
-                Foreground="White" FontSize="10pt" Padding="0, 5, 0, 0" HorizontalAlignment="Center">Replay</TextBlock>
-            <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal">
-                <Button x:Name="MinButton" DockPanel.Dock="Right" Foreground="LightGreen" Content="┄" Click="MinButton_Click" Style="{DynamicResource WindowButton}" />
-                <Button x:Name="MaxButton" DockPanel.Dock="Right" Foreground="LightGoldenrodYellow" Content="▢" Click="MaxButton_Click" Style="{DynamicResource WindowButton}" />
-                <Button x:Name="CloseButton" DockPanel.Dock="Right" Foreground="PaleVioletRed" Content="⨉" Click="CloseButton_Click" Style="{DynamicResource WindowButton}" />
-            </StackPanel>
-        </Grid>
-        <ItemsControl x:Name="ReplEntries" Padding="24, 0, 24, 0" ItemsSource="{Binding Path=Entries}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel>
-                        <avalonEdit:TextEditor
-                            PreviewKeyDown="TextEditor_PreviewKeyDown"
-                            Initialized="TextEditor_Initialized"
-                            local:FocusExtension.IsFocused="{Binding Path=IsFocused}"
-                            Loaded="TextEditor_Loaded"
-                            Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
-                        <TextBlock Tag="stdout" Foreground="LightGray" FontStyle="Italic" Visibility="Collapsed"></TextBlock>
-                        <TextBlock Tag="result" Visibility="Collapsed"></TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <local:TitleBar x:Name="TitleBar" DockPanel.Dock="Top" WindowState="{Binding WindowState, Mode=TwoWay}" />
+        <ScrollViewer Padding="0, 0, 0, 8" x:Name="Scroll">
+            <ItemsControl x:Name="ReplEntries" Padding="24, 0, 24, 0" ItemsSource="{Binding Path=Entries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <avalonEdit:TextEditor
+                                PreviewKeyDown="TextEditor_PreviewKeyDown"
+                                Initialized="TextEditor_Initialized"
+                                local:FocusExtension.IsFocused="{Binding Path=IsFocused}"
+                                Loaded="TextEditor_Loaded"
+                                Unloaded="TextEditor_Unloaded"
+                                Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
+                            <TextBlock Tag="stdout" Foreground="LightGray" FontStyle="Italic" Visibility="Collapsed"></TextBlock>
+                            <TextBlock Tag="result" Visibility="Collapsed"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
     </DockPanel>
 </Window>
