@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.CodeCompletion;
 using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
 using Replay.Services;
@@ -24,8 +25,10 @@ namespace Replay
     {
         readonly SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
         readonly ScriptEvaluator scriptEvaluator = new ScriptEvaluator();
+        readonly CodeCompleter codeCompleter = new CodeCompleter();
         readonly ReplViewModel Model = new ReplViewModel();
         private int index = 0;
+        private CompletionWindow completionWindow;
 
         public MainWindow()
         {
@@ -64,11 +67,11 @@ namespace Replay
 
         private async void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            var repl = (TextEditor)sender;
             // enter evaluates the script, but shift-enter is for a soft newline within the textarea
             if (e.Key == Key.Enter && !Keyboard.Modifiers.HasFlag(ModifierKeys.Shift))
             {
                 e.Handled = true;
-                var repl = (TextEditor)sender;
                 // read
                 string text = repl.Text;
                 // eval
@@ -80,6 +83,25 @@ namespace Replay
                     && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) //ctrl-enter stays on the current line
                 {
                     MoveToNextLine(repl);
+                }
+            }
+            else if (e.Key == Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                e.Handled = true;
+                var completions = await codeCompleter.Complete(repl.Text);
+
+                if(completions.Any())
+                {
+                    completionWindow = new CompletionWindow(repl.TextArea);
+                    var windowItems = completionWindow.CompletionList.CompletionData;
+                    foreach (var completion in completions)
+                    {
+                        windowItems.Add(new CodeCompletionSuggestion(completion.DisplayText));
+                    }
+                    completionWindow.Show();
+                    //completionWindow.Closed += delegate {
+                    //    completionWindow = null;
+                    //};
                 }
             }
         }
