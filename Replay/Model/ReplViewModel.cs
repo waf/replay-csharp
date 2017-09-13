@@ -6,7 +6,10 @@ using System.Windows;
 
 namespace Replay.Model
 {
-    public class ReplModel : INotifyPropertyChanged
+    /// <summary>
+    /// Root of the ViewModel -- one per repl window.
+    /// </summary>
+    public class ReplViewModel : INotifyPropertyChanged
     {
         private WindowState windowState;
         public WindowState WindowState
@@ -15,9 +18,8 @@ namespace Replay.Model
             set => SetField(ref windowState, value);
         }
 
-        public ObservableCollection<ReplResult> Entries { get; } =
-            new ObservableCollection<ReplResult> { new ReplResult() };
-
+        public ObservableCollection<ReplLineViewModel> Entries { get; } =
+            new ObservableCollection<ReplLineViewModel> { new ReplLineViewModel() };
 
         private int? focusIndex;
         public int FocusIndex

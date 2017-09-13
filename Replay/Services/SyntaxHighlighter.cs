@@ -19,7 +19,7 @@ namespace Replay.Services
 
         public SyntaxHighlighter()
         {
-            AdhocWorkspace workspace = new AdhocWorkspace();
+            Workspace workspace = new AdhocWorkspace();
             Solution solution = workspace.CurrentSolution;
             Project project = solution.AddProject("ReplProject", "ReplAssembly", LanguageNames.CSharp);
             document = project.AddDocument("Repl.cs", "");

@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
+using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;
@@ -23,7 +24,7 @@ namespace Replay
     {
         readonly SyntaxHighlighter syntaxHighlighter = new SyntaxHighlighter();
         readonly ScriptEvaluator scriptEvaluator = new ScriptEvaluator();
-        readonly ReplModel Model = new ReplModel();
+        readonly ReplViewModel Model = new ReplViewModel();
         private int index = 0;
 
         public MainWindow()
@@ -88,69 +89,51 @@ namespace Replay
         /// </summary>
         private async Task<EvaluationResult> Evaluate(string text)
         {
-            var result = new EvaluationResult();
             if (string.IsNullOrWhiteSpace(text))
             {
-                return result;
+                return new EvaluationResult();
             }
 
-            var stdout = new ConsoleOutputWriter();
-            Console.SetOut(stdout);
+            using(var stdout = new ConsoleOutputWriter())
+            {
+                var evaluated = await EvaluateCapturingError(text);
+                return new EvaluationResult
+                {
+                    ScriptResult = evaluated.Result,
+                    Exception = evaluated.Exception,
+                    StandardOutput = stdout.GetOutputOrNull()
+                };
+            }
+        }
+
+        private async Task<(ScriptState<object> Result, Exception Exception)> EvaluateCapturingError(string text)
+        {
+            ScriptState<object> result = null;
+            Exception exception = null;
             try
             {
-                result.ScriptResult = await scriptEvaluator.Evaluate(text);
-                if(result.ScriptResult.Exception != null)
-                {
-                    result.Exception = result.ScriptResult.Exception;
-                }
+                result = await scriptEvaluator.Evaluate(text);
+                exception = result?.Exception;
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                result.Exception = exception;
+                exception = e;
             }
-            result.StandardOutput = stdout.GetOutputOrNull();
-            return result;
+            return (result, exception);
         }
 
         private static void Output(TextEditor repl, EvaluationResult result)
         {
-            var outputs = ((Panel)repl.Parent).Children.OfType<TextBlock>().ToList();
-            var resultPanel = outputs.Single(text => (string)text.Tag == "result");
-            var stdoutPanel = outputs.Single(text => (string)text.Tag == "stdout");
-            if(result.StandardOutput == null)
-            {
-                stdoutPanel.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                stdoutPanel.Text = result.StandardOutput;
-                stdoutPanel.Visibility = Visibility.Visible;
-            }
-            if (result.Exception != null)
-            {
-                resultPanel.Text = result.Exception.Message;
-                resultPanel.Foreground = Brushes.Red;
-                resultPanel.Visibility = Visibility.Visible;
-            }
-            else if (result.ScriptResult.ReturnValue != null)
-            {
-                resultPanel.Text = result.ScriptResult.ReturnValue.ToString();
-                resultPanel.Foreground = Brushes.White;
-                resultPanel.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                resultPanel.Visibility = Visibility.Collapsed;
-                resultPanel.Text = null;
-            }
+            var viewmodel = (ReplLineViewModel)repl.DataContext;
+            viewmodel.SetResult(result);
         }
 
         private void MoveToNextLine(TextEditor repl)
         {
-            int currentIndex = Model.Entries.IndexOf((ReplResult)repl.DataContext);
+            int currentIndex = Model.Entries.IndexOf((ReplLineViewModel)repl.DataContext);
             if (currentIndex == Model.Entries.Count - 1)
             {
-                Model.Entries.Add(new ReplResult());
+                Model.Entries.Add(new ReplLineViewModel());
                 this.index = currentIndex + 1;
             }
             else

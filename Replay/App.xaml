@@ -9,6 +9,7 @@
             <ResourceDictionary.MergedDictionaries >
                 <ResourceDictionary Source="UI/ScrollbarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <SolidColorBrush x:Key="BackgroundColor" Color="#444444"/>
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
             <Style x:Key="ReplEditor" TargetType="{x:Type avalonedit:TextEditor}">

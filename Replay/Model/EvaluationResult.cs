@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Replay.Model
 {
-    class EvaluationResult
+    public class EvaluationResult
     {
         /// <summary>
         /// Result of the program

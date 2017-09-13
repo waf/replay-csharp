@@ -4,7 +4,11 @@ using System.Runtime.CompilerServices;
 
 namespace Replay.Model
 {
-    public class ReplResult : INotifyPropertyChanged
+    /// <summary>
+    /// ViewModel for a single line of the repl.
+    /// Child of <see cref="ReplViewModel"/>
+    /// </summary>
+    public class ReplLineViewModel : INotifyPropertyChanged
     {
         bool isFocused;
         public bool IsFocused
@@ -20,11 +24,32 @@ namespace Replay.Model
             set => SetField(ref input,  value);
         }
 
+        string result;
+        public string Result
+        {
+            get => result;
+            set => SetField(ref result,  value);
+        }
+
+        string error;
+        public string Error
+        {
+            get => error;
+            set => SetField(ref error,  value);
+        }
+
         string output;
-        public string Output
+        public string StandardOutput
         {
             get => output;
             set => SetField(ref output,  value);
+        }
+
+        public void SetResult(EvaluationResult result)
+        {
+            this.Result = result.ScriptResult?.ReturnValue?.ToString();
+            this.Error = result.Exception?.Message;
+            this.StandardOutput = result.StandardOutput;
         }
 
         #region INotifyPropertyChanged Helpers

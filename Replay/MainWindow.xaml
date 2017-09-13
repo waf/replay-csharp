@@ -33,8 +33,15 @@
                                 Loaded="TextEditor_Loaded"
                                 Unloaded="TextEditor_Unloaded"
                                 Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
-                            <TextBlock Tag="stdout" Foreground="LightGray" FontStyle="Italic" Visibility="Collapsed"></TextBlock>
-                            <TextBlock Tag="result" Visibility="Collapsed"></TextBlock>
+                            <TextBlock Text="{Binding Path=StandardOutput}"
+                                       Visibility="{Binding Path=StandardOutput, Converter={StaticResource StringToVisibilityConverter}}"
+                                       Foreground="LightGray" FontStyle="Italic" />
+                            <TextBlock Text="{Binding Path=Error}"
+                                       Visibility="{Binding Path=Error, Converter={StaticResource StringToVisibilityConverter}}"
+                                       Foreground="Red" />
+                            <TextBlock Text="{Binding Path=Result}"
+                                       Visibility="{Binding Path=Result, Converter={StaticResource StringToVisibilityConverter}}"
+                                       Foreground="White" />
                         </StackPanel>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
