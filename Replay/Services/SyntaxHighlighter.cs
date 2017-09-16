@@ -9,26 +9,29 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 
-// https://github.com/dotnet/roslyn/blob/master/src/Samples/CSharp/ConsoleClassifier/Program.cs
 
 namespace Replay.Services
 {
+    /// <summary>
+    /// Uses roslyn's Classifier API to syntax highlight code.
+    /// </summary>
+    /// <remarks>
+    /// There's not much documentation about this API, so this is based off of the following sample code:
+    /// https://github.com/dotnet/roslyn/blob/master/src/Samples/CSharp/ConsoleClassifier/Program.cs
+    /// </remarks>
     public class SyntaxHighlighter
     {
         private Document document;
 
-        public SyntaxHighlighter()
+        public SyntaxHighlighter(Document document)
         {
-            Workspace workspace = new AdhocWorkspace();
-            Solution solution = workspace.CurrentSolution;
-            Project project = solution.AddProject("ReplProject", "ReplAssembly", LanguageNames.CSharp);
-            document = project.AddDocument("Repl.cs", "");
+            this.document = document;
         }
+
         public IReadOnlyCollection<ColorSpan> Highlight(string code)
         {
             var source = SourceText.From(code);
             document = document.WithText(source);
-            //document = await Formatter.FormatAsync(document);
             document.TryGetText(out SourceText text);
             IEnumerable<ClassifiedSpan> classified = 
                 Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length))

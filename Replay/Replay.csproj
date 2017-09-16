@@ -203,7 +203,9 @@
     </ApplicationDefinition>
     <Compile Include="Model\EvaluationResult.cs" />
     <Compile Include="Services\CodeCompleter.cs" />
+    <Compile Include="Services\ReplServices.cs" />
     <Compile Include="UI\CodeCompletionSuggestion.cs" />
+    <Compile Include="UI\IntellisenseWindow.cs" />
     <Compile Include="UI\StringToVisibilityConverter.cs" />
     <Compile Include="UI\TitleBar.xaml.cs">
       <DependentUpon>TitleBar.xaml</DependentUpon>

@@ -35,11 +35,5 @@ namespace Replay.UI
                 });
             }
         }
-
-        public static void Register(TextEditor editor, SyntaxHighlighter syntaxHighlighter)
-        {
-            editor.TextArea.TextView.LineTransformers
-                .Add(new AvalonSyntaxHighlightTransformer(syntaxHighlighter));
-        }
     }
 }

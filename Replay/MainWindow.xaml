@@ -29,10 +29,10 @@
                             <avalonEdit:TextEditor
                                 PreviewKeyDown="TextEditor_PreviewKeyDown"
                                 Initialized="TextEditor_Initialized"
-                                local:FocusExtension.IsFocused="{Binding Path=IsFocused}"
                                 Loaded="TextEditor_Loaded"
                                 Unloaded="TextEditor_Unloaded"
-                                Style="{DynamicResource ReplEditor}"></avalonEdit:TextEditor>
+                                Style="{DynamicResource ReplEditor}">
+                            </avalonEdit:TextEditor>
                             <TextBlock Text="{Binding Path=StandardOutput}"
                                        Visibility="{Binding Path=StandardOutput, Converter={StaticResource StringToVisibilityConverter}}"
                                        Foreground="LightGray" FontStyle="Italic" />

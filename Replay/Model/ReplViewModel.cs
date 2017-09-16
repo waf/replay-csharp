@@ -11,6 +11,11 @@ namespace Replay.Model
     /// </summary>
     public class ReplViewModel : INotifyPropertyChanged
     {
+        public ReplViewModel()
+        {
+            FocusIndex = 0;
+        }
+
         private WindowState windowState;
         public WindowState WindowState
         {

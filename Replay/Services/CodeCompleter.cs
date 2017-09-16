@@ -12,40 +12,27 @@ using System.Threading.Tasks;
 
 namespace Replay.Services
 {
+    /// <summary>
+    /// Provides code completion (i.e. Intellisense) using Roslyn
+    /// </summary>
     class CodeCompleter
     {
         private Document document;
-        private string template;
-        private AdhocWorkspace workspace;
-        private Project project;
 
-        public CodeCompleter()
+        public CodeCompleter(Document document)
         {
-            //Workspace workspace = new AdhocWorkspace();
-            //Solution solution = workspace.CurrentSolution;
-            //Project project = solution.AddProject("ReplCodeComplete", "ReplCodeCompleteAssembly", LanguageNames.CSharp);
-            //document = project.AddDocument("Complete.cs", "");
+            this.document = document;
         }
 
         public async Task<ImmutableArray<CompletionItem>> Complete(string code)
         {
             string program = $"using System; namespace TestProject {{ public class CodeComplete {{ public void CodeCompleteMethod() {{ {code} }} }} }}";
-            workspace = new AdhocWorkspace();
-            var projectId = ProjectId.CreateNewId("TestProject");
-            project = workspace.AddProject("TestProject", LanguageNames.CSharp)
-                .AddMetadataReference(CorlibReference)
-                .AddMetadataReference(SystemCoreReference);
-            document = project.AddDocument("CodeComplete.cs", program);
+            document = document.WithText(SourceText.From(program));
             int cursor = program.IndexOf(code) + code.Length;
             var service = CompletionService.GetService(document);
             var completions = await service.GetCompletionsAsync(document, cursor);
             var filtered = service.FilterItems(document, completions.Items, code);
             return filtered;
         }
-
-        private static readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-        private static readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-        private static readonly MetadataReference CSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
-        
     }
 }

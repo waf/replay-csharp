@@ -47,8 +47,8 @@ namespace Replay.Model
 
         public void SetResult(EvaluationResult result)
         {
-            this.Result = result.ScriptResult?.ReturnValue?.ToString();
             this.Error = result.Exception?.Message;
+            this.Result = result.ScriptResult?.ReturnValue?.ToString();
             this.StandardOutput = result.StandardOutput;
         }
 
