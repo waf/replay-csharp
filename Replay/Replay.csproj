@@ -203,17 +203,19 @@
     </ApplicationDefinition>
     <Compile Include="Model\EvaluationResult.cs" />
     <Compile Include="Services\CodeCompleter.cs" />
+    <Compile Include="Services\KeyboardShortcuts.cs" />
     <Compile Include="Services\ReplServices.cs" />
     <Compile Include="UI\CodeCompletionSuggestion.cs" />
     <Compile Include="UI\IntellisenseWindow.cs" />
     <Compile Include="UI\StringToVisibilityConverter.cs" />
+    <Compile Include="UI\TextEditorExtensions.cs" />
     <Compile Include="UI\TitleBar.xaml.cs">
       <DependentUpon>TitleBar.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\AvalonSyntaxHighlightTransformer.cs" />
     <Compile Include="Services\ConsoleOutputWriter.cs" />
     <Compile Include="Model\ReplViewModel.cs" />
-    <Compile Include="Model\ReplLineViewModel.cs" />
+    <Compile Include="Model\LineEditorViewModel.cs" />
     <Compile Include="Services\ScriptEvaluator.cs" />
     <Compile Include="Services\SyntaxHighlighter.cs" />
     <Compile Include="UI\FocusExtension.cs" />

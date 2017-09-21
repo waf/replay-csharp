@@ -4,7 +4,6 @@ using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.CodeAnalysis.Completion;
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Windows.Media;
 
 namespace Replay.UI

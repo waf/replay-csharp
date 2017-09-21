@@ -1,12 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -34,13 +29,14 @@ namespace Replay.UI
         protected override void OnRender(DrawingContext drawingContext)
         {
             prompt.PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip;
-
-            //var coords = this.AdornedElement
-            //    .TransformToAncestor(App.Current.MainWindow)
-            //    .Transform(new Point(0, 0));
-
             drawingContext.DrawText(prompt, new Point(-16, 0));
+        }
 
+        internal static void DrawPrompt(TextEditor repl)
+        {
+            AdornerLayer
+                .GetAdornerLayer(repl)
+                .Add(new PromptAdorner(repl));
         }
     }
 }

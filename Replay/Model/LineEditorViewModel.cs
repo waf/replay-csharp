@@ -8,7 +8,7 @@ namespace Replay.Model
     /// ViewModel for a single line of the repl.
     /// Child of <see cref="ReplViewModel"/>
     /// </summary>
-    public class ReplLineViewModel : INotifyPropertyChanged
+    public class LineEditorViewModel : INotifyPropertyChanged
     {
         bool isFocused;
         public bool IsFocused

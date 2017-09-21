@@ -28,7 +28,9 @@
                         <StackPanel>
                             <avalonEdit:TextEditor
                                 PreviewKeyDown="TextEditor_PreviewKeyDown"
+                                PreviewKeyUp="TextEditor_PreviewKeyUp"
                                 Initialized="TextEditor_Initialized"
+                                FocusManager.GotFocus="TextEditor_GotFocus"
                                 Loaded="TextEditor_Loaded"
                                 Unloaded="TextEditor_Unloaded"
                                 Style="{DynamicResource ReplEditor}">
