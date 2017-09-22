@@ -29,8 +29,8 @@ namespace Replay.Services
         public ReplServices()
         {
             RoslynInitialization = Task.Run(() => RoslynInitialize());
-            SyntaxHighlightInitialization = Task.Run(SyntaxHighlightInitialize);
-            EvaluationInitialization = Task.Run(EvaluationInitialize);
+            SyntaxHighlightInitialization = Task.Run(SyntaxHighlightInitializeAsync);
+            EvaluationInitialization = Task.Run(EvaluationInitializeAsync);
         }
 
         private void RoslynInitialize()
@@ -49,7 +49,7 @@ namespace Replay.Services
         /// <summary>
         /// Initializes the required services, in a background thread.
         /// </summary>
-        private async Task SyntaxHighlightInitialize()
+        private async Task SyntaxHighlightInitializeAsync()
         {
             await RoslynInitialization;
 
@@ -58,29 +58,29 @@ namespace Replay.Services
             syntaxHighlighter.Highlight(InitializationCode);
         }
 
-        private async Task EvaluationInitialize()
+        private async Task EvaluationInitializeAsync()
         {
             await RoslynInitialization;
 
             scriptEvaluator = new ScriptEvaluator();
             codeCompleter = new CodeCompleter(document);
-            await scriptEvaluator.Evaluate(InitializationCode);
+            await scriptEvaluator.EvaluateAsync(InitializationCode);
             await codeCompleter.Complete(InitializationCode);
         }
 
-        public async Task<ImmutableArray<CompletionItem>> CompleteCode(string code)
+        public async Task<ImmutableArray<CompletionItem>> CompleteCodeAsync(string code)
         {
             await EvaluationInitialization;
             return await codeCompleter.Complete(code);
         }
 
-        public async Task<EvaluationResult> Evaluate(string text)
+        public async Task<EvaluationResult> EvaluateAsync(string text)
         {
             await EvaluationInitialization;
-            return await scriptEvaluator.Evaluate(text);
+            return await scriptEvaluator.EvaluateAsync(text);
         }
 
-        public async Task ConfigureSyntaxHighlighting(TextEditor repl)
+        public async Task ConfigureSyntaxHighlightingAsync(TextEditor repl)
         {
             await SyntaxHighlightInitialization;
             repl.TextArea.TextView.LineTransformers

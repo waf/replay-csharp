@@ -32,7 +32,7 @@ namespace Replay.Model
             get => focusIndex.GetValueOrDefault(0);
             set
             {
-                if (value == -1 || focusIndex == Entries.Count)
+                if (value == -1 || value == Entries.Count)
                 {
                     return;
                 }

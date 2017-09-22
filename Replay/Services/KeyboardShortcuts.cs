@@ -17,47 +17,25 @@ namespace Replay.Services
     }
 
     /// <summary>
-    /// Maps keyboard keys to REPL commands
+    /// Maps keyboard keys to commands in the REPL
     /// </summary>
     static class KeyboardShortcuts
     {
+        /// <summary>
+        /// Given a key event, map it to a command in the REPL, or null if
+        /// the key event does not correspond to a command in the REPL.
+        /// </summary>
         public static ReplCommand? MapToCommand(KeyEventArgs key)
         {
-            if (key.Is(Enter))
-            {
-                key.Handled = true;
-                return EvaluateCurrentLine;
-            }
-            else if (key.Is(Control, Enter))
-            {
-                key.Handled = true;
-                return ReevaluateCurrentLine;
-            }
-            else if (key.Is(Control, Space) || key.Is(Tab))
-            {
-                key.Handled = true;
-                return OpenIntellisense;
-            }
-            else if (key.Is(PageUp) || key.Is(Control, Up))
-            {
-                key.Handled = true;
-                return GoToFirstLine;
-            }
-            else if (key.Is(PageDown) || key.Is(Control, Down))
-            {
-                key.Handled = true;
-                return GoToLastLine;
-            }
-            else if (key.Is(Up))
-            {
-                return LineUp;
-            }
-            else if (key.Is(Down))
-            {
-                return LineDown;
-            }
-
-            return null;
+            return 
+                key.Is(Enter) ? EvaluateCurrentLine :
+                key.Is(Control, Enter) ? ReevaluateCurrentLine :
+                key.Is(Control, Space) || key.Is(Tab) ? OpenIntellisense :
+                key.Is(PageUp) || key.Is(Control, Up) ? GoToFirstLine :
+                key.Is(PageDown) || key.Is(Control, Down) ? GoToLastLine :
+                key.Is(Up) ? LineUp :
+                key.Is(Down) ? LineDown :
+                null as ReplCommand?;
         }
 
         private static bool Is(this KeyEventArgs args, Key test) =>

@@ -32,11 +32,11 @@ namespace Replay.UI
             drawingContext.DrawText(prompt, new Point(-16, 0));
         }
 
-        internal static void DrawPrompt(TextEditor repl)
+        internal static void AddTo(UIElement element)
         {
             AdornerLayer
-                .GetAdornerLayer(repl)
-                .Add(new PromptAdorner(repl));
+                .GetAdornerLayer(element)
+                .Add(new PromptAdorner(element));
         }
     }
 }

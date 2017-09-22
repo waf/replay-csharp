@@ -29,11 +29,12 @@ namespace Replay
         private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)
         {
             if (completionWindow?.IsVisible ?? false) return;
-            var mapping = KeyboardShortcuts.MapToCommand(e);
-            if (!mapping.HasValue) return;
-            var command = mapping.Value;
 
-            switch (command)
+            var command = KeyboardShortcuts.MapToCommand(e);
+            if (!command.HasValue) return;
+
+            e.Handled = true;
+            switch (command.Value)
             {
                 case ReplCommand.EvaluateCurrentLine:
                     await ReadEvalPrintLoop(lineEditor, stayOnCurrentLine: false);
@@ -50,18 +51,15 @@ namespace Replay
                 case ReplCommand.GoToLastLine:
                     Model.FocusIndex = Model.Entries.Count - 1;
                     return;
-                case ReplCommand.LineDown:
-                    if (!lineEditor.IsCaretOnFinalLine()) return;
-                    e.Handled = true;
+                case ReplCommand.LineDown when lineEditor.IsCaretOnFinalLine():
                     Model.FocusIndex++;
                     return;
-                case ReplCommand.LineUp:
-                    if (!lineEditor.IsCaretOnFirstLine()) return;
-                    e.Handled = true;
+                case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
                     Model.FocusIndex--;
                     return;
                 default:
-                    throw new ArgumentException("Unhandled editor command: " + command);
+                    e.Handled = false;
+                    break;
             }
         }
 
@@ -80,12 +78,12 @@ namespace Replay
         {
             // read
             string text = lineEditor.Text;
-            if (text == "exit")
+            if (text.Trim() == "exit")
             {
                 Application.Current.Shutdown();
             }
             // eval
-            var result = await services.Evaluate(text);
+            var result = await services.EvaluateAsync(text);
             // print
             Print(lineEditor, result);
             // loop
@@ -112,7 +110,7 @@ namespace Replay
 
         private async Task CompleteCode(TextEditor lineEditor)
         {
-            var completions = await services.CompleteCode(lineEditor.Text);
+            var completions = await services.CompleteCodeAsync(lineEditor.Text);
             if (completions.Any())
             {
                 completionWindow = new IntellisenseWindow(lineEditor.TextArea, completions);
@@ -121,9 +119,9 @@ namespace Replay
 
         private async void TextEditor_Initialized(TextEditor lineEditor, EventArgs e)
         {
-            PromptAdorner.DrawPrompt(lineEditor);
+            PromptAdorner.AddTo(lineEditor);
             lineEditor.TextArea.MouseWheel += TextArea_MouseWheel;
-            await services.ConfigureSyntaxHighlighting(lineEditor);
+            await services.ConfigureSyntaxHighlightingAsync(lineEditor);
         }
 
         private void TextEditor_Loaded(TextEditor lineEditor, RoutedEventArgs e)

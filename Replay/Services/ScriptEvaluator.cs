@@ -16,7 +16,7 @@ namespace Replay.Services
         /// <summary>
         /// Run the script and return the result, capturing any exceptions or standard output.
         /// </summary>
-        public async Task<EvaluationResult> Evaluate(string text)
+        public async Task<EvaluationResult> EvaluateAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
