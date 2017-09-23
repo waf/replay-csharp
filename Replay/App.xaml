@@ -10,7 +10,9 @@
                 <ResourceDictionary Source="UI/ScrollbarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-            <SolidColorBrush x:Key="BackgroundColor" Color="#444444"/>
+            <!--<SolidColorBrush x:Key="BackgroundColor" Color="#303030"/>-->
+            <SolidColorBrush x:Key="BackgroundColor" Color="#313540"/>
+            
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
             <Style x:Key="ReplEditor" TargetType="{x:Type avalonedit:TextEditor}">
                 <Setter Property="Foreground" Value="White"/>

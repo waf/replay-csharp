@@ -13,6 +13,8 @@
         FontFamily="Consolas"
         FontSize="14pt"
         Foreground="White"
+        BorderThickness="1"
+        BorderBrush="#222"
         WindowState="{Binding WindowState, Mode=TwoWay}"
         Title="Replay" Height="500" Width="810">
 
@@ -33,6 +35,7 @@
                                 FocusManager.GotFocus="TextEditor_GotFocus"
                                 Loaded="TextEditor_Loaded"
                                 Unloaded="TextEditor_Unloaded"
+                                Document="{Binding Document, Mode=TwoWay}"
                                 Style="{DynamicResource ReplEditor}">
                             </avalonEdit:TextEditor>
                             <TextBlock Text="{Binding Path=StandardOutput}"

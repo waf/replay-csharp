@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ICSharpCode.AvalonEdit.Document;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -17,11 +18,12 @@ namespace Replay.Model
             set => SetField(ref isFocused,  value);
         }
 
-        string input;
-        public string Input
+        // the input document of the current line editor.
+        TextDocument document;
+        public TextDocument Document
         {
-            get => input;
-            set => SetField(ref input,  value);
+            get => document;
+            set => SetField(ref document,  value);
         }
 
         string result;

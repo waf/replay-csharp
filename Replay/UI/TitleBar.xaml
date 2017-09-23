@@ -9,7 +9,7 @@
     <UserControl.Resources>
         <SolidColorBrush x:Key="Button.Static.Background" Color="#FFDDDDDD"/>
         <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
-        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
+        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#444455"/>
         <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
         <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
         <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
@@ -26,6 +26,7 @@
             </Setter>
         </Style>
         <Style x:Key="WindowButton" TargetType="{x:Type Button}">
+            <Setter Property="FontFamily" Value="Calibri" />
             <Setter Property="FocusVisualStyle" Value="{StaticResource FocusVisual}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderBrush" Value="{StaticResource Button.Static.Border}"/>
@@ -36,7 +37,7 @@
             <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="FontSize" Value="18px"/>
-            <Setter Property="Padding" Value="1"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
@@ -48,11 +49,11 @@
                                 <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="{StaticResource BackgroundHighlightColor}"/>
+                                <Setter Property="Background" TargetName="border" Value="#445"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.MouseOver.Border}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="true">
-                                <Setter Property="Background" TargetName="border" Value="{StaticResource Button.Pressed.Background}"/>
+                                <Setter Property="Background" TargetName="border" Value="#557"/>
                                 <Setter Property="BorderBrush" TargetName="border" Value="{StaticResource Button.Pressed.Border}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
@@ -73,11 +74,11 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <TextBlock Grid.Column="1"
-                Foreground="White" FontSize="10pt" Padding="0, 5, 0, 0" HorizontalAlignment="Center">Replay</TextBlock>
+                Foreground="#ddd" FontWeight="Normal" FontSize="10pt" FontFamily="Calibri" Padding="0, 5, 0, 0" HorizontalAlignment="Center">replay</TextBlock>
         <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal">
-            <Button x:Name="MinButton" DockPanel.Dock="Right" Foreground="LightGreen" Content="┄" Click="MinButton_Click" Style="{StaticResource WindowButton}" />
-            <Button x:Name="MaxButton" DockPanel.Dock="Right" Foreground="LightGoldenrodYellow" Content="▢" Click="MaxButton_Click" Style="{StaticResource WindowButton}" />
-            <Button x:Name="CloseButton" DockPanel.Dock="Right" Foreground="PaleVioletRed" Content="⨉" Click="CloseButton_Click" Style="{StaticResource WindowButton}" />
+            <Button x:Name="MinButton" DockPanel.Dock="Right" Foreground="#ddd" Content="−" Click="MinButton_Click" Style="{StaticResource WindowButton}" />
+            <Button x:Name="MaxButton" DockPanel.Dock="Right" Foreground="#ddd" Content="◻" Padding="0 1 0 0" FontSize="10pt" Click="MaxButton_Click" Style="{StaticResource WindowButton}" />
+            <Button x:Name="CloseButton" DockPanel.Dock="Right" Foreground="#ddd" Content="⨯" Click="CloseButton_Click" Style="{StaticResource WindowButton}" />
         </StackPanel>
     </Grid>
 </UserControl>
