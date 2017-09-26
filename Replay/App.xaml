@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Replay.UI"
              xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit" x:Class="Replay.App"
+             xmlns:completion="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -12,7 +13,16 @@
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <!--<SolidColorBrush x:Key="BackgroundColor" Color="#303030"/>-->
             <SolidColorBrush x:Key="BackgroundColor" Color="#313540"/>
-            
+
+            <Style x:Key="{x:Type local:IntellisenseWindow }" TargetType="{x:Type local:IntellisenseWindow}">
+                <Setter Property="WindowStyle" Value="None"/>
+                <Setter Property="AllowsTransparency" Value="True"/>
+            </Style>
+            <Style x:Key="{x:Type completion:CompletionListBox }" TargetType="{x:Type completion:CompletionListBox}">
+                <Setter Property="Foreground" Value="#dddddd"/>
+                <!-- Background color -->
+                <Setter Property="Background" Value="#292c35"/>
+            </Style>
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
             <Style x:Key="ReplEditor" TargetType="{x:Type avalonedit:TextEditor}">
                 <Setter Property="Foreground" Value="White"/>
