@@ -7,6 +7,7 @@
         xmlns:model="clr-namespace:Replay.Model"
         xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
+        x:Name="Window"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="{StaticResource BackgroundColor}"
@@ -16,6 +17,7 @@
         BorderThickness="1"
         BorderBrush="#222"
         WindowState="{Binding WindowState, Mode=TwoWay}"
+        PreviewMouseWheel="Window_PreviewMouseWheel"
         Title="Replay" Height="500" Width="810">
 
     <WindowChrome.WindowChrome>
@@ -23,7 +25,7 @@
     </WindowChrome.WindowChrome>
     <DockPanel>
         <local:TitleBar x:Name="TitleBar" DockPanel.Dock="Top" WindowState="{Binding WindowState, Mode=TwoWay}" />
-        <ScrollViewer Padding="0, 0, 0, 8" x:Name="Scroll" Template="{DynamicResource ScrollViewerControlTemplate}">
+        <ScrollViewer Padding="0, 0, 0, 8" x:Name="Scroll">
             <ItemsControl x:Name="ReplEntries" Padding="24, 0, 24, 0" ItemsSource="{Binding Path=Entries}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>

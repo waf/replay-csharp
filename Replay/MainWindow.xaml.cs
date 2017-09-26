@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
+using ICSharpCode.AvalonEdit.Editing;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;
@@ -143,7 +144,7 @@ namespace Replay
         /// swallows scroll events by default. So we listen for scroll events
         /// on the textarea, and re-raise them on our window's scrollview.
         /// </summary>
-        private void TextArea_MouseWheel(TextEditor lineEditor, MouseWheelEventArgs e)
+        private void TextArea_MouseWheel(TextArea lineEditor, MouseWheelEventArgs e)
         {
             if (e.Handled) return;
             e.Handled = true;
@@ -164,14 +165,27 @@ namespace Replay
             }
         }
 
+        private void Window_PreviewMouseWheel(Window sender, MouseWheelEventArgs e)
+        {
+            // scale the font size
+            if(Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            {
+                int delta = e.Delta / Math.Abs(e.Delta); // -1 or +1;
+                this.Window.FontSize += delta;
+                Thickness padding = this.ReplEntries.Padding;
+                this.ReplEntries.Padding = new Thickness(padding.Left + delta, padding.Top, padding.Right, padding.Bottom);
+            }
+        }
+
         #region ugly casting of untyped event handlers
         private void TextEditor_GotFocus(object sender, RoutedEventArgs e) => TextEditor_GotFocus((TextEditor)sender, e);
         private void TextEditor_Unloaded(object sender, RoutedEventArgs e) => TextEditor_Unloaded((TextEditor)sender, e);
-        private void TextArea_MouseWheel(object sender, MouseWheelEventArgs e) => TextArea_MouseWheel((TextEditor)sender, e);
         private void TextEditor_Loaded(object sender, RoutedEventArgs e) => TextEditor_Loaded((TextEditor)sender, e);
         private void TextEditor_Initialized(object sender, EventArgs e) => TextEditor_Initialized((TextEditor)sender, e);
         private void TextEditor_PreviewKeyUp(object sender, KeyEventArgs e) => TextEditor_PreviewKeyUp((TextEditor)sender, e);
         private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e) => TextEditor_PreviewKeyDown((TextEditor)sender, e);
+        private void TextArea_MouseWheel(object sender, MouseWheelEventArgs e) => TextArea_MouseWheel((TextArea)sender, e);
+        private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e) => Window_PreviewMouseWheel((Window)sender, e);
         #endregion
     }
 }
