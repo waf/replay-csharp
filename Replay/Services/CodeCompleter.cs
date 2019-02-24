@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Replay.Services
 {
     // TODO: rework code completion based on
+    // https://www.strathweb.com/2018/12/using-roslyn-c-completion-service-programmatically/
     // https://github.com/dotnet/roslyn/issues/24423
-    // and
     // http://source.roslyn.io/#Microsoft.CodeAnalysis.InteractiveEditorFeatures/Extensibility/Interactive/InteractiveEvaluator.cs,387
     /// <summary>
     /// Provides code completion (i.e. Intellisense) using Roslyn
