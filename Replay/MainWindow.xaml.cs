@@ -85,7 +85,7 @@ namespace Replay
                 Application.Current.Shutdown();
             }
             // eval
-            var result = await services.EvaluateAsync(text);
+            var result = await services.EvaluateAsync(line.Id, text);
             // print
             Print(line, result);
             // loop
@@ -194,7 +194,7 @@ namespace Replay
             return Task.WhenAll(
                 services.HighlightAsync(0, initializationCode),
                 services.CompleteCodeAsync(0, initializationCode),
-                services.EvaluateAsync(initializationCode)
+                services.EvaluateAsync(0, initializationCode)
             );
         }
 

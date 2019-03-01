@@ -53,9 +53,15 @@ namespace Replay.Services
                 throw;
             }        }
 
-        public async Task<EvaluationResult> EvaluateAsync(string text)
+        public async Task<EvaluationResult> EvaluateAsync(int id, string text)
         {
             await initialization;
+
+            // track the submission in our workspace. We won't use the
+            // result because the Scripting API doesn't need it, but other
+            // roslyn APIs like code completion and syntax highlighting will.
+            var _ = workspaceManager.CreateOrUpdateSubmission(id, text);
+
             return await scriptEvaluator.EvaluateAsync(text);
         }
     }
