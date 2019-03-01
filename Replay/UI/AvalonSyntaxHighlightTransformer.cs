@@ -10,17 +10,24 @@ namespace Replay.UI
     /// </summary>
     class AvalonSyntaxHighlightTransformer : DocumentColorizingTransformer
     {
-        private readonly SyntaxHighlighter highlighter;
+        private readonly ReplServices replServices;
+        private readonly int lineNumber;
 
-        public AvalonSyntaxHighlightTransformer(SyntaxHighlighter highlighter)
+        public AvalonSyntaxHighlightTransformer(ReplServices replServices, int lineNumber)
         {
-            this.highlighter = highlighter;
+            this.replServices = replServices;
+            this.lineNumber = lineNumber;
         }
 
         protected override void ColorizeLine(DocumentLine line)
         {
+            if (line.Length == 0) return;
+
             string text = CurrentContext.Document.GetText(line);
-            var spans = highlighter.Highlight(text);
+            var spans = replServices
+                .HighlightAsync(lineNumber, text)
+                .Result;
+
             foreach (var span in spans)
             {
                 base.ChangeLinePart(line.Offset + span.Start, line.Offset + span.End, part =>

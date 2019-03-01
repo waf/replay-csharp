@@ -8,7 +8,7 @@ namespace Replay.Model
         /// <summary>
         /// Result of the program
         /// </summary>
-        public ScriptState<Object> ScriptResult { get; set; }
+        public ScriptState<object> ScriptResult { get; set; }
 
         /// <summary>
         /// Any errors when compiling or running the program

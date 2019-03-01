@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Replay.Model
 {
@@ -11,11 +12,15 @@ namespace Replay.Model
     /// </summary>
     public class LineEditorViewModel : INotifyPropertyChanged
     {
+        private static int incrementingId = 0;
+
+        public int Id { get; } = Interlocked.Increment(ref incrementingId);
+
         bool isFocused;
         public bool IsFocused
         {
             get => isFocused;
-            set => SetField(ref isFocused,  value);
+            set => SetPropertyChanged(ref isFocused,  value);
         }
 
         // the input document of the current line editor.
@@ -23,28 +28,28 @@ namespace Replay.Model
         public TextDocument Document
         {
             get => document;
-            set => SetField(ref document,  value);
+            set => SetPropertyChanged(ref document,  value);
         }
 
         string result;
         public string Result
         {
             get => result;
-            set => SetField(ref result,  value);
+            set => SetPropertyChanged(ref result,  value);
         }
 
         string error;
         public string Error
         {
             get => error;
-            set => SetField(ref error,  value);
+            set => SetPropertyChanged(ref error,  value);
         }
 
         string output;
         public string StandardOutput
         {
             get => output;
-            set => SetField(ref output,  value);
+            set => SetPropertyChanged(ref output,  value);
         }
 
         public void SetResult(EvaluationResult result)
@@ -60,7 +65,7 @@ namespace Replay.Model
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        protected bool SetField<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
+        protected bool SetPropertyChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)
         {
             if (EqualityComparer<T>.Default.Equals(field, value)) return false;
             field = value;

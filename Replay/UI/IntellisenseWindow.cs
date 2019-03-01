@@ -13,11 +13,14 @@ namespace Replay.UI
         public IntellisenseWindow(TextArea textArea, ImmutableArray<CompletionItem> completions)
             : base(textArea)
         {
+            if (completions.Length == 0) return;
+
             foreach (var completion in completions)
             {
                 this.CompletionList.CompletionData
                     .Add(new CodeCompletionSuggestion(completion.DisplayText));
             }
+
             this.Show();
         }
     }

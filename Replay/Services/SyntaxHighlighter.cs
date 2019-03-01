@@ -1,8 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Classification;
+﻿using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
+using Replay.Model;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace Replay.Services
@@ -16,21 +17,10 @@ namespace Replay.Services
     /// </remarks>
     public class SyntaxHighlighter
     {
-        private Document document;
-
-        public SyntaxHighlighter(Document document)
+        public async Task<IReadOnlyCollection<ColorSpan>> Highlight(ReplSubmission submission)
         {
-            this.document = document;
-        }
-
-        public IReadOnlyCollection<ColorSpan> Highlight(string code)
-        {
-            var source = SourceText.From(code);
-            document = document.WithText(source);
-            document.TryGetText(out SourceText text);
-            IEnumerable<ClassifiedSpan> classified = 
-                Classifier.GetClassifiedSpansAsync(document, TextSpan.FromBounds(0, text.Length))
-                .Result;
+            IEnumerable<ClassifiedSpan> classified = await Classifier
+                .GetClassifiedSpansAsync(submission.Document, TextSpan.FromBounds(0, submission.Code.Length));
 
             return classified
                 .Select(span => new ColorSpan(

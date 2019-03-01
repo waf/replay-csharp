@@ -25,6 +25,7 @@ namespace Replay
         {
             InitializeComponent();
             DataContext = Model;
+            Task.Run(BackgroundInitializationAsync);
         }
 
         private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)
@@ -38,10 +39,10 @@ namespace Replay
             switch (command.Value)
             {
                 case ReplCommand.EvaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor, stayOnCurrentLine: false);
+                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: false);
                     return;
                 case ReplCommand.ReevaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor, stayOnCurrentLine: true);
+                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
                     return;
                 case ReplCommand.OpenIntellisense:
                     await CompleteCode(lineEditor);
@@ -75,10 +76,10 @@ namespace Replay
             }
         }
 
-        private async Task ReadEvalPrintLoop(TextEditor lineEditor, bool stayOnCurrentLine)
+        private async Task ReadEvalPrintLoop(LineEditorViewModel line, bool stayOnCurrentLine)
         {
             // read
-            string text = lineEditor.Text;
+            string text = line.Document.Text;
             if (text.Trim() == "exit")
             {
                 Application.Current.Shutdown();
@@ -86,22 +87,22 @@ namespace Replay
             // eval
             var result = await services.EvaluateAsync(text);
             // print
-            Print(lineEditor, result);
+            Print(line, result);
             // loop
             if (result.Exception == null && !stayOnCurrentLine)
             {
-                MoveToNextLine(lineEditor);
+                MoveToNextLine(line);
             }
         }
 
-        private static void Print(TextEditor lineEditor, EvaluationResult result)
+        private static void Print(LineEditorViewModel lineEditor, EvaluationResult result)
         {
-            lineEditor.ViewModel().SetResult(result);
+            lineEditor.SetResult(result);
         }
 
-        private void MoveToNextLine(TextEditor lineEditor)
+        private void MoveToNextLine(LineEditorViewModel lineEditor)
         {
-            int currentIndex = Model.Entries.IndexOf(lineEditor.ViewModel());
+            int currentIndex = Model.Entries.IndexOf(lineEditor);
             if (currentIndex == Model.Entries.Count - 1)
             {
                 Model.Entries.Add(new LineEditorViewModel());
@@ -111,18 +112,23 @@ namespace Replay
 
         private async Task CompleteCode(TextEditor lineEditor)
         {
-            var completions = await services.CompleteCodeAsync(lineEditor.Text);
+            var line = lineEditor.ViewModel();
+            var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text);
             if (completions.Any())
             {
                 completionWindow = new IntellisenseWindow(lineEditor.TextArea, completions);
             }
         }
 
-        private async void TextEditor_Initialized(TextEditor lineEditor, EventArgs e)
+        private void TextEditor_Initialized(TextEditor lineEditor, EventArgs e)
         {
             PromptAdorner.AddTo(lineEditor);
             lineEditor.TextArea.MouseWheel += TextArea_MouseWheel;
-            await services.ConfigureSyntaxHighlightingAsync(lineEditor);
+
+            var lineNumber = lineEditor.ViewModel().Id;
+            lineEditor.TextArea.TextView.LineTransformers.Add(
+                new AvalonSyntaxHighlightTransformer(services, lineNumber)
+            );
         }
 
         private void TextEditor_Loaded(TextEditor lineEditor, RoutedEventArgs e)
@@ -175,6 +181,21 @@ namespace Replay
                 Thickness padding = this.ReplEntries.Padding;
                 this.ReplEntries.Padding = new Thickness(padding.Left + delta, padding.Top, padding.Right, padding.Bottom);
             }
+        }
+
+        /// <summary>
+        /// Roslyn can be a little bit slow to warm up, which can cause lag when the
+        /// user first starts typing / evaluating code. Do the warm up in a background
+        /// thread beforehand to improve the user experience.
+        /// </summary>
+        private Task BackgroundInitializationAsync()
+        {
+            const string initializationCode = @"using System; Console.WriteLine(""Hello""); ""World""";
+            return Task.WhenAll(
+                services.HighlightAsync(0, initializationCode),
+                services.CompleteCodeAsync(0, initializationCode),
+                services.EvaluateAsync(initializationCode)
+            );
         }
 
         #region ugly casting of untyped event handlers
