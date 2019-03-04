@@ -16,6 +16,7 @@ namespace Replay.Services
 
         private SyntaxHighlighter syntaxHighlighter;
         private ScriptEvaluator scriptEvaluator;
+        private DotNetCommandEvaluator dotnetEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
 
@@ -25,6 +26,9 @@ namespace Replay.Services
             // run it in a background thread so the UI can render immediately.
             initialization = Task.Run(() =>
             {
+                this.dotnetEvaluator = new DotNetCommandEvaluator();
+                string workingDirectory = this.dotnetEvaluator.CreateWorkingDirectory();
+
                 this.syntaxHighlighter = new SyntaxHighlighter();
                 this.scriptEvaluator = new ScriptEvaluator();
                 this.codeCompleter = new CodeCompleter();
@@ -41,26 +45,26 @@ namespace Replay.Services
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
-            try
-            {
-                await initialization;
-                var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
-                return await this.syntaxHighlighter.Highlight(submission);
-
-            }
-            catch (System.Exception e)
-            {
-                throw;
-            }        }
+            await initialization;
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            return await this.syntaxHighlighter.Highlight(submission);
+        }
 
         public async Task<EvaluationResult> EvaluateAsync(int id, string text)
         {
             await initialization;
 
+            if(text.StartsWith("dotnet "))
+            {
+                var result = await dotnetEvaluator.EvaluateAsync(text);
+                _ = workspaceManager.CreateOrUpdateSubmission(id, string.Empty); // don't try to evaluate the text as C#
+                return result;
+            }
+
             // track the submission in our workspace. We won't use the
             // result because the Scripting API doesn't need it, but other
             // roslyn APIs like code completion and syntax highlighting will.
-            var _ = workspaceManager.CreateOrUpdateSubmission(id, text);
+            _ = workspaceManager.CreateOrUpdateSubmission(id, text);
 
             return await scriptEvaluator.EvaluateAsync(text);
         }

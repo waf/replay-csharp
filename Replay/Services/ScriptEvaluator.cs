@@ -3,6 +3,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
+using System.IO;
+using Microsoft.CodeAnalysis;
+using System.Reflection;
+using System.Linq;
 
 namespace Replay.Services
 {
@@ -11,7 +15,23 @@ namespace Replay.Services
     /// </summary>
     public class ScriptEvaluator
     {
+        private readonly PortableExecutableReference systemRuntimeReference;
+        private readonly PortableExecutableReference netStandard;
+        private readonly ScriptOptions compilationOptions;
         private ScriptState<object> state;
+
+        public ScriptEvaluator()
+        {
+            this.compilationOptions = ScriptOptions.Default
+                .WithReferences(DefaultAssemblies.Assemblies.Value)
+                .WithImports(DefaultAssemblies.DefaultUsings);
+
+            var nugetCache = Path.Combine(
+                Environment.GetEnvironmentVariable("UserProfile"),
+                ".nuget",
+                "packages"
+            );
+        }
 
         /// <summary>
         /// Run the script and return the result, capturing any exceptions or standard output.
@@ -19,6 +39,7 @@ namespace Replay.Services
         public async Task<EvaluationResult> EvaluateAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
+
             {
                 return new EvaluationResult();
             }
@@ -40,7 +61,7 @@ namespace Replay.Services
             try
             {
                 state = state == null
-                    ? await CSharpScript.RunAsync(text)
+                    ? await CSharpScript.RunAsync(text, compilationOptions)
                     : await state.ContinueWithAsync(text);
                 return (state, state.Exception);
             }

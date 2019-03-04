@@ -70,7 +70,7 @@ namespace Replay
             if (completionWindow?.IsVisible ?? false) return;
 
             // complete member accesses
-            if (e.Key == Key.OemPeriod)
+            if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.OemPeriod)
             {
                 await CompleteCode(lineEditor);
             }

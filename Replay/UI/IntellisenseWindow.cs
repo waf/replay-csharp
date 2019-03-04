@@ -4,6 +4,8 @@ using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.CodeAnalysis.Completion;
 using System;
 using System.Collections.Immutable;
+using System.Linq;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Replay.UI
@@ -22,6 +24,18 @@ namespace Replay.UI
             }
 
             this.Show();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+
+            // it seems like this should be handled by the CompletionWindow base class, but it isn't.
+            string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
+            if(!this.CompletionList.CompletionData.Any(completion => completion.Text.Contains(filter)))
+            {
+                this.Hide();
+            }
         }
     }
 

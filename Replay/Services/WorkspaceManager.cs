@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Replay.Services
 {
@@ -19,20 +20,15 @@ namespace Replay.Services
     {
         private readonly IDictionary<int, ReplSubmission> EditorToSubmission = new ConcurrentDictionary<int, ReplSubmission>();
         private readonly AdhocWorkspace workspace;
-        private readonly PortableExecutableReference corlibReference;
-        private readonly PortableExecutableReference systemCoreReference;
         private readonly CSharpCompilationOptions compilationOptions;
 
         public WorkspaceManager()
         {
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
             this.workspace = new AdhocWorkspace(host);
-
-            this.corlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-            this.systemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
             this.compilationOptions = new CSharpCompilationOptions(
                OutputKind.DynamicallyLinkedLibrary,
-               usings: new[] { "System" }
+               usings: DefaultAssemblies.DefaultUsings
             );
         }
 
@@ -74,7 +70,7 @@ namespace Replay.Services
                     isSubmission: true
                 )
                 .WithProjectReferences(previousSubmission)
-                .WithMetadataReferences(new[] { corlibReference, systemCoreReference })
+                .WithMetadataReferences(DefaultAssemblies.Assemblies.Value)
                 .WithCompilationOptions(compilationOptions);
             var project = workspace.AddProject(projectInfo);
             return project;
