@@ -47,8 +47,8 @@ namespace Replay.Services
             var name = "Script" + lineId;
             // we add the previous REPL submission as a project reference, so
             // APIs like Code Completion know about them.
-            var references = GetPreviousSubmission(lineId);
-            Project project = CreateProject(name, references);
+            var projectReferences = GetPreviousSubmission(lineId);
+            Project project = CreateProject(name, projectReferences);
             Document document = CreateDocument(project, name, code);
 
             return new ReplSubmission
@@ -74,6 +74,21 @@ namespace Replay.Services
                 .WithCompilationOptions(compilationOptions);
             var project = workspace.AddProject(projectInfo);
             return project;
+        }
+
+        internal void AddReference(IReadOnlyCollection<MetadataReference> references)
+        {
+            foreach (var kvp in EditorToSubmission)
+            {
+                var updatedDocument = kvp.Value.Document.Project
+                    .AddMetadataReferences(references)
+                    .GetDocument(kvp.Value.Document.Id);
+                EditorToSubmission[kvp.Key] = new ReplSubmission
+                {
+                    Code = kvp.Value.Code,
+                    Document = updatedDocument
+                };
+            }
         }
 
         private Document CreateDocument(Project project, string name, string code)

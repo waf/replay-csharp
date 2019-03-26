@@ -32,7 +32,7 @@ namespace Replay.UI
 
             // it seems like this should be handled by the CompletionWindow base class, but it isn't.
             string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
-            if(!this.CompletionList.CompletionData.Any(completion => completion.Text.Contains(filter)))
+            if(!this.CompletionList.CompletionData.Any(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase)))
             {
                 this.Hide();
             }

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Replay.Model
 {
@@ -21,6 +22,20 @@ namespace Replay.Model
         {
             get => windowState;
             set => SetField(ref windowState, value);
+        }
+
+        private SolidColorBrush background;
+        public SolidColorBrush Background
+        {
+            get => background;
+            set => SetField(ref background, value);
+        }
+
+        private SolidColorBrush foreground;
+        public SolidColorBrush Foreground
+        {
+            get => foreground;
+            set => SetField(ref foreground, value);
         }
 
         public ObservableCollection<LineEditorViewModel> Entries { get; } =

@@ -1,4 +1,5 @@
-﻿using Replay.Model;
+﻿using Buildalyzer;
+using Replay.Model;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -57,6 +58,11 @@ namespace Replay.Services
                 dotnet.CancelOutputRead();
                 dotnet.CancelErrorRead();
             }
+
+            AnalyzerManager manager = new AnalyzerManager();
+            ProjectAnalyzer analyzer = manager.GetProject(@"C:\Users\wafuqua\.replay\ReplaySession20190302153809\Session\Session.csproj");
+            var result = analyzer.Build();
+            ;
         }
 
         private static EvaluationResult ConvertOutputToEvaluationResult(StringBuilder outputBuffer, StringBuilder errorBuffer)

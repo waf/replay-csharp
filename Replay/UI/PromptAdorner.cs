@@ -13,15 +13,12 @@ namespace Replay.UI
     public class PromptAdorner : Adorner
     {
         private readonly TextEditor editor;
+        private readonly Brush color;
         private readonly Typeface typeface;
-        private static readonly SolidColorBrush color = new SolidColorBrush(Colors.White);
         private static readonly double PromptOffset = -8 / 9d;
 
-        public PromptAdorner(UIElement adornedElement) : base(adornedElement)
+        public PromptAdorner(TextEditor editor) : base(editor)
         {
-            if (!(this.AdornedElement is TextEditor editor))
-                return;
-            // store properties that will never change
             this.typeface = editor.FontFamily.GetTypefaces().First();
             this.editor = editor;
         }
@@ -29,16 +26,18 @@ namespace Replay.UI
         protected override void OnRender(DrawingContext drawingContext)
         {
             double fontSize = editor.FontSize;
+            Brush foreground = editor.Foreground;
+
             var prompt = new FormattedText(">",
                 CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                typeface, fontSize, color, 0)
+                typeface, fontSize, foreground, 0)
             {
                 PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip
             };
             drawingContext.DrawText(prompt, new Point(PromptOffset * fontSize, 0));
         }
 
-        internal static void AddTo(UIElement element)
+        internal static void AddTo(TextEditor element)
         {
             AdornerLayer
                 .GetAdornerLayer(element)

@@ -4,12 +4,24 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="theme.vssettings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="theme.vssettings">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="5.0.4" />
+    <PackageReference Include="Buildalyzer" Version="2.2.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-      <Version>2.6.1</Version>
+      <Version>2.6.3</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>

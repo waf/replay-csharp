@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.CodeAnalysis;
 using System.Reflection;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Replay.Services
 {
@@ -15,9 +16,7 @@ namespace Replay.Services
     /// </summary>
     public class ScriptEvaluator
     {
-        private readonly PortableExecutableReference systemRuntimeReference;
-        private readonly PortableExecutableReference netStandard;
-        private readonly ScriptOptions compilationOptions;
+        private ScriptOptions compilationOptions;
         private ScriptState<object> state;
 
         public ScriptEvaluator()
@@ -69,6 +68,11 @@ namespace Replay.Services
             {
                 return (null, exception);
             }
+        }
+
+        internal void AddReference(IReadOnlyCollection<MetadataReference> reference)
+        {
+            this.compilationOptions = this.compilationOptions.AddReferences(reference);
         }
     }
 }

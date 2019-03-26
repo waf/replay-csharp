@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Replay
 {
@@ -17,15 +18,27 @@ namespace Replay
     /// </summary>
     public partial class MainWindow : Window
     {
-        CompletionWindow completionWindow;
-        readonly ReplServices services = new ReplServices();
-        readonly ReplViewModel Model = new ReplViewModel();
+        private CompletionWindow completionWindow;
+        private readonly ReplServices services;
+        private readonly ReplViewModel Model;
 
         public MainWindow()
         {
             InitializeComponent();
+            Model = new ReplViewModel();
+            services = new ReplServices();
+            services.UserConfigurationLoaded += ConfigureWindow;
             DataContext = Model;
             Task.Run(BackgroundInitializationAsync);
+        }
+
+        private void ConfigureWindow(object sender, UserConfiguration configuration)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                Model.Background = new SolidColorBrush(configuration.BackgroundColor);
+                Model.Foreground = new SolidColorBrush(configuration.ForegroundColor);
+            });
         }
 
         private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)

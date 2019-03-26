@@ -2,6 +2,7 @@
 using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
 using System.Windows.Media;
+using System.Windows;
 
 namespace Replay.UI
 {

@@ -11,8 +11,6 @@
                 <ResourceDictionary Source="UI/ScrollbarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-            <!--<SolidColorBrush x:Key="BackgroundColor" Color="#303030"/>-->
-            <SolidColorBrush x:Key="BackgroundColor" Color="#313540"/>
 
             <Style x:Key="{x:Type local:IntellisenseWindow }" TargetType="{x:Type local:IntellisenseWindow}">
                 <Setter Property="WindowStyle" Value="None"/>
@@ -25,7 +23,6 @@
             </Style>
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
             <Style x:Key="ReplEditor" TargetType="{x:Type avalonedit:TextEditor}">
-                <Setter Property="Foreground" Value="White"/>
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
                 <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />

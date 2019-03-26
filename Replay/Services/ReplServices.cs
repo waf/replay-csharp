@@ -1,7 +1,9 @@
 ﻿using Microsoft.CodeAnalysis.Completion;
 using Replay.Model;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Replay.Services
@@ -13,12 +15,14 @@ namespace Replay.Services
     public class ReplServices
     {
         private readonly Task initialization;
-
+        private readonly Task nugetInitialization;
         private SyntaxHighlighter syntaxHighlighter;
         private ScriptEvaluator scriptEvaluator;
-        private DotNetCommandEvaluator dotnetEvaluator;
+        private NugetPackageResolver nugetResolver;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
+
+        public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
         public ReplServices()
         {
@@ -26,13 +30,22 @@ namespace Replay.Services
             // run it in a background thread so the UI can render immediately.
             initialization = Task.Run(() =>
             {
-                this.dotnetEvaluator = new DotNetCommandEvaluator();
-                string workingDirectory = this.dotnetEvaluator.CreateWorkingDirectory();
+                this.syntaxHighlighter = new SyntaxHighlighter("theme.vssettings");
+                UserConfigurationLoaded?.Invoke(this, new UserConfiguration
+                (
+                    syntaxHighlighter.BackgroundColor,
+                    syntaxHighlighter.ForegroundColor
+                ));
 
-                this.syntaxHighlighter = new SyntaxHighlighter();
                 this.scriptEvaluator = new ScriptEvaluator();
                 this.codeCompleter = new CodeCompleter();
                 this.workspaceManager = new WorkspaceManager();
+            });
+            // nuget service has filesystem IO, so it takes a lot of time to resolve
+            // run it separate from the other services so the other services aren't blocked.
+            nugetInitialization = Task.Run(() =>
+            {
+                this.nugetResolver = new NugetPackageResolver();
             });
         }
 
@@ -50,13 +63,31 @@ namespace Replay.Services
             return await this.syntaxHighlighter.Highlight(submission);
         }
 
+        public async Task<EvaluationResult> InstallNugetPackage(string name, string version = null, string source = null)
+        {
+            await initialization;
+            await nugetInitialization;
+            var nugetResult = this.nugetResolver.AddPackage(name, version, source);
+            if(nugetResult.References.Any())
+            {
+                workspaceManager.AddReference(nugetResult.References);
+                scriptEvaluator.AddReference(nugetResult.References);
+            }
+            return new EvaluationResult
+            {
+                StandardOutput = nugetResult.StandardOutput,
+                Exception = nugetResult.Exception,
+            };
+        }
+
         public async Task<EvaluationResult> EvaluateAsync(int id, string text)
         {
             await initialization;
 
-            if(text.StartsWith("dotnet "))
+            if(text.StartsWith("nuget "))
             {
-                var result = await dotnetEvaluator.EvaluateAsync(text);
+                string package = text.Split(' ')[1];
+                var result = await this.InstallNugetPackage(package);
                 _ = workspaceManager.CreateOrUpdateSubmission(id, string.Empty); // don't try to evaluate the text as C#
                 return result;
             }
