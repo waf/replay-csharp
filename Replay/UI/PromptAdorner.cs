@@ -13,7 +13,6 @@ namespace Replay.UI
     public class PromptAdorner : Adorner
     {
         private readonly TextEditor editor;
-        private readonly Brush color;
         private readonly Typeface typeface;
         private static readonly double PromptOffset = -8 / 9d;
 

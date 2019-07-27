@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.CSharp.Scripting.Hosting;
 using Replay.Model;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,14 @@ namespace Replay.Services
     /// Main access point for editor services.
     /// This is a stateful service (due to the contained WorkspaceManager) and is one-per-window.
     /// </summary>
-    public class ReplServices
+    internal class ReplServices
     {
         private readonly Task initialization;
         private SyntaxHighlighter syntaxHighlighter;
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
+        private PrettyPrinter prettyPrinter;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
@@ -38,6 +40,7 @@ namespace Replay.Services
                 this.scriptEvaluator = new ScriptEvaluator();
                 this.codeCompleter = new CodeCompleter();
                 this.workspaceManager = new WorkspaceManager();
+                this.prettyPrinter = new PrettyPrinter();
             });
         }
 
@@ -55,7 +58,7 @@ namespace Replay.Services
             return await this.syntaxHighlighter.Highlight(submission);
         }
 
-        public async Task<EvaluationResult> EvaluateAsync(int id, string text)
+        public async Task<LineOutput> EvaluateAsync(int id, string text)
         {
             await initialization;
 
@@ -64,7 +67,8 @@ namespace Replay.Services
             // roslyn APIs like code completion and syntax highlighting will.
             _ = workspaceManager.CreateOrUpdateSubmission(id, text);
 
-            return await scriptEvaluator.EvaluateAsync(text);
+            var scriptResult = await scriptEvaluator.EvaluateAsync(text);
+            return prettyPrinter.Format(scriptResult);
         }
     }
 }

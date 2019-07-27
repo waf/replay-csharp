@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
+using Replay.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,7 +11,7 @@ namespace Replay.Model
     /// ViewModel for a single line of the repl.
     /// Child of <see cref="ReplViewModel"/>
     /// </summary>
-    public class LineEditorViewModel : INotifyPropertyChanged
+    internal class LineEditorViewModel : INotifyPropertyChanged
     {
         private static int incrementingId = 0;
 
@@ -52,11 +53,11 @@ namespace Replay.Model
             set => SetPropertyChanged(ref output,  value);
         }
 
-        public void SetResult(EvaluationResult result)
+        public void SetResult(LineOutput output)
         {
-            this.Error = result.Exception?.Message;
-            this.Result = result.ScriptResult?.ReturnValue?.ToString();
-            this.StandardOutput = result.StandardOutput;
+            this.Result = output.Result;
+            this.Error = output.Exception;
+            this.StandardOutput = output.StandardOutput;
         }
 
         #region INotifyPropertyChanged Helpers

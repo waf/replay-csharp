@@ -108,7 +108,7 @@ namespace Replay
             }
         }
 
-        private static void Print(LineEditorViewModel lineEditor, EvaluationResult result)
+        private static void Print(LineEditorViewModel lineEditor, LineOutput result)
         {
             lineEditor.SetResult(result);
         }
