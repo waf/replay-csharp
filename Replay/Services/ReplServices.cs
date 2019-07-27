@@ -15,10 +15,8 @@ namespace Replay.Services
     public class ReplServices
     {
         private readonly Task initialization;
-        private readonly Task nugetInitialization;
         private SyntaxHighlighter syntaxHighlighter;
         private ScriptEvaluator scriptEvaluator;
-        private NugetPackageResolver nugetResolver;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
 
@@ -30,7 +28,7 @@ namespace Replay.Services
             // run it in a background thread so the UI can render immediately.
             initialization = Task.Run(() =>
             {
-                this.syntaxHighlighter = new SyntaxHighlighter("theme.vssettings");
+                this.syntaxHighlighter = new SyntaxHighlighter("Themes/dracula.vssettings");
                 UserConfigurationLoaded?.Invoke(this, new UserConfiguration
                 (
                     syntaxHighlighter.BackgroundColor,
@@ -40,12 +38,6 @@ namespace Replay.Services
                 this.scriptEvaluator = new ScriptEvaluator();
                 this.codeCompleter = new CodeCompleter();
                 this.workspaceManager = new WorkspaceManager();
-            });
-            // nuget service has filesystem IO, so it takes a lot of time to resolve
-            // run it separate from the other services so the other services aren't blocked.
-            nugetInitialization = Task.Run(() =>
-            {
-                this.nugetResolver = new NugetPackageResolver();
             });
         }
 
@@ -63,34 +55,9 @@ namespace Replay.Services
             return await this.syntaxHighlighter.Highlight(submission);
         }
 
-        public async Task<EvaluationResult> InstallNugetPackage(string name, string version = null, string source = null)
-        {
-            await initialization;
-            await nugetInitialization;
-            var nugetResult = this.nugetResolver.AddPackage(name, version, source);
-            if(nugetResult.References.Any())
-            {
-                workspaceManager.AddReference(nugetResult.References);
-                scriptEvaluator.AddReference(nugetResult.References);
-            }
-            return new EvaluationResult
-            {
-                StandardOutput = nugetResult.StandardOutput,
-                Exception = nugetResult.Exception,
-            };
-        }
-
         public async Task<EvaluationResult> EvaluateAsync(int id, string text)
         {
             await initialization;
-
-            if(text.StartsWith("nuget "))
-            {
-                string package = text.Split(' ')[1];
-                var result = await this.InstallNugetPackage(package);
-                _ = workspaceManager.CreateOrUpdateSubmission(id, string.Empty); // don't try to evaluate the text as C#
-                return result;
-            }
 
             // track the submission in our workspace. We won't use the
             // result because the Scripting API doesn't need it, but other

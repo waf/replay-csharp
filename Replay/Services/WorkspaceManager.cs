@@ -76,21 +76,6 @@ namespace Replay.Services
             return project;
         }
 
-        internal void AddReference(IReadOnlyCollection<MetadataReference> references)
-        {
-            foreach (var kvp in EditorToSubmission)
-            {
-                var updatedDocument = kvp.Value.Document.Project
-                    .AddMetadataReferences(references)
-                    .GetDocument(kvp.Value.Document.Id);
-                EditorToSubmission[kvp.Key] = new ReplSubmission
-                {
-                    Code = kvp.Value.Code,
-                    Document = updatedDocument
-                };
-            }
-        }
-
         private Document CreateDocument(Project project, string name, string code)
         {
             var documentInfo = DocumentInfo.Create(

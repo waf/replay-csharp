@@ -69,10 +69,5 @@ namespace Replay.Services
                 return (null, exception);
             }
         }
-
-        internal void AddReference(IReadOnlyCollection<MetadataReference> reference)
-        {
-            this.compilationOptions = this.compilationOptions.AddReferences(reference);
-        }
     }
 }
