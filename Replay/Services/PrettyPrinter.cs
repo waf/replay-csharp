@@ -1,8 +1,8 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting.Hosting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Scripting.Hosting;
+using Microsoft.CodeAnalysis.Formatting;
 using Replay.Model;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace Replay.Services
 {
@@ -15,12 +15,15 @@ namespace Replay.Services
             this.objectFormatter = CSharpObjectFormatter.Instance;
         }
 
-        public LineOutput Format(EvaluationResult evaluationResult)
+        public async Task<FormattedLine> FormatAsync(Document document, EvaluationResult evaluationResult = null)
         {
-            return new LineOutput(
-                FormatObject(evaluationResult.ScriptResult?.ReturnValue),
-                evaluationResult.Exception?.Message,
-                evaluationResult.StandardOutput
+            var formattedDocument = await Formatter.FormatAsync(document);
+            var formattedText = await formattedDocument.GetTextAsync();
+            return new FormattedLine(
+                formattedText.ToString(),
+                FormatObject(evaluationResult?.ScriptResult?.ReturnValue),
+                evaluationResult?.Exception?.Message,
+                evaluationResult?.StandardOutput
             );
         }
 

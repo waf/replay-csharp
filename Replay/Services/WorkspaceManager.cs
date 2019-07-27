@@ -1,13 +1,13 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using Replay.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Replay.Services
 {
@@ -32,28 +32,29 @@ namespace Replay.Services
             );
         }
 
-        public ReplSubmission CreateOrUpdateSubmission(int lineId, string code)
+        public async Task<ReplSubmission> CreateOrUpdateSubmissionAsync(int lineId, string code)
         {
             var replSubmission = EditorToSubmission.TryGetValue(lineId, out var previousSubmission)
-                ? UpdateSubmission(previousSubmission, code)
-                : CreateSubmission(lineId, code);
+                ? await UpdateSubmissionAsync(previousSubmission, code)
+                : await CreateSubmissionAsync(lineId, code);
 
             EditorToSubmission[lineId] = replSubmission;
             return replSubmission;
         }
 
-        private ReplSubmission CreateSubmission(int lineId, string code)
+        private async Task<ReplSubmission> CreateSubmissionAsync(int lineId, string code)
         {
             var name = "Script" + lineId;
             // we add the previous REPL submission as a project reference, so
             // APIs like Code Completion know about them.
             var projectReferences = GetPreviousSubmission(lineId);
             Project project = CreateProject(name, projectReferences);
-            Document document = CreateDocument(project, name, code);
+            Document document = await CreateDocumentAsync(project, name, code);
+            Document formattedDocument = await Formatter.FormatAsync(document);
 
             return new ReplSubmission
             {
-                Document = document,
+                Document = formattedDocument,
                 Code = code
             };
         }
@@ -76,7 +77,7 @@ namespace Replay.Services
             return project;
         }
 
-        private Document CreateDocument(Project project, string name, string code)
+        private async Task<Document> CreateDocumentAsync(Project project, string name, string code)
         {
             var documentInfo = DocumentInfo.Create(
                 id: DocumentId.CreateNewId(project.Id),
@@ -84,7 +85,8 @@ namespace Replay.Services
                 sourceCodeKind: SourceCodeKind.Script,
                 loader: TextLoader.From(TextAndVersion.Create(SourceText.From(code), VersionStamp.Create())));
             var document = workspace.AddDocument(documentInfo);
-            return document;
+            var formattedDocument = await Formatter.FormatAsync(document);
+            return formattedDocument;
         }
 
         private ProjectReference[] GetPreviousSubmission(int lineId)
@@ -94,13 +96,17 @@ namespace Replay.Services
                 : Array.Empty<ProjectReference>();
         }
 
-        private ReplSubmission UpdateSubmission(ReplSubmission replSubmission, string code)
+        private async Task<ReplSubmission> UpdateSubmissionAsync(ReplSubmission replSubmission, string code, bool format = false)
         {
             var edit = workspace.CurrentSolution.WithDocumentText(replSubmission.Document.Id, SourceText.From(code));
             var success = workspace.TryApplyChanges(edit);
 
             // document has changed, requery to get the new one
             var document = workspace.CurrentSolution.GetDocument(replSubmission.Document.Id);
+            if(format)
+            {
+                document = await Formatter.FormatAsync(document);
+            }
 
             return new ReplSubmission
             {

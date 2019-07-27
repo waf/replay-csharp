@@ -1,10 +1,9 @@
-﻿using Microsoft.CodeAnalysis.Completion;
-using Microsoft.CodeAnalysis.CSharp.Scripting.Hosting;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
 using Replay.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Replay.Services
@@ -47,28 +46,39 @@ namespace Replay.Services
         public async Task<ImmutableArray<CompletionItem>> CompleteCodeAsync(int lineId, string code)
         {
             await initialization;
-            ReplSubmission replSubmission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            ReplSubmission replSubmission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
             return await this.codeCompleter.Complete(replSubmission);
         }
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
             await initialization;
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
-            return await this.syntaxHighlighter.Highlight(submission);
+            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
+            return await this.syntaxHighlighter.HighlightAsync(submission);
         }
 
-        public async Task<LineOutput> EvaluateAsync(int id, string text)
+        public async Task<(bool IsComplete, FormattedLine Output)> EvaluateAsync(int id, string text)
         {
             await initialization;
+
+            // bail out if it's not a complete statement, but first try automatic completions
+            var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync(text);
+            if(!success)
+            {
+                return (false, null);
+            }
+            text = (await newTree.GetRootAsync())
+                .NormalizeWhitespace()
+                .ToFullString();
 
             // track the submission in our workspace. We won't use the
             // result because the Scripting API doesn't need it, but other
             // roslyn APIs like code completion and syntax highlighting will.
-            _ = workspaceManager.CreateOrUpdateSubmission(id, text);
-
+            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(id, text);
             var scriptResult = await scriptEvaluator.EvaluateAsync(text);
-            return prettyPrinter.Format(scriptResult);
+            var output = await prettyPrinter.FormatAsync(submission.Document, scriptResult);
+
+            return (true, output);
         }
     }
 }

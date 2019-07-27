@@ -3,11 +3,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
-using System.IO;
 using Microsoft.CodeAnalysis;
-using System.Reflection;
 using System.Linq;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Replay.Services
 {
@@ -18,18 +17,44 @@ namespace Replay.Services
     {
         private ScriptOptions compilationOptions;
         private ScriptState<object> state;
-
+        public readonly CSharpParseOptions parseOptions;
+            
         public ScriptEvaluator()
         {
             this.compilationOptions = ScriptOptions.Default
                 .WithReferences(DefaultAssemblies.Assemblies.Value)
                 .WithImports(DefaultAssemblies.DefaultUsings);
 
-            var nugetCache = Path.Combine(
-                Environment.GetEnvironmentVariable("UserProfile"),
-                ".nuget",
-                "packages"
-            );
+            this.parseOptions = new CSharpParseOptions(LanguageVersion.Latest, kind: SourceCodeKind.Script);
+        }
+
+        public async Task<(bool Success, SyntaxTree NewTree)> TryCompleteStatementAsync(string text)
+        {
+            var syntaxTree = SyntaxFactory.ParseSyntaxTree(text.ToString(), parseOptions);
+            if (SyntaxFactory.IsCompleteSubmission(syntaxTree))
+            {
+                return (true, syntaxTree);
+            }
+            return await TryWithSemicolon(syntaxTree);
+        }
+
+        private async Task<(bool Success, SyntaxTree NewTree)> TryWithSemicolon(SyntaxTree syntaxTree)
+        {
+            var root = await syntaxTree.GetRootAsync();
+            if (root.ChildNodes().First() is FieldDeclarationSyntax declaration
+                && declaration.SemicolonToken.IsMissing)
+            {
+                var withSemicolon = declaration.WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+                var newTree = syntaxTree.WithRootAndOptions(
+                    root.ReplaceNode(declaration, withSemicolon),
+                    parseOptions
+                );
+                if (SyntaxFactory.IsCompleteSubmission(newTree))
+                {
+                    return (true, newTree);
+                }
+            }
+            return (false, syntaxTree);
         }
 
         /// <summary>
@@ -38,7 +63,6 @@ namespace Replay.Services
         public async Task<EvaluationResult> EvaluateAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
-
             {
                 return new EvaluationResult();
             }

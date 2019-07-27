@@ -1,13 +1,15 @@
 ﻿namespace Replay.Model
 {
-    internal class LineOutput
+    internal class FormattedLine
     {
+        public string Input { get; }
         public string Result { get; }
         public string Exception { get; }
         public string StandardOutput { get; }
 
-        public LineOutput(string result, string error, string standardOutput)
+        public FormattedLine(string input, string result, string error, string standardOutput)
         {
+            this.Input = input;
             this.Result = result;
             this.Exception = error;
             this.StandardOutput = standardOutput;

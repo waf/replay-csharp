@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
+using Microsoft.CodeAnalysis;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;
@@ -97,18 +98,27 @@ namespace Replay
             {
                 Application.Current.Shutdown();
             }
+
             // eval
             var result = await services.EvaluateAsync(line.Id, text);
+            if(!result.IsComplete)
+            {
+                line.Document.Text += Environment.NewLine;
+                return;
+            }
+            line.Document.Text = result.Output.Input;
+
             // print
-            Print(line, result);
+            Print(line, result.Output);
+
             // loop
-            if (result.Exception == null && !stayOnCurrentLine)
+            if (result.Output.Exception == null && !stayOnCurrentLine)
             {
                 MoveToNextLine(line);
             }
         }
 
-        private static void Print(LineEditorViewModel lineEditor, LineOutput result)
+        private static void Print(LineEditorViewModel lineEditor, FormattedLine result)
         {
             lineEditor.SetResult(result);
         }

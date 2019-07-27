@@ -2,7 +2,6 @@
 using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
 using System.Windows.Media;
-using System.Windows;
 
 namespace Replay.UI
 {
@@ -25,10 +24,8 @@ namespace Replay.UI
             if (line.Length == 0) return;
 
             string text = CurrentContext.Document.GetText(line);
-            var spans = replServices
-                .HighlightAsync(lineNumber, text)
-                .Result;
 
+            var spans = replServices.HighlightAsync(lineNumber, text).Result;
             foreach (var span in spans)
             {
                 base.ChangeLinePart(line.Offset + span.Start, line.Offset + span.End, part =>
@@ -37,5 +34,6 @@ namespace Replay.UI
                 });
             }
         }
+
     }
 }

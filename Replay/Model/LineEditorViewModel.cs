@@ -1,5 +1,4 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
-using Replay.Services;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -53,7 +52,7 @@ namespace Replay.Model
             set => SetPropertyChanged(ref output,  value);
         }
 
-        public void SetResult(LineOutput output)
+        public void SetResult(FormattedLine output)
         {
             this.Result = output.Result;
             this.Error = output.Exception;

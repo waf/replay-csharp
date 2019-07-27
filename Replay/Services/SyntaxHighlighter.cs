@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.Text;
 using Replay.Model;
 using Replay.UI;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -30,7 +29,7 @@ namespace Replay.Services
             this.BackgroundColor = theme[ThemeReader.Background];
         }
 
-        public async Task<IReadOnlyCollection<ColorSpan>> Highlight(ReplSubmission submission)
+        public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(ReplSubmission submission)
         {
             IEnumerable<ClassifiedSpan> classified = await Classifier.GetClassifiedSpansAsync(
                 submission.Document,
@@ -41,11 +40,24 @@ namespace Replay.Services
 
                 .Select(span => new ColorSpan
                 (
-                    theme.GetValueOrDefault(span.ClassificationType, ForegroundColor),
+                    LookUpColorFromTheme(ref span),
                     span.TextSpan.Start,
                     span.TextSpan.End
                 ))
                 .ToList();
+        }
+
+        private Color LookUpColorFromTheme(ref ClassifiedSpan span)
+        {
+            if (theme.TryGetValue(span.ClassificationType, out var color))
+            {
+                return color;
+            }
+            if (theme.TryGetValue(span.ClassificationType.Split(" - ").First(), out color))
+            {
+                return color;
+            }
+            return ForegroundColor;
         }
     }
 
