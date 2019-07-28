@@ -12,12 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Themes\solarized-light.vssettings">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.0.0-preview1" />
     <PackageReference Include="Buildalyzer" Version="2.3.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
@@ -44,9 +38,6 @@
 
   <ItemGroup>
     <None Update="Themes\dracula.vssettings">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Themes\solarized-dark.vssettings">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

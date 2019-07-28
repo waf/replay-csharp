@@ -18,15 +18,19 @@ namespace Replay.UI
             if (completions.Length == 0) return;
             this.CompletionList.IsFiltering = true;
 
+            int maxLength = 0;
             foreach (var completion in completions)
             {
                 var completionItem = new RoslynCompletionSuggestion(completion);
                 this.CompletionList.CompletionData.Add(completionItem);
+                maxLength = Math.Max(maxLength, completionItem.Text.Length);
             }
 
             string textBeingCompleted = textArea.Document.Text.Substring(completions[0].Span.Start, completions[0].Span.Length);
+            this.StartOffset -= textBeingCompleted.Length; // if the user has already typed some text, consider that text part of the completion
             this.CompletionList.SelectItem(textBeingCompleted);
 
+            this.Width = maxLength * 12;
             this.Show();
         }
 
@@ -34,9 +38,14 @@ namespace Replay.UI
         {
             base.OnKeyDown(e);
 
+            // close completion window if there are no matches, or only 1 match that is exactly what the user already typed.
             // it seems like this should be handled by the CompletionWindow base class, but it isn't.
             string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
-            if(!this.CompletionList.CompletionData.Any(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase)))
+            var matches = this.CompletionList.CompletionData
+                .Where(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+            
+            if(!matches.Any() || (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCultureIgnoreCase)))
             {
                 this.Hide();
             }
@@ -67,13 +76,13 @@ namespace Replay.UI
         /// <summary>
         /// Help text in tooltip
         /// </summary>
-        public object Description => Text;
+        public object Description => completion.Tags.FirstOrDefault();
 
         public double Priority => 1;
 
         public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
-            textArea.Document.Replace(completion.Span.Start, completion.Span.Length, this.Text);
+            textArea.Document.Replace(completionSegment, this.Text);
         }
     }
 }

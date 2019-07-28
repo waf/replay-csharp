@@ -14,7 +14,11 @@ namespace Replay.Services
         {
             var service = CompletionService.GetService(submission.Document);
             var completions = await service.GetCompletionsAsync(submission.Document, submission.Code.Length);
-            return completions?.Items ?? ImmutableArray.Create<CompletionItem>();
+            if(completions?.Items == null)
+            {
+                return ImmutableArray.Create<CompletionItem>();
+            }
+            return completions.Items;
         }
     }
 }
