@@ -2,13 +2,16 @@
 using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
 using System.Windows.Media;
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
 
 namespace Replay.UI
 {
     /// <summary>
     /// Integration point with Avalon editor for syntax highlighting.
     /// </summary>
-    class AvalonSyntaxHighlightTransformer : DocumentColorizingTransformer
+    class AvalonSyntaxHighlightTransformer : AsyncDocumentColorizingTransformer
     {
         private readonly ReplServices replServices;
         private readonly int lineNumber;
@@ -19,21 +22,20 @@ namespace Replay.UI
             this.lineNumber = lineNumber;
         }
 
-        protected override void ColorizeLine(DocumentLine line)
+        protected async override Task ColorizeLineAsync(DocumentLine line, DocumentContext context, IList<VisualLineElement> elements)
         {
             if (line.Length == 0) return;
 
-            string text = CurrentContext.Document.GetText(line);
+            string text = context.CurrentContext.Document.GetText(line);
 
-            var spans = replServices.HighlightAsync(lineNumber, text).Result;
+            var spans = await replServices.HighlightAsync(lineNumber, text);
             foreach (var span in spans)
             {
-                base.ChangeLinePart(line.Offset + span.Start, line.Offset + span.End, part =>
+                base.ChangeLinePart(line.Offset + span.Start, line.Offset + span.End, elements, context, part =>
                 {
                     part.TextRunProperties.SetForegroundBrush(new SolidColorBrush(span.Color));
                 });
             }
         }
-
     }
 }
