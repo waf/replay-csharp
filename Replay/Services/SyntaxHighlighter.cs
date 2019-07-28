@@ -37,28 +37,41 @@ namespace Replay.Services
             );
 
             return classified
-
-                .Select(span => new ColorSpan
-                (
-                    LookUpColorFromTheme(ref span),
-                    span.TextSpan.Start,
-                    span.TextSpan.End
-                ))
+                .GroupBy(span => span.TextSpan)
+                .Select(spans => LookUpColorFromTheme(spans.ToArray()))
                 .ToList();
         }
 
-        private Color LookUpColorFromTheme(ref ClassifiedSpan span)
+        /// <summary>
+        /// The Classifier can return multiple classifications for a single span.
+        /// For example, "Console" will return ["class name", "static symbol"].
+        /// Select the first one that we have color for; the assumption is
+        /// the first one is more specific.
+        /// </summary>
+        private ColorSpan LookUpColorFromTheme(ClassifiedSpan[] spans)
         {
-            if (theme.TryGetValue(span.ClassificationType, out var color))
-            {
-                return color;
-            }
-            if (theme.TryGetValue(span.ClassificationType.Split(" - ").First(), out color))
-            {
-                return color;
-            }
-            return ForegroundColor;
+            return
+                spans.Select(span =>
+                {
+                    if (theme.TryGetValue(span.ClassificationType, out Color color)
+                        || (fallbacks.TryGetValue(span.ClassificationType, out string fallback)
+                            && theme.TryGetValue(fallback, out color)))
+                    {
+                        return new ColorSpan(color, span.TextSpan.Start, span.TextSpan.End);
+                    }
+                    return null;
+                })
+                .FirstOrDefault()
+                ??
+                new ColorSpan(ForegroundColor, spans[0].TextSpan.Start, spans[0].TextSpan.End);
         }
+
+        private static readonly IReadOnlyDictionary<string, string> fallbacks = new Dictionary<string, string>
+        {
+            // fallbacks from https://github.com/dotnet/roslyn/blob/master/src/EditorFeatures/Core/Implementation/Classification/ClassificationTypeDefinitions.cs
+            { "keyword - control", "keyword" },
+            { "operator - overloaded", "operator" }
+        };
     }
 
     public class ColorSpan
