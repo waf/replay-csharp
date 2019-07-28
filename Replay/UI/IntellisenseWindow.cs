@@ -16,12 +16,16 @@ namespace Replay.UI
             : base(textArea)
         {
             if (completions.Length == 0) return;
+            this.CompletionList.IsFiltering = true;
 
             foreach (var completion in completions)
             {
-                this.CompletionList.CompletionData
-                    .Add(new CodeCompletionSuggestion(completion.DisplayText));
+                var completionItem = new RoslynCompletionSuggestion(completion);
+                this.CompletionList.CompletionData.Add(completionItem);
             }
+
+            string textBeingCompleted = textArea.Document.Text.Substring(completions[0].Span.Start, completions[0].Span.Length);
+            this.CompletionList.SelectItem(textBeingCompleted);
 
             this.Show();
         }
@@ -42,16 +46,18 @@ namespace Replay.UI
     /// <summary>
     /// A single suggestion in the Intellisense Window
     /// </summary>
-    class CodeCompletionSuggestion : ICompletionData
+    class RoslynCompletionSuggestion : ICompletionData
     {
-        public CodeCompletionSuggestion(string text)
+        private readonly CompletionItem completion;
+
+        public RoslynCompletionSuggestion(CompletionItem completion)
         {
-            this.Text = text;
+            this.completion = completion;
         }
 
         public ImageSource Image => null;
 
-        public string Text { get; }
+        public string Text => completion.DisplayText;
 
         /// <summary>
         /// The UIElement to render
@@ -67,7 +73,7 @@ namespace Replay.UI
 
         public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {
-            textArea.Document.Replace(completionSegment, this.Text);
+            textArea.Document.Replace(completion.Span.Start, completion.Span.Length, this.Text);
         }
     }
 }
