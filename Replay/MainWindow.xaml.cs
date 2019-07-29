@@ -136,7 +136,8 @@ namespace Replay
         private async Task CompleteCode(TextEditor lineEditor)
         {
             var line = lineEditor.ViewModel();
-            var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text);
+            var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text, lineEditor.CaretOffset);
+
             if (completions.Any())
             {
                 completionWindow = new IntellisenseWindow(lineEditor.TextArea, completions);
@@ -216,7 +217,7 @@ namespace Replay
             const string initializationCode = @"using System; Console.WriteLine(""Hello""); ""World""";
             return Task.WhenAll(
                 services.HighlightAsync(0, initializationCode),
-                services.CompleteCodeAsync(0, initializationCode),
+                services.CompleteCodeAsync(0, initializationCode, initializationCode.Length),
                 services.EvaluateAsync(0, initializationCode)
             );
         }

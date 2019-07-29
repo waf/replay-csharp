@@ -43,11 +43,11 @@ namespace Replay.Services
             });
         }
 
-        public async Task<ImmutableArray<CompletionItem>> CompleteCodeAsync(int lineId, string code)
+        public async Task<ImmutableArray<CompletionItem>> CompleteCodeAsync(int lineId, string code, int caretIndex)
         {
             await initialization;
             ReplSubmission replSubmission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
-            return await this.codeCompleter.Complete(replSubmission);
+            return await this.codeCompleter.Complete(replSubmission, caretIndex);
         }
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)

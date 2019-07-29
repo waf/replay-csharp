@@ -10,10 +10,13 @@ namespace Replay.Services
     /// </summary>
     class CodeCompleter
     {
-        public async Task<ImmutableArray<CompletionItem>> Complete(ReplSubmission submission)
+        public async Task<ImmutableArray<CompletionItem>> Complete(ReplSubmission submission, int caretIndex)
         {
             var service = CompletionService.GetService(submission.Document);
-            var completions = await service.GetCompletionsAsync(submission.Document, submission.Code.Length);
+            var completions = await service.GetCompletionsAsync(submission.Document, caretIndex);
+            //var infoService = QuickInfoService.GetService(submission.Document);
+            //var info = await infoService.GetQuickInfoAsync(submission.Document, caretIndex - 1);
+
             if(completions?.Items == null)
             {
                 return ImmutableArray.Create<CompletionItem>();

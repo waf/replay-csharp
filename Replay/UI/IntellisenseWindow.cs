@@ -2,6 +2,7 @@
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
@@ -16,8 +17,17 @@ namespace Replay.UI
             : base(textArea)
         {
             if (completions.Length == 0) return;
-            this.CompletionList.IsFiltering = true;
 
+            TextSpan span = completions[0].Span;
+            string textBeingCompleted = textArea.Document.Text.Substring(span.Start, span.Length);
+
+            PopulateCompletionDropDown(completions, textBeingCompleted);
+            SetCompletionBounds(textBeingCompleted, span);
+            Show();
+        }
+
+        private void PopulateCompletionDropDown(ImmutableArray<CompletionItem> completions, string textBeingCompleted)
+        {
             int maxLength = 0;
             foreach (var completion in completions)
             {
@@ -25,18 +35,35 @@ namespace Replay.UI
                 this.CompletionList.CompletionData.Add(completionItem);
                 maxLength = Math.Max(maxLength, completionItem.Text.Length);
             }
-
-            string textBeingCompleted = textArea.Document.Text.Substring(completions[0].Span.Start, completions[0].Span.Length);
-            this.StartOffset -= textBeingCompleted.Length; // if the user has already typed some text, consider that text part of the completion
-            this.CompletionList.SelectItem(textBeingCompleted);
-
             this.Width = maxLength * 12;
-            this.Show();
+            this.CompletionList.IsFiltering = true;
+            this.CompletionList.SelectItem(textBeingCompleted);
+        }
+
+        private void SetCompletionBounds(string textBeingCompleted, TextSpan span)
+        {
+            if (span.Start < this.StartOffset && this.StartOffset < span.End)
+            {
+                // handle when we're completing an already complete word, e.g. Console.WriteLi|ne
+                this.StartOffset = span.Start;
+                this.EndOffset = span.End;
+            }
+            else
+            {
+                // handle when we're completing partially typed word, e.g. Console.WriteLi|
+                this.StartOffset -= textBeingCompleted.Length;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
+
+            if(e.Key == Key.OemPeriod)
+            {
+                // while autocompleting, the user typed a period. This will trigger a new completion window, so this old one should close
+                this.Hide();
+            }
 
             // close completion window if there are no matches, or only 1 match that is exactly what the user already typed.
             // it seems like this should be handled by the CompletionWindow base class, but it isn't.
@@ -76,7 +103,7 @@ namespace Replay.UI
         /// <summary>
         /// Help text in tooltip
         /// </summary>
-        public object Description => completion.Tags.FirstOrDefault();
+        public object Description { get; set; }
 
         public double Priority => 1;
 

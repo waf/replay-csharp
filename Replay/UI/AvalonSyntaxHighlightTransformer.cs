@@ -3,7 +3,6 @@ using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
 using System.Windows.Media;
 using System.Threading.Tasks;
-using System;
 using System.Collections.Generic;
 
 namespace Replay.UI
