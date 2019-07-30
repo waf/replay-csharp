@@ -43,7 +43,7 @@ namespace Replay.Services
             });
         }
 
-        public async Task<ImmutableArray<CompletionItem>> CompleteCodeAsync(int lineId, string code, int caretIndex)
+        public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(int lineId, string code, int caretIndex)
         {
             await initialization;
             ReplSubmission replSubmission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);

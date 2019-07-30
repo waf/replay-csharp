@@ -1,10 +1,10 @@
 ﻿using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
-using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.Text;
+using Replay.Services;
 using System;
-using System.Collections.Immutable;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -13,20 +13,20 @@ namespace Replay.UI
 {
     class IntellisenseWindow : CompletionWindow
     {
-        public IntellisenseWindow(TextArea textArea, ImmutableArray<CompletionItem> completions)
+        public IntellisenseWindow(TextArea textArea, IReadOnlyList<ReplCompletion> completions)
             : base(textArea)
         {
-            if (completions.Length == 0) return;
+            if (completions.Count == 0) return;
 
-            TextSpan span = completions[0].Span;
+            TextSpan span = completions[0].CompletionItem.Span;
             string textBeingCompleted = textArea.Document.Text.Substring(span.Start, span.Length);
 
-            PopulateCompletionDropDown(completions, textBeingCompleted);
             SetCompletionBounds(textBeingCompleted, span);
+            PopulateCompletionDropDown(completions, textBeingCompleted);
             Show();
         }
 
-        private void PopulateCompletionDropDown(ImmutableArray<CompletionItem> completions, string textBeingCompleted)
+        private void PopulateCompletionDropDown(IReadOnlyList<ReplCompletion> completions, string textBeingCompleted)
         {
             int maxLength = 0;
             foreach (var completion in completions)
@@ -84,16 +84,25 @@ namespace Replay.UI
     /// </summary>
     class RoslynCompletionSuggestion : ICompletionData
     {
-        private readonly CompletionItem completion;
+        private readonly int startOffset;
+        private readonly int endOffset;
+        private Func<string, string, string> completeText;
 
-        public RoslynCompletionSuggestion(CompletionItem completion)
+        public RoslynCompletionSuggestion(ReplCompletion completion)
         {
-            this.completion = completion;
+            Completion = completion;
+        }
+
+        public RoslynCompletionSuggestion(ReplCompletion completion, int startOffset, int endOffset)
+        {
+            this.Completion = completion;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
 
         public ImageSource Image => null;
 
-        public string Text => completion.DisplayText;
+        public string Text => Completion.CompletionItem.DisplayText;
 
         /// <summary>
         /// The UIElement to render
@@ -103,9 +112,11 @@ namespace Replay.UI
         /// <summary>
         /// Help text in tooltip
         /// </summary>
-        public object Description { get; set; }
+        public object Description => Completion.QuickInfoTask.Value.Result; // warning, blocking code
 
-        public double Priority => 1;
+        public double Priority => Completion.CompletionItem.Rules.MatchPriority;
+
+        public ReplCompletion Completion { get; }
 
         public void Complete(TextArea textArea, ISegment completionSegment, EventArgs insertionRequestEventArgs)
         {

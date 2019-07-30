@@ -1,6 +1,12 @@
-﻿using Microsoft.CodeAnalysis.Completion;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Completion;
+using Microsoft.CodeAnalysis.QuickInfo;
+using Microsoft.CodeAnalysis.Text;
 using Replay.Model;
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Replay.Services
@@ -10,18 +16,52 @@ namespace Replay.Services
     /// </summary>
     class CodeCompleter
     {
-        public async Task<ImmutableArray<CompletionItem>> Complete(ReplSubmission submission, int caretIndex)
+        public async Task<IReadOnlyList<ReplCompletion>> Complete(ReplSubmission submission, int caretIndex)
         {
             var service = CompletionService.GetService(submission.Document);
             var completions = await service.GetCompletionsAsync(submission.Document, caretIndex);
-            //var infoService = QuickInfoService.GetService(submission.Document);
-            //var info = await infoService.GetQuickInfoAsync(submission.Document, caretIndex - 1);
 
-            if(completions?.Items == null)
+            if (completions?.Items == null)
             {
-                return ImmutableArray.Create<CompletionItem>();
+                return ImmutableArray.Create<ReplCompletion>();
             }
-            return completions.Items;
+            return completions.Items
+                .Select(item => new ReplCompletion(
+                    submission,
+                    item,
+                    new Lazy<Task<string>>(() => GetQuickInfo(submission.Document, item))
+                ))
+                .ToList();
         }
+
+        public async Task<string> GetQuickInfo(Document document, CompletionItem completion)
+        {
+            var infoService = QuickInfoService.GetService(document);
+            string text = (await document.GetTextAsync()).ToString();
+            string completedText = text.Substring(0, completion.Span.Start)
+                + completion.DisplayText
+                + (completion.Span.End == text.Length ? "" : text.Substring(completion.Span.End));
+            var newDoc = document.WithText(SourceText.From(completedText));
+            var info = await infoService.GetQuickInfoAsync(newDoc, completedText.Length - 1);
+
+            if (info == null || info.Sections.Length == 0)
+            {
+                return null;
+            }
+            return info.Sections.First().Text;
+        }
+    }
+    public class ReplCompletion
+    {
+        public ReplCompletion(ReplSubmission replSubmission, CompletionItem completionItem, Lazy<Task<string>> quickInfoTask)
+        {
+            ReplSubmission = replSubmission;
+            CompletionItem = completionItem;
+            QuickInfoTask = quickInfoTask;
+        }
+
+        public ReplSubmission ReplSubmission { get; }
+        public CompletionItem CompletionItem { get; }
+        public Lazy<Task<string>> QuickInfoTask { get; }
     }
 }
