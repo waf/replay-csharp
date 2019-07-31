@@ -83,10 +83,16 @@ namespace Replay
         {
             if (completionWindow?.IsVisible ?? false) return;
 
-            // complete member accesses
-            if (Keyboard.Modifiers == ModifierKeys.None && e.Key == Key.OemPeriod)
+            if (Keyboard.Modifiers == ModifierKeys.None
+                && e.Key == Key.OemPeriod // complete member accesses
+                && !IsCompletingDigit()) // but don't complete decimal points in numbers
             {
                 await CompleteCode(lineEditor);
+            }
+
+            bool IsCompletingDigit() {
+                string text = lineEditor.Document.Text;
+                return text.Length >= 2 && Char.IsDigit(text[text.Length - 2]);
             }
         }
 
@@ -141,6 +147,7 @@ namespace Replay
             if (completions.Any())
             {
                 completionWindow = new IntellisenseWindow(lineEditor.TextArea, completions);
+                completionWindow.Closed += delegate { completionWindow = null; };
             }
         }
 
