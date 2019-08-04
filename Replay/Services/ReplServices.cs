@@ -1,15 +1,18 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Completion;
 using Replay.Model;
+using Replay.Services.CommandHandlers;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Replay.Services
 {
     /// <summary>
     /// Main access point for editor services.
+    /// Manages background initialization for all services in a way that doesn't increase startup time.
     /// This is a stateful service (due to the contained WorkspaceManager) and is one-per-window.
     /// </summary>
     internal class ReplServices
@@ -19,7 +22,7 @@ namespace Replay.Services
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
-        private PrettyPrinter prettyPrinter;
+        private ICommandHandler[] commandHandlers;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
@@ -39,7 +42,13 @@ namespace Replay.Services
                 this.scriptEvaluator = new ScriptEvaluator();
                 this.codeCompleter = new CodeCompleter();
                 this.workspaceManager = new WorkspaceManager();
-                this.prettyPrinter = new PrettyPrinter();
+
+                this.commandHandlers = new ICommandHandler[]
+                {
+                    new AssemblyReferenceCommand(scriptEvaluator, workspaceManager),
+                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller()),
+                    new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
+                };
             });
         }
 
@@ -57,28 +66,12 @@ namespace Replay.Services
             return await this.syntaxHighlighter.HighlightAsync(submission);
         }
 
-        public async Task<(bool IsComplete, FormattedLine Output)> EvaluateAsync(int id, string text)
+        public async Task<LineEvaluationResult> EvaluateAsync(int id, string text, IReplLogger logger)
         {
             await initialization;
-
-            // bail out if it's not a complete statement, but first try automatic completions
-            var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync(text);
-            if(!success)
-            {
-                return (false, null);
-            }
-            text = (await newTree.GetRootAsync())
-                .NormalizeWhitespace()
-                .ToFullString();
-
-            // track the submission in our workspace. We won't use the
-            // result because the Scripting API doesn't need it, but other
-            // roslyn APIs like code completion and syntax highlighting will.
-            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(id, text);
-            var scriptResult = await scriptEvaluator.EvaluateAsync(text);
-            var output = await prettyPrinter.FormatAsync(submission.Document, scriptResult);
-
-            return (true, output);
+            return await commandHandlers
+                .First(handler => handler.CanHandle(text))
+                .HandleAsync(id, text, logger);
         }
     }
 }

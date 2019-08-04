@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Scripting.Hosting;
+using System.Reflection;
 
 namespace Replay.Services
 {
@@ -16,6 +18,7 @@ namespace Replay.Services
     public class ScriptEvaluator
     {
         private ScriptOptions compilationOptions;
+        private readonly InteractiveAssemblyLoader assemblyLoader;
         private ScriptState<object> state;
         public readonly CSharpParseOptions parseOptions;
             
@@ -24,6 +27,8 @@ namespace Replay.Services
             this.compilationOptions = ScriptOptions.Default
                 .WithReferences(DefaultAssemblies.Assemblies.Value)
                 .WithImports(DefaultAssemblies.DefaultUsings);
+
+            this.assemblyLoader = new InteractiveAssemblyLoader();
 
             this.parseOptions = new CSharpParseOptions(LanguageVersion.Latest, kind: SourceCodeKind.Script);
         }
@@ -41,7 +46,9 @@ namespace Replay.Services
         private async Task<(bool Success, SyntaxTree NewTree)> TryWithSemicolon(SyntaxTree syntaxTree)
         {
             var root = await syntaxTree.GetRootAsync();
-            if (root.ChildNodes().First() is FieldDeclarationSyntax declaration
+            var nodes = root.ChildNodes().ToList();
+            if (nodes.Any()
+                && nodes.First() is FieldDeclarationSyntax declaration
                 && declaration.SemicolonToken.IsMissing)
             {
                 var withSemicolon = declaration.WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
@@ -60,17 +67,17 @@ namespace Replay.Services
         /// <summary>
         /// Run the script and return the result, capturing any exceptions or standard output.
         /// </summary>
-        public async Task<EvaluationResult> EvaluateAsync(string text)
+        public async Task<ScriptEvaluationResult> EvaluateAsync(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
             {
-                return new EvaluationResult();
+                return new ScriptEvaluationResult();
             }
 
             using(var stdout = new ConsoleOutputWriter())
             {
                 var evaluated = await EvaluateCapturingError(text);
-                return new EvaluationResult
+                return new ScriptEvaluationResult
                 {
                     ScriptResult = evaluated.Result,
                     Exception = evaluated.Exception,
@@ -79,13 +86,28 @@ namespace Replay.Services
             }
         }
 
+        public async Task AddReferences(params MetadataReference[] assemblies)
+        {
+            /*
+            var assemblies = assemblyPaths.Select(Assembly.LoadFile).ToArray();
+            foreach (var assembly in assemblies)
+            {
+                assemblyLoader.RegisterDependency(assemblyPaths[0].Properties.al)
+                assemblyLoader.RegisterDependency(assembly);
+            }
+            */
+            compilationOptions = compilationOptions.AddReferences(assemblies);
+            state = await state.ContinueWithAsync(null, compilationOptions);
+        }
+
         private async Task<(ScriptState<object> Result, Exception Exception)> EvaluateCapturingError(string text)
         {
             try
             {
                 state = state == null
-                    ? await CSharpScript.RunAsync(text, compilationOptions)
+                    ? await CSharpScript.Create(text, compilationOptions, null, assemblyLoader).RunAsync()
                     : await state.ContinueWithAsync(text);
+
                 return (state, state.Exception);
             }
             catch (Exception exception)

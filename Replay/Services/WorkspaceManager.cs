@@ -7,6 +7,7 @@ using Replay.Model;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Replay.Services
@@ -32,23 +33,26 @@ namespace Replay.Services
             );
         }
 
-        public async Task<ReplSubmission> CreateOrUpdateSubmissionAsync(int lineId, string code)
+        public async Task<ReplSubmission> CreateOrUpdateSubmissionAsync(
+            int lineId,
+            string code,
+            params MetadataReference[] assemblyReferences)
         {
             var replSubmission = EditorToSubmission.TryGetValue(lineId, out var previousSubmission)
-                ? await UpdateSubmissionAsync(previousSubmission, code)
-                : await CreateSubmissionAsync(lineId, code);
+                ? await UpdateSubmissionAsync(previousSubmission, code, assemblyReferences)
+                : await CreateSubmissionAsync(lineId, code, assemblyReferences);
 
             EditorToSubmission[lineId] = replSubmission;
             return replSubmission;
         }
 
-        private async Task<ReplSubmission> CreateSubmissionAsync(int lineId, string code)
+        private async Task<ReplSubmission> CreateSubmissionAsync(int lineId, string code, MetadataReference[] assemblyReferences)
         {
             var name = "Script" + lineId;
             // we add the previous REPL submission as a project reference, so
             // APIs like Code Completion know about them.
             var projectReferences = GetPreviousSubmission(lineId);
-            Project project = CreateProject(name, projectReferences);
+            Project project = CreateProject(name, projectReferences, assemblyReferences);
             Document document = await CreateDocumentAsync(project, name, code);
             Document formattedDocument = await Formatter.FormatAsync(document);
 
@@ -59,7 +63,7 @@ namespace Replay.Services
             };
         }
 
-        private Project CreateProject(string name, ProjectReference[] previousSubmission)
+        private Project CreateProject(string name, ProjectReference[] previousSubmission, MetadataReference[] assemblyReferences)
         {
             var projectInfo = ProjectInfo
                 .Create(
@@ -71,7 +75,7 @@ namespace Replay.Services
                     isSubmission: true
                 )
                 .WithProjectReferences(previousSubmission)
-                .WithMetadataReferences(DefaultAssemblies.Assemblies.Value)
+                .WithMetadataReferences(DefaultAssemblies.Assemblies.Value.Concat(assemblyReferences))
                 .WithCompilationOptions(compilationOptions);
             var project = workspace.AddProject(projectInfo);
             return project;
@@ -96,9 +100,16 @@ namespace Replay.Services
                 : Array.Empty<ProjectReference>();
         }
 
-        private async Task<ReplSubmission> UpdateSubmissionAsync(ReplSubmission replSubmission, string code, bool format = false)
+        private async Task<ReplSubmission> UpdateSubmissionAsync(
+            ReplSubmission replSubmission,
+            string code,
+            IReadOnlyCollection<MetadataReference> references,
+            bool format = false)
         {
-            var edit = workspace.CurrentSolution.WithDocumentText(replSubmission.Document.Id, SourceText.From(code));
+            var edit = workspace.CurrentSolution
+                .WithDocumentText(replSubmission.Document.Id, SourceText.From(code))
+                .AddMetadataReferences(replSubmission.Document.Project.Id, references);
+
             var success = workspace.TryApplyChanges(edit);
 
             // document has changed, requery to get the new one

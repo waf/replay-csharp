@@ -106,25 +106,32 @@ namespace Replay
             }
 
             // eval
-            var result = await services.EvaluateAsync(line.Id, text);
-            if(!result.IsComplete)
+            var logger = new Logger(line);
+            var result = await services.EvaluateAsync(line.Id, text, logger);
+            if(result == LineEvaluationResult.IncompleteInput)
             {
                 line.Document.Text += Environment.NewLine;
                 return;
             }
-            line.Document.Text = result.Output.Input;
+            if(!string.IsNullOrEmpty(result.FormattedInput))
+            {
+                line.Document.Text = result.FormattedInput;
+            }
 
             // print
-            Print(line, result.Output);
+            if(result != LineEvaluationResult.NoOutput)
+            {
+                Print(line, result);
+            }
 
             // loop
-            if (result.Output.Exception == null && !stayOnCurrentLine)
+            if (result.Exception == null && !stayOnCurrentLine)
             {
                 MoveToNextLine(line);
             }
         }
 
-        private static void Print(LineEditorViewModel lineEditor, FormattedLine result)
+        private static void Print(LineEditorViewModel lineEditor, LineEvaluationResult result)
         {
             lineEditor.SetResult(result);
         }
@@ -225,7 +232,7 @@ namespace Replay
             return Task.WhenAll(
                 services.HighlightAsync(0, initializationCode),
                 services.CompleteCodeAsync(0, initializationCode, initializationCode.Length),
-                services.EvaluateAsync(0, initializationCode)
+                services.EvaluateAsync(0, initializationCode, new NullLogger())
             );
         }
 

@@ -52,7 +52,7 @@ namespace Replay.Model
             set => SetPropertyChanged(ref output,  value);
         }
 
-        public void SetResult(FormattedLine output)
+        public void SetResult(LineEvaluationResult output)
         {
             this.Result = output.Result;
             this.Error = output.Exception;

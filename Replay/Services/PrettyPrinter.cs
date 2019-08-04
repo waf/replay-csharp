@@ -15,11 +15,11 @@ namespace Replay.Services
             this.objectFormatter = CSharpObjectFormatter.Instance;
         }
 
-        public async Task<FormattedLine> FormatAsync(Document document, EvaluationResult evaluationResult = null)
+        public async Task<LineEvaluationResult> FormatAsync(Document document, ScriptEvaluationResult evaluationResult = null)
         {
             var formattedDocument = await Formatter.FormatAsync(document);
             var formattedText = await formattedDocument.GetTextAsync();
-            return new FormattedLine(
+            return new LineEvaluationResult(
                 formattedText.ToString(),
                 FormatObject(evaluationResult?.ScriptResult?.ReturnValue),
                 evaluationResult?.Exception?.Message,

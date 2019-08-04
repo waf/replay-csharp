@@ -3,7 +3,7 @@ using System;
 
 namespace Replay.Model
 {
-    public class EvaluationResult
+    public class ScriptEvaluationResult
     {
         /// <summary>
         /// Result of the program
