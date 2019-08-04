@@ -12,6 +12,8 @@ A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval
 - Re-evaluate a line multiple times by hitting <kbd>ctrl</kbd> + <kbd>enter</kbd>
 - Intellisense and method signature documentation
 - Syntax highlighting
+- Reference assemblies by `#r path/to/my.dll`
+- Reference nuget packages by `#nuget MyPackage`
 - Pretty-print evaluation results
 - Detect incomplete expressions (e.g. `if (condition) {`), and insert a "soft newline" rather than evaluating the incomplete expression.
 
