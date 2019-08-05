@@ -6,7 +6,6 @@
     <UseWPF>true</UseWPF>
     <LangVersion>default</LangVersion>
     <PublishSingleFile>true</PublishSingleFile>
-    <PublishReadyToRun>true</PublishReadyToRun>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
