@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
-using static System.Windows.Input.ModifierKeys;
-using static System.Windows.Input.Key;
 using static Replay.Services.ReplCommand;
+using static System.Windows.Input.Key;
+using static System.Windows.Input.ModifierKeys;
 
 namespace Replay.Services
 {
@@ -27,7 +27,7 @@ namespace Replay.Services
         /// </summary>
         public static ReplCommand? MapToCommand(KeyEventArgs key)
         {
-            return 
+            return
                 key.Is(Enter) ? EvaluateCurrentLine :
                 key.Is(Control, Enter) ? ReevaluateCurrentLine :
                 key.Is(Control, Space) || key.Is(Tab) ? OpenIntellisense :

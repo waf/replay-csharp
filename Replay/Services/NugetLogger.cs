@@ -3,9 +3,13 @@ using System.Threading.Tasks;
 
 namespace Replay.Services
 {
+    /// <summary>
+    /// Implementation of <see cref="NuGet.Common.ILogger" /> that is passed into the nuget API to collect
+    /// nuget output. It forwards the output to our <see cref="IReplLogger" /> for display.
+    /// </summary>
     internal class NugetLogger : ILogger
     {
-        private IReplLogger logger;
+        private readonly IReplLogger logger;
 
         public NugetLogger(IReplLogger logger)
         {
@@ -40,12 +44,12 @@ namespace Replay.Services
             return Task.CompletedTask;
         }
 
-        public void LogDebug(string data) { }
         public void LogInformation(string data) => logger.LogOutput(data);
         public void LogInformationSummary(string data) => logger.LogOutput(data);
-        public void LogMinimal(string data) { }
-        public void LogVerbose(string data) { }
         public void LogWarning(string data) => logger.LogOutput(data);
         public void LogError(string data) => logger.LogError(data);
+        public void LogDebug(string data) { /* Don't bother logging "debug" output to the REPL */ }
+        public void LogMinimal(string data) { /* Don't bother logging "minimal" output to the REPL */ }
+        public void LogVerbose(string data) { /* Don't bother logging "verbose" output to the REPL */ }
     }
 }

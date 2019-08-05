@@ -52,7 +52,7 @@ namespace Replay.Model
                     return;
                 }
 
-                if(!focusIndex.HasValue)
+                if (!focusIndex.HasValue)
                 {
                     Entries[value].IsFocused = true;
                     SetField(ref focusIndex, value, updateOnlyWhenChanged: false);

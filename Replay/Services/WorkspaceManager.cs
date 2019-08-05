@@ -114,7 +114,7 @@ namespace Replay.Services
 
             // document has changed, requery to get the new one
             var document = workspace.CurrentSolution.GetDocument(replSubmission.Document.Id);
-            if(format)
+            if (format)
             {
                 document = await Formatter.FormatAsync(document);
             }

@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace Replay.Services
 {
+    /// <summary>
+    /// Pretty-Printer for printing C# objects as strings
+    /// </summary>
     class PrettyPrinter
     {
-        private CSharpObjectFormatter objectFormatter;
+        private readonly CSharpObjectFormatter objectFormatter;
 
         public PrettyPrinter()
         {
@@ -29,7 +32,7 @@ namespace Replay.Services
 
         private string FormatObject(object obj)
         {
-            if(obj == null)
+            if (obj == null)
             {
                 // right now there's no way to determine the difference between "no value" and "null value"
                 // intercept all nulls and return null, instead of the string "null"

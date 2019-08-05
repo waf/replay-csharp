@@ -26,13 +26,15 @@ namespace Replay
         public MainWindow()
         {
             InitializeComponent();
-            Model = new ReplViewModel();
+            DataContext = Model = new ReplViewModel();
             services = new ReplServices();
             services.UserConfigurationLoaded += ConfigureWindow;
-            DataContext = Model;
             Task.Run(BackgroundInitializationAsync);
         }
 
+        /// <summary>
+        /// Callback for when user settings are loaded
+        /// </summary>
         private void ConfigureWindow(object sender, UserConfiguration configuration)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -42,84 +44,32 @@ namespace Replay
             });
         }
 
-        private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)
-        {
-            if (completionWindow?.IsVisible ?? false) return;
-
-            var command = KeyboardShortcuts.MapToCommand(e);
-            if (!command.HasValue) return;
-
-            e.Handled = true;
-            switch (command.Value)
-            {
-                case ReplCommand.EvaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: false);
-                    return;
-                case ReplCommand.ReevaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
-                    return;
-                case ReplCommand.OpenIntellisense:
-                    await CompleteCode(lineEditor);
-                    return;
-                case ReplCommand.GoToFirstLine:
-                    Model.FocusIndex = 0;
-                    return;
-                case ReplCommand.GoToLastLine:
-                    Model.FocusIndex = Model.Entries.Count - 1;
-                    return;
-                case ReplCommand.LineDown when lineEditor.IsCaretOnFinalLine():
-                    Model.FocusIndex++;
-                    return;
-                case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
-                    Model.FocusIndex--;
-                    return;
-                default:
-                    e.Handled = false;
-                    break;
-            }
-        }
-
-        private async void TextEditor_PreviewKeyUp(TextEditor lineEditor, KeyEventArgs e)
-        {
-            if (completionWindow?.IsVisible ?? false) return;
-
-            if (Keyboard.Modifiers == ModifierKeys.None
-                && e.Key == Key.OemPeriod // complete member accesses
-                && !IsCompletingDigit()) // but don't complete decimal points in numbers
-            {
-                await CompleteCode(lineEditor);
-            }
-
-            bool IsCompletingDigit() {
-                string text = lineEditor.Document.Text;
-                return text.Length >= 2 && Char.IsDigit(text[text.Length - 2]);
-            }
-        }
-
+        /// <summary>
+        /// The main REPL loop
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="stayOnCurrentLine"></param>
+        /// <returns></returns>
         private async Task ReadEvalPrintLoop(LineEditorViewModel line, bool stayOnCurrentLine)
         {
             // read
             string text = line.Document.Text;
-            if (text.Trim() == "exit")
-            {
-                Application.Current.Shutdown();
-            }
 
             // eval
             var logger = new Logger(line);
             var result = await services.EvaluateAsync(line.Id, text, logger);
-            if(result == LineEvaluationResult.IncompleteInput)
+            if (result == LineEvaluationResult.IncompleteInput)
             {
                 line.Document.Text += Environment.NewLine;
                 return;
             }
-            if(!string.IsNullOrEmpty(result.FormattedInput))
+            if (!string.IsNullOrEmpty(result.FormattedInput))
             {
                 line.Document.Text = result.FormattedInput;
             }
 
             // print
-            if(result != LineEvaluationResult.NoOutput)
+            if (result != LineEvaluationResult.NoOutput)
             {
                 Print(line, result);
             }
@@ -177,6 +127,61 @@ namespace Replay
             }
         }
 
+        private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)
+        {
+            if (completionWindow?.IsVisible ?? false) return;
+
+            var command = KeyboardShortcuts.MapToCommand(e);
+            if (!command.HasValue) return;
+
+            e.Handled = true;
+            switch (command.Value)
+            {
+                case ReplCommand.EvaluateCurrentLine:
+                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: false);
+                    return;
+                case ReplCommand.ReevaluateCurrentLine:
+                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
+                    return;
+                case ReplCommand.OpenIntellisense:
+                    await CompleteCode(lineEditor);
+                    return;
+                case ReplCommand.GoToFirstLine:
+                    Model.FocusIndex = 0;
+                    return;
+                case ReplCommand.GoToLastLine:
+                    Model.FocusIndex = Model.Entries.Count - 1;
+                    return;
+                case ReplCommand.LineDown when lineEditor.IsCaretOnFinalLine():
+                    Model.FocusIndex++;
+                    return;
+                case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
+                    Model.FocusIndex--;
+                    return;
+                default:
+                    e.Handled = false;
+                    break;
+            }
+        }
+
+        private async void TextEditor_PreviewKeyUp(TextEditor lineEditor, KeyEventArgs e)
+        {
+            if (completionWindow?.IsVisible ?? false) return;
+
+            if (Keyboard.Modifiers == ModifierKeys.None
+                && e.Key == Key.OemPeriod // complete member accesses
+                && !IsCompletingDigit()) // but don't complete decimal points in numbers
+            {
+                await CompleteCode(lineEditor);
+            }
+
+            bool IsCompletingDigit()
+            {
+                string text = lineEditor.Document.Text;
+                return text.Length >= 2 && Char.IsDigit(text[text.Length - 2]);
+            }
+        }
+
         private void TextEditor_Unloaded(TextEditor lineEditor, RoutedEventArgs e)
         {
             lineEditor.TextArea.MouseWheel -= TextArea_MouseWheel;
@@ -212,7 +217,7 @@ namespace Replay
         private void Window_PreviewMouseWheel(Window sender, MouseWheelEventArgs e)
         {
             // scale the font size
-            if(Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 int delta = e.Delta / Math.Abs(e.Delta); // -1 or +1;
                 this.Window.FontSize += delta;

@@ -1,28 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Replay.Model;
+using System.Threading.Tasks;
 
 namespace Replay.Services.CommandHandlers
 {
-    class AssemblyReferenceCommand : ICommandHandler
+    /// <summary>
+    /// An <see cref="ICommandHandler" /> for referencing assemblies.
+    /// Handles lines like "#r path/to/my.dll"
+    /// </summary>
+    class AssemblyReferenceCommandHandler : ICommandHandler
     {
         private readonly ScriptEvaluator scriptEvaluator;
         private readonly WorkspaceManager workspaceManager;
+        private const string CommandPrefix = "#r ";
 
-        public AssemblyReferenceCommand(ScriptEvaluator scriptEvaluator, WorkspaceManager workspaceManager)
+        public AssemblyReferenceCommandHandler(ScriptEvaluator scriptEvaluator, WorkspaceManager workspaceManager)
         {
             this.scriptEvaluator = scriptEvaluator;
             this.workspaceManager = workspaceManager;
         }
 
-        public bool CanHandle(string input) => input.StartsWith("#r ");
+        public bool CanHandle(string input) => input.StartsWith(CommandPrefix);
 
         public async Task<LineEvaluationResult> HandleAsync(int lineId, string input, IReplLogger logger)
         {
-            string assembly = input.Substring(3).Trim('"');
+            string assembly = input.Substring(CommandPrefix.Length).Trim('"');
             var reference = MetadataReference.CreateFromFile(assembly);
             logger.LogOutput("Referencing " + reference.Display);
             await scriptEvaluator.AddReferences(reference);

@@ -1,7 +1,9 @@
 ﻿using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.Extensions.Caching.Memory;
 using Replay.Model;
 using Replay.UI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +20,8 @@ namespace Replay.Services
     /// </remarks>
     public class SyntaxHighlighter
     {
+        private readonly MemoryCache colorCache;
+        private readonly MemoryCacheEntryOptions colorCacheExpiration;
         private readonly IReadOnlyDictionary<string, Color> theme;
         public Color ForegroundColor { get; }
         public Color BackgroundColor { get; }
@@ -25,6 +29,8 @@ namespace Replay.Services
         public SyntaxHighlighter(string themeFilename)
         {
             this.theme = ThemeReader.GetTheme(themeFilename);
+            this.colorCache = new MemoryCache(new MemoryCacheOptions());
+            this.colorCacheExpiration = new MemoryCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5) };
             this.ForegroundColor = theme[ThemeReader.Foreground];
             this.BackgroundColor = theme[ThemeReader.Background];
         }
@@ -53,11 +59,17 @@ namespace Replay.Services
             return
                 spans.Select(span =>
                 {
+                    if (colorCache.Get<ColorSpan>(span) is ColorSpan cachedColorSpan)
+                    {
+                        return cachedColorSpan;
+                    }
                     if (theme.TryGetValue(span.ClassificationType, out Color color)
                         || (fallbacks.TryGetValue(span.ClassificationType, out string fallback)
                             && theme.TryGetValue(fallback, out color)))
                     {
-                        return new ColorSpan(color, span.TextSpan.Start, span.TextSpan.End);
+                        var colorSpan = new ColorSpan(color, span.TextSpan.Start, span.TextSpan.End);
+                        colorCache.Set(span, colorSpan, colorCacheExpiration);
+                        return colorSpan;
                     }
                     return null;
                 })

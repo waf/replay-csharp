@@ -28,7 +28,7 @@ namespace Replay.Services
     class NugetPackageInstaller
     {
         private readonly NuGetFramework nugetFramework;
-        private readonly List<SourceRepository> repositories;
+        private readonly IReadOnlyCollection<SourceRepository> repositories;
         private readonly SourceCacheContext nugetCache;
         private readonly PackagePathResolver packagePathResolver;
         private readonly string globalPackageFolder;
@@ -53,9 +53,13 @@ namespace Replay.Services
         {
             var nugetLogger = new NugetLogger(logger);
             var package = await FindPackageAsync(packageSearchTerm, repositories, nugetLogger);
+            if (package == null)
+            {
+                logger.LogError($"Could not find package '{packageSearchTerm}'");
+                return Array.Empty<MetadataReference>();
+            }
 
             var dependencies = await GetPackageDependencies(package, nugetFramework, nugetCache, nugetLogger, repositories);
-
             var packagesToInstall = ResolvePackages(package, dependencies, nugetLogger);
             var packageExtractionContext = new PackageExtractionContext(
                 PackageSaveMode.Defaultv3,
@@ -77,7 +81,7 @@ namespace Replay.Services
                     );
 
                     installedPath = installedPath ?? packagePathResolver.GetInstalledPath(packageToInstall);
-                    return FilterByFramework(frameworkReducer, allResources.SelectMany(x => x))
+                    return FilterByFramework(frameworkReducer, allResources.SelectMany(x => x).ToList())
                         .Where(item => item.EndsWith(".dll"))
                         .Select(item => MetadataReference.CreateFromFile(Path.Combine(installedPath, item)))
                         .ToList();
@@ -115,7 +119,7 @@ namespace Replay.Services
 
         private async Task<ISet<SourcePackageDependencyInfo>> GetPackageDependencies(
             PackageIdentity package, NuGetFramework nugetFramework, SourceCacheContext nugetCache,
-            ILogger instance, List<SourceRepository> repositories)
+            ILogger instance, IReadOnlyCollection<SourceRepository> repositories)
         {
             var dependencies = new ConcurrentDictionary<SourcePackageDependencyInfo, byte>(PackageIdentityComparer.Default);
             await GetPackageDependencies(package, nugetFramework, nugetCache, instance, repositories, dependencies);
@@ -194,7 +198,7 @@ namespace Replay.Services
             }
         }
 
-        private List<string> FilterByFramework(FrameworkReducer frameworkReducer, IEnumerable<FrameworkSpecificGroup> libItems)
+        private List<string> FilterByFramework(FrameworkReducer frameworkReducer, IReadOnlyCollection<FrameworkSpecificGroup> libItems)
         {
             var nearest = frameworkReducer.GetNearest(nugetFramework, libItems.Select(x => x.TargetFramework));
             var libItemCollection = libItems

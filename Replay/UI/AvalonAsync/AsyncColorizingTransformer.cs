@@ -22,29 +22,29 @@ using System.Threading.Tasks;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
-	/// <summary>
-	/// Base class for <see cref="IVisualLineTransformer"/> that helps
-	/// splitting visual elements so that colors (and other text properties) can be easily assigned
-	/// to individual words/characters.
-	/// </summary>
-	public abstract class AsyncColorizingTransformer : IVisualLineTransformer, ITextViewConnect
-	{
-		/// <summary>
-		/// <see cref="IVisualLineTransformer.Transform"/> implementation.
-		/// Sets <see cref="CurrentElements"/> and calls <see cref="ColorizeAsync"/>.
-		/// </summary>
-		public async void Transform(ITextRunConstructionContext context, IList<VisualLineElement> elements)
-		{
-			if (elements == null)
-				throw new ArgumentNullException("elements");
+    /// <summary>
+    /// Base class for <see cref="IVisualLineTransformer"/> that helps
+    /// splitting visual elements so that colors (and other text properties) can be easily assigned
+    /// to individual words/characters.
+    /// </summary>
+    public abstract class AsyncColorizingTransformer : IVisualLineTransformer, ITextViewConnect
+    {
+        /// <summary>
+        /// <see cref="IVisualLineTransformer.Transform"/> implementation.
+        /// Sets <see cref="CurrentElements"/> and calls <see cref="ColorizeAsync"/>.
+        /// </summary>
+        public async void Transform(ITextRunConstructionContext context, IList<VisualLineElement> elements)
+        {
+            if (elements == null)
+                throw new ArgumentNullException("elements");
 
             await ColorizeAsync(context, elements);
-		}
+        }
 
-		/// <summary>
-		/// Performs the colorization.
-		/// </summary>
-		protected abstract Task ColorizeAsync(ITextRunConstructionContext context, IList<VisualLineElement> elements);
+        /// <summary>
+        /// Performs the colorization.
+        /// </summary>
+        protected abstract Task ColorizeAsync(ITextRunConstructionContext context, IList<VisualLineElement> elements);
 
         /// <summary>
         /// Changes visual element properties.
@@ -60,54 +60,61 @@ namespace ICSharpCode.AvalonEdit.Rendering
         protected void ChangeVisualElements(int visualStartColumn, int visualEndColumn, IList<VisualLineElement> elements, Action<VisualLineElement> action)
         {
             if (action == null)
-				throw new ArgumentNullException("action");
-			for (int i = 0; i < elements.Count; i++) {
-				VisualLineElement e = elements[i];
-				if (e.VisualColumn > visualEndColumn)
-					break;
-				if (e.VisualColumn < visualStartColumn &&
-				    e.VisualColumn + e.VisualLength > visualStartColumn)
-				{
-					if (e.CanSplit) {
-						e.Split(visualStartColumn, elements, i--);
-						continue;
-					}
-				}
-				if (e.VisualColumn >= visualStartColumn && e.VisualColumn < visualEndColumn) {
-					if (e.VisualColumn + e.VisualLength > visualEndColumn) {
-						if (e.CanSplit) {
-							e.Split(visualEndColumn, elements, i--);
-							continue;
-						}
-					} else {
-						action(e);
-					}
-				}
-			}
-		}
+                throw new ArgumentNullException("action");
+            for (int i = 0; i < elements.Count; i++)
+            {
+                VisualLineElement e = elements[i];
+                if (e.VisualColumn > visualEndColumn)
+                    break;
+                if (e.VisualColumn < visualStartColumn &&
+                    e.VisualColumn + e.VisualLength > visualStartColumn)
+                {
+                    if (e.CanSplit)
+                    {
+                        e.Split(visualStartColumn, elements, i--);
+                        continue;
+                    }
+                }
+                if (e.VisualColumn >= visualStartColumn && e.VisualColumn < visualEndColumn)
+                {
+                    if (e.VisualColumn + e.VisualLength > visualEndColumn)
+                    {
+                        if (e.CanSplit)
+                        {
+                            e.Split(visualEndColumn, elements, i--);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        action(e);
+                    }
+                }
+            }
+        }
 
-		/// <summary>
-		/// Called when added to a text view.
-		/// </summary>
-		protected virtual void OnAddToTextView(TextView textView)
-		{
-		}
+        /// <summary>
+        /// Called when added to a text view.
+        /// </summary>
+        protected virtual void OnAddToTextView(TextView textView)
+        {
+        }
 
-		/// <summary>
-		/// Called when removed from a text view.
-		/// </summary>
-		protected virtual void OnRemoveFromTextView(TextView textView)
-		{
-		}
+        /// <summary>
+        /// Called when removed from a text view.
+        /// </summary>
+        protected virtual void OnRemoveFromTextView(TextView textView)
+        {
+        }
 
-		void ITextViewConnect.AddToTextView(TextView textView)
-		{
-			OnAddToTextView(textView);
-		}
+        void ITextViewConnect.AddToTextView(TextView textView)
+        {
+            OnAddToTextView(textView);
+        }
 
-		void ITextViewConnect.RemoveFromTextView(TextView textView)
-		{
-			OnRemoveFromTextView(textView);
-		}
-	}
+        void ITextViewConnect.RemoveFromTextView(TextView textView)
+        {
+            OnRemoveFromTextView(textView);
+        }
+    }
 }

@@ -20,7 +20,7 @@ namespace Replay.Model
         public bool IsFocused
         {
             get => isFocused;
-            set => SetPropertyChanged(ref isFocused,  value);
+            set => SetPropertyChanged(ref isFocused, value);
         }
 
         // the input document of the current line editor.
@@ -28,28 +28,28 @@ namespace Replay.Model
         public TextDocument Document
         {
             get => document;
-            set => SetPropertyChanged(ref document,  value);
+            set => SetPropertyChanged(ref document, value);
         }
 
         string result;
         public string Result
         {
             get => result;
-            set => SetPropertyChanged(ref result,  value);
+            set => SetPropertyChanged(ref result, value);
         }
 
         string error;
         public string Error
         {
             get => error;
-            set => SetPropertyChanged(ref error,  value);
+            set => SetPropertyChanged(ref error, value);
         }
 
         string output;
         public string StandardOutput
         {
             get => output;
-            set => SetPropertyChanged(ref output,  value);
+            set => SetPropertyChanged(ref output, value);
         }
 
         public void SetResult(LineEvaluationResult output)

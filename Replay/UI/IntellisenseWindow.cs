@@ -59,7 +59,7 @@ namespace Replay.UI
         {
             base.OnKeyDown(e);
 
-            if(e.Key == Key.OemPeriod)
+            if (e.Key == Key.OemPeriod)
             {
                 // while autocompleting, the user typed a period. This will trigger a new completion window, so this old one should close
                 this.Hide();
@@ -71,8 +71,8 @@ namespace Replay.UI
             var matches = this.CompletionList.CompletionData
                 .Where(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase))
                 .ToList();
-            
-            if(!matches.Any() || (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCultureIgnoreCase)))
+
+            if (!matches.Any() || (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCultureIgnoreCase)))
             {
                 this.Hide();
             }
@@ -84,20 +84,9 @@ namespace Replay.UI
     /// </summary>
     class RoslynCompletionSuggestion : ICompletionData
     {
-        private readonly int startOffset;
-        private readonly int endOffset;
-        private Func<string, string, string> completeText;
-
         public RoslynCompletionSuggestion(ReplCompletion completion)
         {
             Completion = completion;
-        }
-
-        public RoslynCompletionSuggestion(ReplCompletion completion, int startOffset, int endOffset)
-        {
-            this.Completion = completion;
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
         }
 
         public ImageSource Image => null;

@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Replay.Model;
+using System.Threading.Tasks;
 
 namespace Replay.Services.CommandHandlers
 {
+    /// <summary>
+    /// An <see cref="ICommandHandler" /> for evaluating code.
+    /// This command handler runs last and handles anything that can't be handled by other command handlers.
+    /// </summary>
     class EvaluationCommandHandler : ICommandHandler
     {
         private readonly ScriptEvaluator scriptEvaluator;
@@ -26,7 +27,7 @@ namespace Replay.Services.CommandHandlers
         {
             // bail out if it's not a complete statement, but first try automatic completions
             var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync(text);
-            if(!success)
+            if (!success)
             {
                 return LineEvaluationResult.IncompleteInput;
             }

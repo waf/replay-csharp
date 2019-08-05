@@ -1,10 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Completion;
-using Replay.Model;
+﻿using Replay.Model;
 using Replay.Services.CommandHandlers;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -22,7 +19,7 @@ namespace Replay.Services
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
-        private ICommandHandler[] commandHandlers;
+        private IReadOnlyCollection<ICommandHandler> commandHandlers;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
@@ -45,7 +42,8 @@ namespace Replay.Services
 
                 this.commandHandlers = new ICommandHandler[]
                 {
-                    new AssemblyReferenceCommand(scriptEvaluator, workspaceManager),
+                    new ExitCommandHandler(),
+                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager),
                     new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller()),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
                 };
@@ -55,23 +53,23 @@ namespace Replay.Services
         public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(int lineId, string code, int caretIndex)
         {
             await initialization;
-            ReplSubmission replSubmission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
-            return await this.codeCompleter.Complete(replSubmission, caretIndex);
+            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
+            return await codeCompleter.Complete(submission, caretIndex);
         }
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
             await initialization;
             var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
-            return await this.syntaxHighlighter.HighlightAsync(submission);
+            return await syntaxHighlighter.HighlightAsync(submission);
         }
 
-        public async Task<LineEvaluationResult> EvaluateAsync(int id, string text, IReplLogger logger)
+        public async Task<LineEvaluationResult> EvaluateAsync(int lineId, string code, IReplLogger logger)
         {
             await initialization;
             return await commandHandlers
-                .First(handler => handler.CanHandle(text))
-                .HandleAsync(id, text, logger);
+                .First(handler => handler.CanHandle(code))
+                .HandleAsync(lineId, code, logger);
         }
     }
 }

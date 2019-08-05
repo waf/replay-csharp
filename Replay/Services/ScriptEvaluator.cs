@@ -1,14 +1,12 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
-using System;
-using System.Threading.Tasks;
+﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
-using Microsoft.CodeAnalysis;
+using System;
 using System.Linq;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Scripting.Hosting;
-using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Replay.Services
 {
@@ -18,17 +16,14 @@ namespace Replay.Services
     public class ScriptEvaluator
     {
         private ScriptOptions compilationOptions;
-        private readonly InteractiveAssemblyLoader assemblyLoader;
         private ScriptState<object> state;
         public readonly CSharpParseOptions parseOptions;
-            
+
         public ScriptEvaluator()
         {
             this.compilationOptions = ScriptOptions.Default
                 .WithReferences(DefaultAssemblies.Assemblies.Value)
                 .WithImports(DefaultAssemblies.DefaultUsings);
-
-            this.assemblyLoader = new InteractiveAssemblyLoader();
 
             this.parseOptions = new CSharpParseOptions(LanguageVersion.Latest, kind: SourceCodeKind.Script);
         }
@@ -74,7 +69,7 @@ namespace Replay.Services
                 return new ScriptEvaluationResult();
             }
 
-            using(var stdout = new ConsoleOutputWriter())
+            using (var stdout = new ConsoleOutputWriter())
             {
                 var evaluated = await EvaluateCapturingError(text);
                 return new ScriptEvaluationResult
@@ -88,14 +83,6 @@ namespace Replay.Services
 
         public async Task AddReferences(params MetadataReference[] assemblies)
         {
-            /*
-            var assemblies = assemblyPaths.Select(Assembly.LoadFile).ToArray();
-            foreach (var assembly in assemblies)
-            {
-                assemblyLoader.RegisterDependency(assemblyPaths[0].Properties.al)
-                assemblyLoader.RegisterDependency(assembly);
-            }
-            */
             compilationOptions = compilationOptions.AddReferences(assemblies);
             state = await state.ContinueWithAsync(null, compilationOptions);
         }
@@ -105,7 +92,7 @@ namespace Replay.Services
             try
             {
                 state = state == null
-                    ? await CSharpScript.Create(text, compilationOptions, null, assemblyLoader).RunAsync()
+                    ? await CSharpScript.Create(text, compilationOptions).RunAsync()
                     : await state.ContinueWithAsync(text);
 
                 return (state, state.Exception);
