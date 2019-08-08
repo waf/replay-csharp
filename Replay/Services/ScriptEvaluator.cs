@@ -15,13 +15,13 @@ namespace Replay.Services
     /// </summary>
     public class ScriptEvaluator
     {
-        private ScriptOptions compilationOptions;
+        private ScriptOptions scriptOptions;
         private ScriptState<object> state;
         public readonly CSharpParseOptions parseOptions;
 
         public ScriptEvaluator()
         {
-            this.compilationOptions = ScriptOptions.Default
+            this.scriptOptions = ScriptOptions.Default
                 .WithReferences(DefaultAssemblies.Assemblies.Value)
                 .WithImports(DefaultAssemblies.DefaultUsings);
 
@@ -83,24 +83,28 @@ namespace Replay.Services
 
         public async Task AddReferences(params MetadataReference[] assemblies)
         {
-            compilationOptions = compilationOptions.AddReferences(assemblies);
-            state = await state.ContinueWithAsync(null, compilationOptions);
+            this.scriptOptions = scriptOptions.AddReferences(assemblies);
+            this.state = await EvaluateStringWithStateAsync(string.Empty, this.state, this.scriptOptions);
         }
 
         private async Task<(ScriptState<object> Result, Exception Exception)> EvaluateCapturingError(string text)
         {
             try
             {
-                state = state == null
-                    ? await CSharpScript.Create(text, compilationOptions).RunAsync()
-                    : await state.ContinueWithAsync(text);
-
+                state = await EvaluateStringWithStateAsync(text, this.state, this.scriptOptions);
                 return (state, state.Exception);
             }
             catch (Exception exception)
             {
                 return (null, exception);
             }
+        }
+
+        private static Task<ScriptState<object>> EvaluateStringWithStateAsync(string text, ScriptState<object> state, ScriptOptions scriptOptions)
+        {
+            return state == null
+                ? CSharpScript.Create(text, scriptOptions).RunAsync()
+                : state.ContinueWithAsync(text);
         }
     }
 }
