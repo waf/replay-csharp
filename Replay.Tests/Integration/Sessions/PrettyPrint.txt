@@ -1,0 +1,16 @@
+﻿> var a = new[] { 1, 2, 3, 4 }
+result:
+stdout:
+error:
+> a
+result: int[4] { 1, 2, 3, 4 }
+stdout:
+error:
+> a.Where(i => i % 2 == 0)
+result: Enumerable.WhereArrayIterator<int> { 2, 4 }
+stdout:
+error:
+> new { Hello = "World" }
+result: <>f__AnonymousType0#4<string>(\{ Hello = "World" })
+stdout:
+error:

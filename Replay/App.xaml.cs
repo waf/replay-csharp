@@ -1,6 +1,8 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
 
+[assembly: InternalsVisibleTo("Replay.Tests")]
 namespace Replay
 {
     /// <summary>

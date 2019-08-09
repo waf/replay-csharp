@@ -1,0 +1,12 @@
+﻿> var x = 5;
+result:
+stdout:
+error:
+> x + 5
+result: 10
+stdout:
+error:
+> Math.Pow(x, 2)
+result: 25
+stdout:
+error:

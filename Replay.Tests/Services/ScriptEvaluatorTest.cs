@@ -1,13 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Replay.Model;
 using Replay.Services;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Replay.Tests
+namespace Replay.Tests.Services
 {
     public class ScriptEvaluatorTest
     {

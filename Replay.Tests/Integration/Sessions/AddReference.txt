@@ -1,0 +1,12 @@
+﻿> using NodaTime;
+result:
+stdout:
+error: (1,7): error CS0246: The type or namespace name 'NodaTime' could not be found (are you missing a using directive or an assembly reference?)
+> #r TestAssemblies/NodaTime.dll
+result:
+stdout:
+error:
+> using NodaTime;
+result:
+stdout:
+error:
