@@ -7,11 +7,11 @@ namespace Replay.Services
     /// Implementation of <see cref="NuGet.Common.ILogger" /> that is passed into the nuget API to collect
     /// nuget output. It forwards the output to our <see cref="IReplLogger" /> for display.
     /// </summary>
-    internal class NugetLogger : ILogger
+    internal class NugetErrorLogger : ILogger
     {
         private readonly IReplLogger logger;
 
-        public NugetLogger(IReplLogger logger)
+        public NugetErrorLogger(IReplLogger logger)
         {
             this.logger = logger;
         }
@@ -44,10 +44,10 @@ namespace Replay.Services
             return Task.CompletedTask;
         }
 
-        public void LogInformation(string data) => logger.LogOutput(data);
-        public void LogInformationSummary(string data) => logger.LogOutput(data);
         public void LogWarning(string data) => logger.LogOutput(data);
         public void LogError(string data) => logger.LogError(data);
+        public void LogInformation(string data) { /* Don't bother logging "info" output to the REPL */ }
+        public void LogInformationSummary(string data) => logger.LogOutput(data);
         public void LogDebug(string data) { /* Don't bother logging "debug" output to the REPL */ }
         public void LogMinimal(string data) { /* Don't bother logging "minimal" output to the REPL */ }
         public void LogVerbose(string data) { /* Don't bother logging "verbose" output to the REPL */ }

@@ -52,12 +52,12 @@ namespace Replay
         /// <returns></returns>
         private async Task ReadEvalPrintLoop(LineEditorViewModel line, bool stayOnCurrentLine)
         {
+            ClearPreviousOutput(line);
             // read
             string text = line.Document.Text;
 
             // eval
-            var logger = new Logger(line);
-            var result = await services.EvaluateAsync(line.Id, text, logger);
+            var result = await services.EvaluateAsync(line.Id, text, new Logger(line));
             if (result == LineEvaluationResult.IncompleteInput)
             {
                 line.Document.Text += Environment.NewLine;
@@ -81,10 +81,11 @@ namespace Replay
             }
         }
 
-        private static void Print(LineEditorViewModel lineEditor, LineEvaluationResult result)
-        {
+        private static void ClearPreviousOutput(LineEditorViewModel line) =>
+            line.StandardOutput = line.Error = line.Result = string.Empty;
+
+        private static void Print(LineEditorViewModel lineEditor, LineEvaluationResult result) =>
             lineEditor.SetResult(result);
-        }
 
         private void MoveToNextLine(LineEditorViewModel lineEditor)
         {

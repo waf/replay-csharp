@@ -27,13 +27,11 @@ namespace Replay.Services.CommandHandlers
         public async Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger)
         {
             string package = text.Substring(CommandPrefix.Length).Trim('"');
-            logger.LogOutput("Adding NuGet package " + package);
             var assemblies = (await nugetInstaller.Install(package, logger)).ToArray();
             if (assemblies.Any())
             {
                 await scriptEvaluator.AddReferences(assemblies);
                 await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, string.Empty, assemblies);
-                logger.LogOutput("Added NuGet package successfully");
             }
             return LineEvaluationResult.NoOutput;
         }

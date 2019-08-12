@@ -51,13 +51,16 @@ namespace Replay.Services
 
         public async Task<IReadOnlyCollection<MetadataReference>> Install(string packageSearchTerm, IReplLogger logger)
         {
-            var nugetLogger = new NugetLogger(logger);
+            var nugetLogger = new NugetErrorLogger(logger);
+            logger.LogOutput($"Searching for {packageSearchTerm}");
             var package = await FindPackageAsync(packageSearchTerm, repositories, nugetLogger);
             if (package == null)
             {
                 logger.LogError($"Could not find package '{packageSearchTerm}'");
                 return Array.Empty<MetadataReference>();
             }
+            logger.LogOutput("Found " + Display(package));
+            logger.LogOutput("Determining dependences...");
 
             var dependencies = await GetPackageDependencies(package, nugetFramework, nugetCache, nugetLogger, repositories);
             var packagesToInstall = ResolvePackages(package, dependencies, nugetLogger);
@@ -73,7 +76,7 @@ namespace Replay.Services
                     var installedPath = packagePathResolver.GetInstalledPath(packageToInstall);
                     PackageReaderBase packageReader = installedPath == null
                         ? await DownloadPackage(packageToInstall, packageExtractionContext, nugetLogger)
-                        : new PackageFolderReader(installedPath);
+                        : LocalPackageReader(packageToInstall, installedPath, nugetLogger);
 
                     var allResources = await Task.WhenAll(
                         packageReader.GetLibItemsAsync(CancellationToken.None),
@@ -81,10 +84,14 @@ namespace Replay.Services
                     );
 
                     installedPath = installedPath ?? packagePathResolver.GetInstalledPath(packageToInstall);
-                    return FilterByFramework(frameworkReducer, allResources.SelectMany(x => x).ToList())
+                    var references = FilterByFramework(frameworkReducer, allResources.SelectMany(x => x).ToList())
                         .Where(item => item.EndsWith(".dll"))
                         .Select(item => MetadataReference.CreateFromFile(Path.Combine(installedPath, item)))
                         .ToList();
+
+                    logger.LogOutput("Installation complete for " + Display(packageToInstall));
+
+                    return references;
                 })
             );
 
@@ -93,10 +100,24 @@ namespace Replay.Services
                 .ToList();
         }
 
+        private static PackageFolderReader LocalPackageReader(SourcePackageDependencyInfo packageToInstall, string installedPath, NugetErrorLogger nugetLogger)
+        {
+            nugetLogger.LogInformationSummary($"Using cached package {Display(packageToInstall)}");
+            return new PackageFolderReader(installedPath);
+        }
+
+        private static string Display(PackageIdentity package)
+        {
+            string version = package.HasVersion
+                ? " v" + package.Version.ToFullString()
+                : "";
+            return package.Id + version;
+        }
+
         private static async Task<PackageIdentity> FindPackageAsync(
             string packageSearch,
             IReadOnlyCollection<SourceRepository> repositories,
-            NugetLogger nugetLogger)
+            ILogger nugetLogger)
         {
             var results = await Task.WhenAll(repositories
                 .Select(async repository =>
@@ -131,26 +152,33 @@ namespace Replay.Services
             SourceCacheContext cacheContext,
             ILogger logger,
             IReadOnlyCollection<SourceRepository> repositories,
-            ConcurrentDictionary<SourcePackageDependencyInfo, byte> dependencies)
+            ConcurrentDictionary<SourcePackageDependencyInfo, byte> dependencies,
+            int recursionLevel = 0)
         {
             if (dependencies.Keys.Contains(package)) return;
 
-            await Task.WhenAll(repositories.Select(async repository =>
+            foreach (var repository in repositories)
             {
                 var dependencyInfoResource = await repository.GetResourceAsync<DependencyInfoResource>();
                 var dependencyInfo = await dependencyInfoResource.ResolvePackage(
                     package, framework, cacheContext, logger, CancellationToken.None);
 
-                if (dependencyInfo == null) return;
+                if (dependencyInfo == null) continue;
+
+                logger.LogInformationSummary(
+                    (recursionLevel == 0 ? "" : new string('│', recursionLevel - 1))
+                    + (recursionLevel == 0 ? Display(package) : $"├ {Display(package)}"));
 
                 dependencies[dependencyInfo] = 1;
 
                 await Task.WhenAll(dependencyInfo.Dependencies.Select(dependency =>
                     GetPackageDependencies(
                         new PackageIdentity(dependency.Id, dependency.VersionRange.MinVersion),
-                        framework, cacheContext, logger, repositories, dependencies)
+                        framework, cacheContext, logger, new[] { dependencyInfo.Source }, dependencies, recursionLevel + 1)
                 ));
-            }));
+
+                return;
+            }
         }
 
         private IEnumerable<SourcePackageDependencyInfo> ResolvePackages(
@@ -180,6 +208,7 @@ namespace Replay.Services
             PackageExtractionContext packageExtractionContext,
             ILogger nugetLogger)
         {
+            nugetLogger.LogInformationSummary($"Downloading {Display(packageToInstall)}");
             var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(CancellationToken.None);
             using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                 packageToInstall,
@@ -187,6 +216,7 @@ namespace Replay.Services
                 globalPackageFolder,
                 nugetLogger, CancellationToken.None))
             {
+                nugetLogger.LogInformationSummary($"Extracting {Display(packageToInstall)}");
                 await PackageExtractor.ExtractPackageAsync(
                     downloadResult.PackageSource,
                     downloadResult.PackageStream,
