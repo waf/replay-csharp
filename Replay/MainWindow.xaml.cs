@@ -9,6 +9,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -144,6 +145,9 @@ namespace Replay
                 case ReplCommand.ReevaluateCurrentLine:
                     await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
                     return;
+                case ReplCommand.DuplicatePreviousLine:
+                    DuplicatePreviousLine(lineEditor);
+                    return;
                 case ReplCommand.OpenIntellisense:
                     await CompleteCode(lineEditor);
                     return;
@@ -163,6 +167,15 @@ namespace Replay
                     e.Handled = false;
                     break;
             }
+        }
+
+        private void DuplicatePreviousLine(TextEditor lineEditorViewModel)
+        {
+            if (Model.FocusIndex == 0)
+                return;
+            var previousLine = Model.Entries[Model.FocusIndex - 1];
+
+            lineEditorViewModel.Document.Text = previousLine.Document.Text;
         }
 
         private async void TextEditor_PreviewKeyUp(TextEditor lineEditor, KeyEventArgs e)
@@ -227,6 +240,24 @@ namespace Replay
             }
         }
 
+        private void Scroll_ScrollChanged(ScrollViewer sender, ScrollChangedEventArgs e)
+        {
+            bool shouldAutoScrollToBottom = sender.Tag == null || (bool)sender.Tag;
+            // set autoscroll mode when user scrolls, and store it in the ScrollViewer's Tag.
+            if (e.ExtentHeightChange == 0)
+            {
+                sender.Tag = 
+                    shouldAutoScrollToBottom =
+                        sender.VerticalOffset == sender.ScrollableHeight;
+            }
+
+            // autoscroll to bottom
+            if (shouldAutoScrollToBottom && e.ExtentHeightChange != 0)
+            {
+                sender.ScrollToEnd();
+            }
+        }
+
         /// <summary>
         /// Roslyn can be a little bit slow to warm up, which can cause lag when the
         /// user first starts typing / evaluating code. Do the warm up in a background
@@ -251,6 +282,7 @@ namespace Replay
         private void TextEditor_PreviewKeyDown(object sender, KeyEventArgs e) => TextEditor_PreviewKeyDown((TextEditor)sender, e);
         private void TextArea_MouseWheel(object sender, MouseWheelEventArgs e) => TextArea_MouseWheel((TextArea)sender, e);
         private void Window_PreviewMouseWheel(object sender, MouseWheelEventArgs e) => Window_PreviewMouseWheel((Window)sender, e);
+        private void Scroll_ScrollChanged(object sender, ScrollChangedEventArgs e) => Scroll_ScrollChanged((ScrollViewer)sender, e);
         #endregion
     }
 }

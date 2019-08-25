@@ -9,6 +9,7 @@ namespace Replay.Services
     {
         EvaluateCurrentLine,
         ReevaluateCurrentLine,
+        DuplicatePreviousLine,
         OpenIntellisense,
         GoToFirstLine,
         GoToLastLine,
@@ -30,6 +31,7 @@ namespace Replay.Services
             return
                 key.Is(Enter) ? EvaluateCurrentLine :
                 key.Is(Control, Enter) ? ReevaluateCurrentLine :
+                key.Is(Alt, Up) ? DuplicatePreviousLine :
                 key.Is(Control, Space) || key.Is(Tab) ? OpenIntellisense :
                 key.Is(PageUp) || key.Is(Control, Up) ? GoToFirstLine :
                 key.Is(PageDown) || key.Is(Control, Down) ? GoToLastLine :
@@ -42,7 +44,11 @@ namespace Replay.Services
             args.Key == test && Keyboard.Modifiers == ModifierKeys.None;
 
         private static bool Is(this KeyEventArgs args, ModifierKeys modifier, Key test) =>
-            args.Key == test && Keyboard.Modifiers.HasFlag(modifier);
+            Keyboard.Modifiers.HasFlag(modifier)
+            && (
+                args.Key == test
+                || (args.SystemKey == test && args.Key == Key.System)
+            );
     }
 
 }
