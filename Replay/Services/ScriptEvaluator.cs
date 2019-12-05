@@ -104,7 +104,7 @@ namespace Replay.Services
         {
             return state == null
                 ? CSharpScript.Create(text, scriptOptions).RunAsync()
-                : state.ContinueWithAsync(text);
+                : state.ContinueWithAsync(text, scriptOptions);
         }
     }
 }
