@@ -1,14 +1,8 @@
 ﻿using Replay.Model;
 using System;
 
-namespace Replay
+namespace Replay.Logging
 {
-    internal interface IReplLogger
-    {
-        void LogOutput(string output);
-        void LogError(string error);
-    }
-
     internal class Logger : IReplLogger
     {
         private LineEditorViewModel line;
@@ -22,11 +16,5 @@ namespace Replay
             line.StandardOutput += output + Environment.NewLine;
         public void LogError(string error) =>
             line.Error += error + Environment.NewLine;
-    }
-
-    internal class NullLogger : IReplLogger
-    {
-        public void LogError(string error) { }
-        public void LogOutput(string output) { }
     }
 }

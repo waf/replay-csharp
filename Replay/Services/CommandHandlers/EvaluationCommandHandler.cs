@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Replay.Logging;
 using Replay.Model;
 using System.Threading.Tasks;
 

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
 using Replay.Model;
+using Replay.Services.AssemblyLoading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,14 +23,16 @@ namespace Replay.Services
         private readonly IDictionary<int, ReplSubmission> EditorToSubmission = new ConcurrentDictionary<int, ReplSubmission>();
         private readonly AdhocWorkspace workspace;
         private readonly CSharpCompilationOptions compilationOptions;
+        private readonly DefaultAssemblies defaultAssemblies;
 
-        public WorkspaceManager()
+        public WorkspaceManager(DefaultAssemblies defaultAssemblies)
         {
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
             this.workspace = new AdhocWorkspace(host);
+            this.defaultAssemblies = defaultAssemblies;
             this.compilationOptions = new CSharpCompilationOptions(
                OutputKind.DynamicallyLinkedLibrary,
-               usings: DefaultAssemblies.DefaultUsings
+               usings: defaultAssemblies.DefaultUsings
             );
         }
 
@@ -75,7 +78,7 @@ namespace Replay.Services
                     isSubmission: true
                 )
                 .WithProjectReferences(previousSubmission)
-                .WithMetadataReferences(DefaultAssemblies.Assemblies.Value.Concat(assemblyReferences))
+                .WithMetadataReferences(defaultAssemblies.Assemblies.Value.Concat(assemblyReferences))
                 .WithCompilationOptions(compilationOptions);
             var project = workspace.AddProject(projectInfo);
             return project;

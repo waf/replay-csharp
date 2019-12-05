@@ -1,7 +1,8 @@
 ﻿using NuGet.Common;
+using Replay.Logging;
 using System.Threading.Tasks;
 
-namespace Replay.Services
+namespace Replay.Services.Nuget
 {
     /// <summary>
     /// Implementation of <see cref="NuGet.Common.ILogger" /> that is passed into the nuget API to collect

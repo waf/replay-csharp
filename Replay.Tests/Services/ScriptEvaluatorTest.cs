@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
 using Replay.Services;
+using Replay.Services.AssemblyLoading;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -12,7 +14,14 @@ namespace Replay.Tests.Services
 
         public ScriptEvaluatorTest()
         {
-            this.scriptEvaluator = new ScriptEvaluator();
+            this.scriptEvaluator = new ScriptEvaluator(
+                new DefaultAssemblies(
+                    new DotNetAssemblyLocator(
+                        () => new Process(),
+                        new FileIO()
+                    )
+                )
+            );
         }
 
         [Fact]

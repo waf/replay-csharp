@@ -1,7 +1,11 @@
-﻿using Replay.Model;
+﻿using Replay.Logging;
+using Replay.Model;
+using Replay.Services.AssemblyLoading;
 using Replay.Services.CommandHandlers;
+using Replay.Services.Nuget;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,15 +40,17 @@ namespace Replay.Services
                     syntaxHighlighter.ForegroundColor
                 ));
 
-                this.scriptEvaluator = new ScriptEvaluator();
+                var io = new FileIO();
+                var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
                 this.codeCompleter = new CodeCompleter();
-                this.workspaceManager = new WorkspaceManager();
+                this.scriptEvaluator = new ScriptEvaluator(assemblies);
+                this.workspaceManager = new WorkspaceManager(assemblies);
 
                 this.commandHandlers = new ICommandHandler[]
                 {
                     new ExitCommandHandler(),
                     new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager),
-                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller()),
+                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
                 };
             });

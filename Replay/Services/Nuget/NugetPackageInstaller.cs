@@ -8,6 +8,8 @@ using NuGet.Packaging.Signing;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
+using Replay.Logging;
+using Replay.Services.AssemblyLoading;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -16,7 +18,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Replay.Services
+namespace Replay.Services.Nuget
 {
     /// <summary>
     /// Downloads nuget packages
@@ -34,16 +36,18 @@ namespace Replay.Services
         private readonly string globalPackageFolder;
         private readonly FrameworkReducer frameworkReducer;
         private readonly ClientPolicyContext clientPolicy;
+        private readonly FileIO io;
 
-        public NugetPackageInstaller()
+        public NugetPackageInstaller(FileIO io)
         {
             var nugetSettings = Settings.LoadDefaultSettings(root: null);
-            var sourceRepositoryProvider = new SourceRepositoryProvider(nugetSettings, Repository.Provider.GetCoreV3());
+            var sourceRepositoryProvider = new SourceRepositoryProvider(new PackageSourceProvider(nugetSettings), Repository.Provider.GetCoreV3());
 
+            this.io = io;
             this.nugetFramework = NuGetFramework.ParseFolder("netstandard2.0");
             this.repositories = sourceRepositoryProvider.GetRepositories().ToList();
             this.nugetCache = new SourceCacheContext();
-            this.packagePathResolver = new PackagePathResolver(Path.GetFullPath("packages"));
+            this.packagePathResolver = new PackagePathResolver(io.GetFullFileSystemPath("packages"));
             this.globalPackageFolder = SettingsUtility.GetGlobalPackagesFolder(nugetSettings);
             this.frameworkReducer = new FrameworkReducer();
             this.clientPolicy = ClientPolicyContext.GetClientPolicy(nugetSettings, NuGet.Common.NullLogger.Instance);
@@ -83,10 +87,12 @@ namespace Replay.Services
                         packageReader.GetFrameworkItemsAsync(CancellationToken.None)
                     );
 
-                    installedPath = installedPath ?? packagePathResolver.GetInstalledPath(packageToInstall);
-                    var references = FilterByFramework(frameworkReducer, allResources.SelectMany(x => x).ToList())
-                        .Where(item => item.EndsWith(".dll"))
-                        .Select(item => MetadataReference.CreateFromFile(Path.Combine(installedPath, item)))
+                    installedPath ??= packagePathResolver.GetInstalledPath(packageToInstall);
+                    var references = DotNetAssemblyLocator.GroupDirectoryContentsIntoAssemblies(
+                            FilterByFramework(frameworkReducer, allResources.SelectMany(x => x).ToList())
+                            .Select(item => Path.Combine(installedPath, item))
+                        )
+                        .Select(assembly => io.CreateMetadataReferenceWithDocumentation(assembly))
                         .ToList();
 
                     logger.LogOutput("Installation complete for " + Display(packageToInstall));

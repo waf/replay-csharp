@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Replay.Services;
 using Replay.Model;
+using Replay.Logging;
 
 namespace Replay.Tests.Integration
 {

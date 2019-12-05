@@ -2,6 +2,7 @@
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.CodeAnalysis;
+using Replay.Logging;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
 using Replay.Model;
+using Replay.Services.AssemblyLoading;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,11 +20,11 @@ namespace Replay.Services
         private ScriptState<object> state;
         public readonly CSharpParseOptions parseOptions;
 
-        public ScriptEvaluator()
+        public ScriptEvaluator(DefaultAssemblies defaultAssemblies)
         {
             this.scriptOptions = ScriptOptions.Default
-                .WithReferences(DefaultAssemblies.Assemblies.Value)
-                .WithImports(DefaultAssemblies.DefaultUsings);
+                .WithReferences(defaultAssemblies.Assemblies.Value)
+                .WithImports(defaultAssemblies.DefaultUsings);
 
             this.parseOptions = new CSharpParseOptions(LanguageVersion.Latest, kind: SourceCodeKind.Script);
         }

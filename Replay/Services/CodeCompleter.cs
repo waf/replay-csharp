@@ -48,7 +48,10 @@ namespace Replay.Services
             {
                 return null;
             }
-            return info.Sections.First().Text;
+            return string.Join(
+                Environment.NewLine,
+                info.Sections.Select(section => section.Text)
+            );
         }
     }
     public class ReplCompletion

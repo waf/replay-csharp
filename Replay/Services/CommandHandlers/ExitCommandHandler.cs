@@ -1,4 +1,5 @@
-﻿using Replay.Model;
+﻿using Replay.Logging;
+using Replay.Model;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
