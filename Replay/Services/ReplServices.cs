@@ -74,9 +74,16 @@ namespace Replay.Services
         public async Task<LineEvaluationResult> EvaluateAsync(int lineId, string code, IReplLogger logger)
         {
             await initialization;
-            return await commandHandlers
-                .First(handler => handler.CanHandle(code))
-                .HandleAsync(lineId, code, logger);
+            try
+            {
+                return await commandHandlers
+                    .First(handler => handler.CanHandle(code))
+                    .HandleAsync(lineId, code, logger);
+            }
+            catch (Exception ex)
+            {
+                return new LineEvaluationResult(code, null, "Error: " + ex.Message, null);
+            }
         }
     }
 }
