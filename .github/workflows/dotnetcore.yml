@@ -1,0 +1,29 @@
+name: .NET Core
+
+on: [release]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+    - name: Dotnet Publish
+      run: dotnet publish --runtime win-x64 --configuration Release
+    - name: Create ZIP
+      shell: pwsh
+      run: |
+        cd Replay\bin\release\netcoreapp3.1\win-x64\
+        mv publish Replay
+        Compress-Archive -Path .\Replay -DestinationPath Replay-win-x64.zip
+    - name: Upload to Existing Release
+      uses: Shopify/upload-to-release@1.0.0
+      with:
+        name: Replay-win-x64.zip
+        path: Replay\bin\release\netcoreapp3.1\win-x64\Replay-win-x64.zip
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
