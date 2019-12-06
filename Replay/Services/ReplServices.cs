@@ -33,7 +33,7 @@ namespace Replay.Services
             // run it in a background thread so the UI can render immediately.
             initialization = Task.Run(() =>
             {
-                this.syntaxHighlighter = new SyntaxHighlighter("Themes/dracula.vssettings");
+                this.syntaxHighlighter = new SyntaxHighlighter("Themes/theme.vssettings");
                 UserConfigurationLoaded?.Invoke(this, new UserConfiguration
                 (
                     syntaxHighlighter.BackgroundColor,

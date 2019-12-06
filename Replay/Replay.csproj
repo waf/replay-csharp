@@ -44,9 +44,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Themes\dracula.vssettings">
+    <Content Include="Themes\*.vssettings">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
