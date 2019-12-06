@@ -19,7 +19,10 @@ A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval
 
 ## Running
 
-Requires .NET Core 3 on Windows (due to WPF).
+Requires .NET Core 3.1 on Windows (due to WPF). Prebuilt binaries can be
+downloaded from the [Releases page](https://github.com/waf/replay-csharp/releases).
 
-- Prebuilt binaries can be downloaded from the `dist` directory.
-- To build from source, clone the repository and run `dotnet build -c Release`
+## Building from source
+
+- To build from source, clone the repository and run `dotnet build`
+- Optionally, build a AOT-compiled version using `dotnet publish -r win-x64 -c Release`
