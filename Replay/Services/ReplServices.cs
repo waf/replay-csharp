@@ -49,6 +49,7 @@ namespace Replay.Services
                 this.commandHandlers = new ICommandHandler[]
                 {
                     new ExitCommandHandler(),
+                    new HelpCommandHandler(),
                     new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager),
                     new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
