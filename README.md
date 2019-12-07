@@ -3,7 +3,7 @@
 A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for C#.
 
 <p align="center">
-<img src="https://github.com/waf/replay-csharp/raw/master/doc/replay.gif" style="max-width:100%;" width="600px" align="middle">
+<img src="https://github.com/waf/replay-csharp/raw/master/resource/replay.gif" style="max-width:100%;" width="600px" align="middle">
 </p>
 
 ## Features
@@ -28,3 +28,7 @@ A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval
 
 - To build from source, clone the repository and run `dotnet build`
 - Optionally, build a AOT-compiled version using `dotnet publish -r win-x64 -c Release`
+
+## Attribution
+
+- Application logo by 588ku from [pngtree.com](https://pngtree.com/).
