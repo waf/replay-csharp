@@ -7,7 +7,7 @@ using static System.Windows.Input.ModifierKeys;
 
 namespace Replay.Services
 {
-    enum ReplCommand
+    public enum ReplCommand
     {
         EvaluateCurrentLine,
         ReevaluateCurrentLine,
@@ -25,7 +25,7 @@ namespace Replay.Services
     /// <summary>
     /// Maps keyboard keys to commands in the REPL
     /// </summary>
-    static class KeyboardShortcuts
+    public static class KeyboardShortcuts
     {
         /// <summary>
         /// Given a key event, map it to a command in the REPL, or null if
@@ -46,8 +46,8 @@ namespace Replay.Services
                 (Control, Down) => GoToLastLine,
                 Up => LineUp,
                 Down => LineDown,
-                (Control, L) => ClearScreen,
                 (Control, S) => SaveSession,
+                (Control, L) => ClearScreen,
                 _ => null
             };
 
@@ -60,8 +60,8 @@ namespace Replay.Services
             @"Ctrl-Space or Tab – Open intellisense.",
             @"PageUp or Ctrl-Up – Go to the first line of the session.",
             @"PageDown or Ctrl-Down – Go to the last line of the session.",
+            @"Ctrl-S – Save your session (as a C# or Markdown file).",
             @"Ctrl-L – Clear the screen.",
-            @"Ctrl-S – Save your session (C# or Markdown).",
         };
 
         private static object GetPressedKey(KeyEventArgs keyEvent) =>

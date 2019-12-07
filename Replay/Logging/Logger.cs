@@ -1,4 +1,5 @@
 ﻿using Replay.Model;
+using Replay.Services.Logging;
 using System;
 
 namespace Replay.Logging

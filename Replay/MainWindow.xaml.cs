@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Replay.Logging;
 using Replay.Model;
 using Replay.Services;
+using Replay.Services.Model;
 using Replay.UI;
 using System;
 using System.Linq;

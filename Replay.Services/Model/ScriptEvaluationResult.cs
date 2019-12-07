@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.Scripting;
 using System;
 
-namespace Replay.Model
+namespace Replay.Services.Model
 {
     public class ScriptEvaluationResult
     {

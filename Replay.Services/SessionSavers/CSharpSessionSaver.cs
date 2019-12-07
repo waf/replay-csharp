@@ -12,6 +12,10 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Replay.Services.SessionSavers
 {
+    /// <summary>
+    /// Saves the user's session as a C# file, with
+    /// the REPL lines embedded in a main method.
+    /// </summary>
     class CSharpSessionSaver : ISessionSaver
     {
         private readonly FileIO io;

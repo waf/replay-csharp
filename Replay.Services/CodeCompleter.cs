@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis.Completion;
 using Microsoft.CodeAnalysis.QuickInfo;
 using Microsoft.CodeAnalysis.Text;
-using Replay.Model;
+using Replay.Services.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;

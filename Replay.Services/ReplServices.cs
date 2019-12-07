@@ -1,13 +1,12 @@
-﻿using Replay.Logging;
-using Replay.Model;
-using Replay.Services.AssemblyLoading;
+﻿using Replay.Services.AssemblyLoading;
 using Replay.Services.CommandHandlers;
+using Replay.Services.Logging;
+using Replay.Services.Model;
 using Replay.Services.Nuget;
 using Replay.Services.SessionSavers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,7 +17,7 @@ namespace Replay.Services
     /// Manages background initialization for all services in a way that doesn't increase startup time.
     /// This is a stateful service (due to the contained WorkspaceManager) and is one-per-window.
     /// </summary>
-    internal class ReplServices
+    public class ReplServices
     {
         private readonly Task initialization;
         private SyntaxHighlighter syntaxHighlighter;

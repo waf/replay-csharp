@@ -1,6 +1,6 @@
-﻿namespace Replay.Model
+﻿namespace Replay.Services.Model
 {
-    internal class LineEvaluationResult
+    public class LineEvaluationResult
     {
         public string FormattedInput { get; }
         public string Result { get; }
@@ -14,10 +14,10 @@
 
         public LineEvaluationResult(string formattedInput, string result, string error, string standardOutput)
         {
-            this.FormattedInput = formattedInput;
-            this.Result = result;
-            this.Exception = error;
-            this.StandardOutput = standardOutput;
+            FormattedInput = formattedInput;
+            Result = result;
+            Exception = error;
+            StandardOutput = standardOutput;
         }
     }
 }

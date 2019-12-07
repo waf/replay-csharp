@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 using Replay.Services;
-using Replay.Model;
 using Replay.Logging;
+using Replay.Services.Model;
 
 namespace Replay.Tests.Integration
 {

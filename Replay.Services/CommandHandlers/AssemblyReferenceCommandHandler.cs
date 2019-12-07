@@ -1,7 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
-using Replay.Logging;
-using Replay.Model;
-using Replay.Services.AssemblyLoading;
+﻿using Replay.Services.AssemblyLoading;
+using Replay.Services.Logging;
+using Replay.Services.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;

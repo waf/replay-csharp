@@ -1,5 +1,5 @@
 ﻿using NuGet.Common;
-using Replay.Logging;
+using Replay.Services.Logging;
 using System.Threading.Tasks;
 
 namespace Replay.Services.Nuget

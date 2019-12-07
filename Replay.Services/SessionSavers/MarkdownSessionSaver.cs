@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace Replay.Services.SessionSavers
 {
+    /// <summary>
+    /// Saves the user's session as a markdown file, with the REPL lines
+    /// as code blocks, and leading comments as plain text.
+    /// </summary>
     class MarkdownSessionSaver : ISessionSaver
     {
         private readonly FileIO io;
@@ -94,7 +98,8 @@ namespace Replay.Services.SessionSavers
             yield return "```";
         }
 
-        private static bool IsComment(string line) => line.StartsWith("//");
+        private static bool IsComment(string line) =>
+            line.StartsWith("//"); // this doesn't handle /* block comments */, that might be ok?
     }
 
     public class LineToSave

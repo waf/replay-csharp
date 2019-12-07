@@ -1,4 +1,6 @@
-﻿namespace Replay.Logging
+﻿using Replay.Services.Logging;
+
+namespace Replay.Logging
 {
     /// <summary>
     /// Used in the rare case where we don't want to show the user

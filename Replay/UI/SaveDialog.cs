@@ -29,14 +29,23 @@ namespace Replay.UI
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                string chosenFormat = supportedSaveFormats[saveFileDialog.FilterIndex - 1]; // 1-based index? really?
-                var linesToSave = lines
-                    .Select(line => new LineToSave(line.Document.Text, line.Result, line.StandardOutput, line.Error))
-                    .ToList();
-                var message = await replServices.SaveSessionAsync(saveFileDialog.FileName, chosenFormat, linesToSave);
+                var message = await replServices.SaveSessionAsync(
+                    filename: saveFileDialog.FileName,
+                    fileFormat: supportedSaveFormats[saveFileDialog.FilterIndex - 1], // 1-based index? really?
+                    linesToSave: ConvertToSaveModel(lines)
+                );
 
                 MessageBox.Show(message);
             }
         }
+
+        private static IReadOnlyCollection<LineToSave> ConvertToSaveModel(IEnumerable<LineEditorViewModel> lines) => lines
+            .Select(line => new LineToSave(
+                line.Document.Text,
+                line.Result,
+                line.StandardOutput,
+                line.Error)
+            )
+            .ToList();
     }
 }

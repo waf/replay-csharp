@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 
-namespace Replay.Model
+namespace Replay.Services.Model
 {
     /// <summary>
     /// A submission of a code to the REPL.

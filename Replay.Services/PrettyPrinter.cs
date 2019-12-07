@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting.Hosting;
 using Microsoft.CodeAnalysis.Formatting;
-using Replay.Model;
+using Replay.Services.Model;
 using System.Threading.Tasks;
 
 namespace Replay.Services

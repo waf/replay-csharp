@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
-using Replay.Logging;
-using Replay.Model;
+using Replay.Services.Logging;
+using Replay.Services.Model;
 using System.Threading.Tasks;
 
 namespace Replay.Services.CommandHandlers
