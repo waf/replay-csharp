@@ -1,4 +1,4 @@
-# replay-csharp
+# <img align="left" width="46" height="46" src="https://raw.githubusercontent.com/waf/replay-csharp/master/resource/logo_medium.png" />Replay
 
 A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for C#.
 
