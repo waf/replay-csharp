@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using static Replay.Services.ReplCommand;
 using static System.Windows.Input.Key;
@@ -20,6 +19,7 @@ namespace Replay.Services
         LineDown,
         LineUp,
         ClearScreen,
+        SaveSession,
     }
 
     /// <summary>
@@ -47,6 +47,7 @@ namespace Replay.Services
                 Up => LineUp,
                 Down => LineDown,
                 (Control, L) => ClearScreen,
+                (Control, S) => SaveSession,
                 _ => null
             };
 
@@ -60,6 +61,7 @@ namespace Replay.Services
             @"PageUp or Ctrl-Up – Go to the first line of the session.",
             @"PageDown or Ctrl-Down – Go to the last line of the session.",
             @"Ctrl-L – Clear the screen.",
+            @"Ctrl-S – Save your session (C# or Markdown).",
         };
 
         private static object GetPressedKey(KeyEventArgs keyEvent) =>

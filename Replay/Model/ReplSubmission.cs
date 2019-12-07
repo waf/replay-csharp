@@ -9,7 +9,13 @@ namespace Replay.Model
     /// </summary>
     public class ReplSubmission
     {
-        public Document Document { get; set; }
-        public string Code { get; set; }
+        public ReplSubmission(string code, Document document)
+        {
+            Code = code;
+            Document = document;
+        }
+
+        public string Code { get; }
+        public Document Document { get; }
     }
 }

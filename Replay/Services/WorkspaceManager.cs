@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
@@ -9,7 +10,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Replay.Services
 {
@@ -20,7 +20,7 @@ namespace Replay.Services
     /// </summary>
     class WorkspaceManager
     {
-        private readonly IDictionary<int, ReplSubmission> EditorToSubmission = new ConcurrentDictionary<int, ReplSubmission>();
+        private readonly ConcurrentDictionary<int, ReplSubmission> EditorToSubmission = new ConcurrentDictionary<int, ReplSubmission>();
         private readonly AdhocWorkspace workspace;
         private readonly CSharpCompilationOptions compilationOptions;
         private readonly DefaultAssemblies defaultAssemblies;
@@ -58,11 +58,7 @@ namespace Replay.Services
             Project project = CreateProject(name, projectReferences, assemblyReferences);
             Document document = CreateDocument(project, name, code);
 
-            return new ReplSubmission
-            {
-                Document = document,
-                Code = code
-            };
+            return new ReplSubmission(code, document);
         }
 
         private Project CreateProject(string name, ProjectReference[] previousSubmission, MetadataReference[] assemblyReferences)
@@ -115,11 +111,32 @@ namespace Replay.Services
             // document has changed, requery to get the new one
             var document = workspace.CurrentSolution.GetDocument(replSubmission.Document.Id);
 
-            return new ReplSubmission
-            {
-                Code = code,
-                Document = document
-            };
+            return new ReplSubmission(code, document);
         }
+
+        public SessionSnapshot GetHistoricalSnapshot()
+        {
+            static UsingDirectiveSyntax ParseUsing(string type) =>
+                SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(type)).NormalizeWhitespace();
+
+            var usings = this.compilationOptions
+                .Usings
+                .Select(ParseUsing)
+                .ToList();
+
+            return new SessionSnapshot(usings, this.EditorToSubmission);
+        }
+    }
+
+    public class SessionSnapshot
+    {
+        public SessionSnapshot(IReadOnlyCollection<UsingDirectiveSyntax> initialUsingDirectives, IReadOnlyDictionary<int, ReplSubmission> submissions)
+        {
+            InitialUsingDirectives = initialUsingDirectives;
+            Submissions = submissions;
+        }
+
+        public IReadOnlyCollection<UsingDirectiveSyntax> InitialUsingDirectives { get; }
+        public IReadOnlyDictionary<int, ReplSubmission> Submissions { get; }
     }
 }

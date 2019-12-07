@@ -11,7 +11,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -23,8 +22,8 @@ namespace Replay
     public partial class MainWindow : Window
     {
         private CompletionWindow completionWindow;
-        private readonly ReplServices services;
         private readonly ReplViewModel Model;
+        private readonly ReplServices services;
 
         public MainWindow()
         {
@@ -50,9 +49,8 @@ namespace Replay
         /// <summary>
         /// The main REPL loop
         /// </summary>
-        /// <param name="line"></param>
-        /// <param name="stayOnCurrentLine"></param>
-        /// <returns></returns>
+        /// <param name="line">Current line being evaluated</param>
+        /// <param name="stayOnCurrentLine">whether or not to progress to the next line of the REPL</param>
         private async Task ReadEvalPrintLoop(LineEditorViewModel line, bool stayOnCurrentLine)
         {
             ClearPreviousOutput(line);
@@ -149,10 +147,10 @@ namespace Replay
                     await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
                     return;
                 case ReplCommand.CyclePreviousLine:
-                    CycleThroughHistory(lineEditor, previousHistoryPointer, -1);
+                    CycleThroughHistory(lineEditor.ViewModel(), previousHistoryPointer, -1);
                     return;
                 case ReplCommand.CycleNextLine:
-                    CycleThroughHistory(lineEditor, previousHistoryPointer, +1);
+                    CycleThroughHistory(lineEditor.ViewModel(), previousHistoryPointer, +1);
                     return;
                 case ReplCommand.OpenIntellisense:
                     await CompleteCode(lineEditor);
@@ -170,16 +168,24 @@ namespace Replay
                     Model.FocusIndex--;
                     return;
                 case ReplCommand.ClearScreen:
-                    Model.MinimumFocusIndex = Model.FocusIndex;
-                    Model.FocusIndex = Model.Entries.Count - 1;
-                    foreach (var entry in Model.Entries.SkipLast(1))
-                    {
-                        entry.IsVisible = false;
-                    }
+                    ClearScreen();
+                    return;
+                case ReplCommand.SaveSession:
+                    await new SaveDialog(services).SaveAsync(Model.Entries);
                     return;
                 default:
                     e.Handled = false;
                     break;
+            }
+        }
+
+        private void ClearScreen()
+        {
+            Model.MinimumFocusIndex = Model.FocusIndex;
+            Model.FocusIndex = Model.Entries.Count - 1;
+            foreach (var entry in Model.Entries.SkipLast(1))
+            {
+                entry.IsVisible = false;
             }
         }
 
@@ -190,15 +196,15 @@ namespace Replay
             return previousLinePointer;
         }
 
-        private void CycleThroughHistory(TextEditor lineEditorViewModel, int previousLinePointer, int delta)
+        private void CycleThroughHistory(LineEditorViewModel lineEditorViewModel, int previousLinePointer, int delta)
         {
-            var prospectivePreviousLine = Model.FocusIndex + previousLinePointer + delta;
+            var prospectiveLineIndex = Model.FocusIndex + previousLinePointer + delta;
 
-            if (prospectivePreviousLine < 0)
+            if (prospectiveLineIndex < 0)
             {
                 Model.CycleHistoryLinePointer = 1 - Model.Entries.Count;
             }
-            else if (prospectivePreviousLine >= Model.Entries.Count - 1)
+            else if (prospectiveLineIndex >= Model.Entries.Count - 1)
             {
                 Model.CycleHistoryLinePointer = 0;
                 lineEditorViewModel.Document.Text = string.Empty;
@@ -206,7 +212,7 @@ namespace Replay
             else
             {
                 Model.CycleHistoryLinePointer = previousLinePointer + delta;
-                lineEditorViewModel.Document.Text = Model.Entries[prospectivePreviousLine].Document.Text;
+                lineEditorViewModel.Document.Text = Model.Entries[prospectiveLineIndex].Document.Text;
             }
         }
 

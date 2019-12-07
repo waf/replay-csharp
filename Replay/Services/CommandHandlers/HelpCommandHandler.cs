@@ -18,7 +18,7 @@ namespace Replay.Services.CommandHandlers
             {
                 new[]
                 {
-                    "Welcome to Replay!",
+                    "Welcome to Replay! ❤",
                     "",
                     "Keyboard Shortcuts",
                     "==================",

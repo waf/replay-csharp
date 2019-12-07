@@ -3,9 +3,11 @@ using Replay.Model;
 using Replay.Services.AssemblyLoading;
 using Replay.Services.CommandHandlers;
 using Replay.Services.Nuget;
+using Replay.Services.SessionSavers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,10 +22,12 @@ namespace Replay.Services
     {
         private readonly Task initialization;
         private SyntaxHighlighter syntaxHighlighter;
+
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
         private IReadOnlyCollection<ICommandHandler> commandHandlers;
+        private IReadOnlyCollection<ISessionSaver> savers;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
@@ -52,6 +56,12 @@ namespace Replay.Services
                     new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, io),
                     new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
+                };
+
+                this.savers = new ISessionSaver[]
+                {
+                    new CSharpSessionSaver(io, workspaceManager),
+                    new MarkdownSessionSaver(io),
                 };
             });
 
@@ -83,5 +93,23 @@ namespace Replay.Services
                 return new LineEvaluationResult(code, null, "Error: " + ex.Message, null);
             }
         }
+
+        public async Task<string> SaveSessionAsync(string filename, string fileFormat, IReadOnlyCollection<LineToSave> linesToSave)
+        {
+            try
+            {
+                return await savers
+                    .First(saver => saver.SaveFormat == fileFormat)
+                    .SaveAsync(filename, linesToSave);
+            }
+            catch (Exception ex)
+            {
+                return "Saving the session has failed. " + ex.Message;
+            }
+        }
+
+        public IReadOnlyList<string> GetSupportedSaveFormats() =>
+            this.savers.Select(s => s.SaveFormat).ToList();
+
     }
 }
