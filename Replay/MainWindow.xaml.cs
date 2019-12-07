@@ -94,7 +94,9 @@ namespace Replay
             int currentIndex = Model.Entries.IndexOf(lineEditor);
             if (currentIndex == Model.Entries.Count - 1)
             {
-                Model.Entries.Add(new LineEditorViewModel());
+                var newLine = new LineEditorViewModel();
+                Model.Entries.Add(newLine);
+                services.EvaluateAsync(newLine.Id, "", new NullLogger()); // run empty evaluation to create a corresponding compilation in roslyn
             }
             Model.FocusIndex = currentIndex + 1;
         }
