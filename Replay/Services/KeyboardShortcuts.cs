@@ -12,7 +12,8 @@ namespace Replay.Services
     {
         EvaluateCurrentLine,
         ReevaluateCurrentLine,
-        DuplicatePreviousLine,
+        CyclePreviousLine,
+        CycleNextLine,
         OpenIntellisense,
         GoToFirstLine,
         GoToLastLine,
@@ -35,7 +36,8 @@ namespace Replay.Services
             {
                 Enter => EvaluateCurrentLine,
                 (Control, Enter) => ReevaluateCurrentLine,
-                (Alt, Up) => DuplicatePreviousLine,
+                (Alt, Up) => CyclePreviousLine,
+                (Alt, Down) => CycleNextLine,
                 (Control, Space) => OpenIntellisense,
                 Tab => OpenIntellisense,
                 PageUp => GoToFirstLine,
@@ -52,8 +54,8 @@ namespace Replay.Services
         {
             @"Enter – Evaluate the current line.",
             @"Ctrl-Enter – Reevaluate the current line.",
-            @"Alt-Up – Duplicate the previous line.",
             @"Shift-Enter – Insert a ""soft newline.""",
+            @"Alt-Up or Alt-Down – Cycle through previous lines.",
             @"Ctrl-Space or Tab – Open intellisense.",
             @"PageUp or Ctrl-Up – Go to the first line of the session.",
             @"PageDown or Ctrl-Down – Go to the last line of the session.",

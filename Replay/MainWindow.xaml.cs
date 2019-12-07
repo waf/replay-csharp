@@ -135,6 +135,7 @@ namespace Replay
         {
             if (completionWindow?.IsVisible ?? false) return;
 
+            int previousHistoryPointer = ResetHistoryCyclePointer();
             var command = KeyboardShortcuts.MapToCommand(e);
             if (!command.HasValue) return;
 
@@ -147,8 +148,11 @@ namespace Replay
                 case ReplCommand.ReevaluateCurrentLine:
                     await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
                     return;
-                case ReplCommand.DuplicatePreviousLine:
-                    DuplicatePreviousLine(lineEditor);
+                case ReplCommand.CyclePreviousLine:
+                    CycleThroughHistory(lineEditor, previousHistoryPointer, -1);
+                    return;
+                case ReplCommand.CycleNextLine:
+                    CycleThroughHistory(lineEditor, previousHistoryPointer, +1);
                     return;
                 case ReplCommand.OpenIntellisense:
                     await CompleteCode(lineEditor);
@@ -166,7 +170,7 @@ namespace Replay
                     Model.FocusIndex--;
                     return;
                 case ReplCommand.ClearScreen:
-                    Model.MinFocusValue = Model.FocusIndex;
+                    Model.MinimumFocusIndex = Model.FocusIndex;
                     Model.FocusIndex = Model.Entries.Count - 1;
                     foreach (var entry in Model.Entries.SkipLast(1))
                     {
@@ -179,13 +183,31 @@ namespace Replay
             }
         }
 
-        private void DuplicatePreviousLine(TextEditor lineEditorViewModel)
+        private int ResetHistoryCyclePointer()
         {
-            if (Model.FocusIndex == 0)
-                return;
-            var previousLine = Model.Entries[Model.FocusIndex - 1];
+            int previousLinePointer = Model.CycleHistoryLinePointer;
+            Model.CycleHistoryLinePointer = 0;
+            return previousLinePointer;
+        }
 
-            lineEditorViewModel.Document.Text = previousLine.Document.Text;
+        private void CycleThroughHistory(TextEditor lineEditorViewModel, int previousLinePointer, int delta)
+        {
+            var prospectivePreviousLine = Model.FocusIndex + previousLinePointer + delta;
+
+            if (prospectivePreviousLine < 0)
+            {
+                Model.CycleHistoryLinePointer = 1 - Model.Entries.Count;
+            }
+            else if (prospectivePreviousLine >= Model.Entries.Count - 1)
+            {
+                Model.CycleHistoryLinePointer = 0;
+                lineEditorViewModel.Document.Text = string.Empty;
+            }
+            else
+            {
+                Model.CycleHistoryLinePointer = previousLinePointer + delta;
+                lineEditorViewModel.Document.Text = Model.Entries[prospectivePreviousLine].Document.Text;
+            }
         }
 
         private async void TextEditor_PreviewKeyUp(TextEditor lineEditor, KeyEventArgs e)
