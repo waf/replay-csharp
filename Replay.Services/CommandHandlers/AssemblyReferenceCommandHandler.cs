@@ -39,7 +39,7 @@ namespace Replay.Services.CommandHandlers
             {
                 logger.LogOutput("Referencing " + assembly.Display);
                 await scriptEvaluator.AddReferences(assembly);
-                workspaceManager.CreateOrUpdateSubmission(lineId, string.Empty, assembly);
+                workspaceManager.CreateOrUpdateSubmission(lineId, assemblyReferences: assembly);
                 logger.LogOutput("Assembly successfully referenced");
             }
             return LineEvaluationResult.NoOutput;

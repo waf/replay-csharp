@@ -66,8 +66,11 @@ namespace Replay.Services.SessionSavers
                 statementNodes
                 .Select(node => node switch
                 {
-                    // global statements are not valid in our main method file. Convert to comment.
-                    GlobalStatementSyntax global => Comment($"/* {global.ToFullString()} */").ToFullString(),
+                    // plain identifier statements are not valid in our main method file. Convert to comment.
+                    GlobalStatementSyntax { Statement: ExpressionStatementSyntax { Expression: IdentifierNameSyntax _ } }
+                        => Comment($"/* {node.ToFullString()} */").ToFullString(),
+
+                    // otherwise, pass through unchanged
                     _ => node.ToFullString()
                 })
             );

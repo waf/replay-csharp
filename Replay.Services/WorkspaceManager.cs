@@ -36,16 +36,39 @@ namespace Replay.Services
             );
         }
 
+        /// <summary>
+        /// Track the code in our workspace.
+        /// </summary>
+        /// <param name="lineId">
+        /// The line id. Each successive line should increment by one.
+        /// Each line will have a reference back to earlier lines.
+        /// </param>
+        /// <param name="code">
+        /// The C# code to track
+        /// </param>
+        /// <param name="persistent">
+        /// Whether or not the supplied code should be persisted to our workspace.
+        /// This is usually true, but there are some "throw-away" cases like syntax
+        /// highlighting of potential input we don't want to persist.
+        /// </param>
+        /// <param name="assemblyReferences">
+        /// Assembly references to include with this code. Assembly references provided
+        /// for earlier code submissions will be automatically referenced.
+        /// </param>
         public ReplSubmission CreateOrUpdateSubmission(
             int lineId,
-            string code,
+            string code = "",
+            bool persistent = true,
             params MetadataReference[] assemblyReferences)
         {
             var replSubmission = EditorToSubmission.TryGetValue(lineId, out var previousSubmission)
                 ? UpdateSubmission(previousSubmission, code, assemblyReferences)
                 : CreateSubmission(lineId, code, assemblyReferences);
 
-            EditorToSubmission[lineId] = replSubmission;
+            if(persistent)
+            {
+                EditorToSubmission[lineId] = replSubmission;
+            }
             return replSubmission;
         }
 

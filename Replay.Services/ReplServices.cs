@@ -74,7 +74,7 @@ namespace Replay.Services
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
             await initialization;
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, persistent: false);
             return await syntaxHighlighter.HighlightAsync(submission);
         }
 

@@ -33,7 +33,7 @@ namespace Replay.Services.CommandHandlers
             if (assemblies.Any())
             {
                 await scriptEvaluator.AddReferences(assemblies);
-                workspaceManager.CreateOrUpdateSubmission(lineId, string.Empty, assemblies);
+                workspaceManager.CreateOrUpdateSubmission(lineId, assemblyReferences: assemblies);
             }
             return LineEvaluationResult.NoOutput;
         }

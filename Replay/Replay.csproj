@@ -11,37 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.0.0" />
-    <!--
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-      <Version>2.9.8</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp">
-      <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features">
-      <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting">
-      <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces">
-      <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.Features">
-      <Version>3.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="3.0.1" />
-    <PackageReference Include="NuGet.Configuration" Version="5.3.1" />
-    <PackageReference Include="NuGet.Frameworks" Version="5.3.1" />
-    <PackageReference Include="NuGet.Packaging" Version="5.3.1" />
-    <PackageReference Include="NuGet.Packaging.Core" Version="5.3.1" />
-    <PackageReference Include="NuGet.Protocol" Version="5.3.1" />
-    <PackageReference Include="NuGet.Resolver" Version="5.3.1" />
-    <PackageReference Include="NuGet.Versioning" Version="5.3.1" />
-    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
-    -->
   </ItemGroup>
 
   <ItemGroup>
@@ -59,10 +28,6 @@
     <Page Update="UI\TitleBar.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Services\" />
   </ItemGroup>
 
   <ItemGroup>
