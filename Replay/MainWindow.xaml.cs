@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -163,6 +164,14 @@ namespace Replay
                     return;
                 case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
                     Model.FocusIndex--;
+                    return;
+                case ReplCommand.ClearScreen:
+                    Model.MinFocusValue = Model.FocusIndex;
+                    Model.FocusIndex = Model.Entries.Count - 1;
+                    foreach (var entry in Model.Entries.SkipLast(1))
+                    {
+                        entry.IsVisible = false;
+                    }
                     return;
                 default:
                     e.Handled = false;

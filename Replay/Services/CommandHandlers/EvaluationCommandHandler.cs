@@ -39,7 +39,7 @@ namespace Replay.Services.CommandHandlers
             // track the submission in our workspace. We won't need the
             // result for script evaluation, but other roslyn APIs like
             // code completion and syntax highlighting will need it.
-            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, text);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, text);
             var scriptResult = await scriptEvaluator.EvaluateAsync(text);
             var output = await prettyPrinter.FormatAsync(submission.Document, scriptResult);
 

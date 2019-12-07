@@ -2,6 +2,8 @@
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -20,6 +22,7 @@ namespace Replay.UI
         {
             this.typeface = editor.FontFamily.GetTypefaces().First();
             this.editor = editor;
+            HideAdornerWhenElementHidden(editor);
         }
 
         protected override void OnRender(DrawingContext drawingContext)
@@ -35,6 +38,17 @@ namespace Replay.UI
             };
             drawingContext.DrawText(prompt, new Point(PromptOffset * fontSize, 0));
         }
+
+        /// <summary>
+        /// If the UI element is hidden (e.g. the user cleared the screen)
+        /// the adorner should also be hidden.
+        /// </summary>
+        private void HideAdornerWhenElementHidden(UIElement element) =>
+            SetBinding(VisibilityProperty, new Binding(nameof(element.IsVisible))
+            {
+                Source = element,
+                Converter = new BooleanToVisibilityConverter()
+            });
 
         internal static void AddTo(TextEditor element)
         {

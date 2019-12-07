@@ -15,6 +15,7 @@ namespace Replay.Model
         public ReplViewModel()
         {
             FocusIndex = 0;
+            MinFocusValue = 0;
         }
 
         private WindowState windowState;
@@ -47,7 +48,7 @@ namespace Replay.Model
             get => focusIndex.GetValueOrDefault(0);
             set
             {
-                if (value == -1 || value == Entries.Count)
+                if (value < MinFocusValue || value == Entries.Count)
                 {
                     return;
                 }
@@ -68,6 +69,8 @@ namespace Replay.Model
                 SetField(ref focusIndex, value, updateOnlyWhenChanged: false);
             }
         }
+
+        public int MinFocusValue { get; set; }
 
         #region INotifyPropertyChanged Helpers
         public event PropertyChangedEventHandler PropertyChanged;

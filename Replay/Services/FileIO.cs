@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Replay.Services.AssemblyLoading;
+using System;
 using System.IO;
 
 namespace Replay.Services
@@ -12,6 +13,7 @@ namespace Replay.Services
         public FileIO()
         {
             GetFilesInDirectory = Directory.GetFiles;
+            DoesFileExist = File.Exists;
             GetFullFileSystemPath = Path.GetFullPath;
             CreateMetadataReferenceFromFile = MetadataReference.CreateFromFile;
             CreateDocumentationFromXmlFile = XmlDocumentationProvider.CreateFromFile;
@@ -21,11 +23,12 @@ namespace Replay.Services
                     : CreateMetadataReferenceFromFile(assembly.FullAssemblyPath, documentation: CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath));
         }
 
-        public CreateMetadataReferenceFromFile CreateMetadataReferenceFromFile { get; set; }
-        public CreateMetadataReferenceWithDocumentation CreateMetadataReferenceWithDocumentation { get; set; }
-        public CreateDocumentationFromXmlFile CreateDocumentationFromXmlFile { get; set; }
         public GetFilesInDirectory GetFilesInDirectory { get; set; }
+        public DoesFileExist DoesFileExist { get; set; }
         public GetFullFileSystemPath GetFullFileSystemPath { get; set; }
+        public CreateMetadataReferenceFromFile CreateMetadataReferenceFromFile { get; set; }
+        public CreateDocumentationFromXmlFile CreateDocumentationFromXmlFile { get; set; }
+        public CreateMetadataReferenceWithDocumentation CreateMetadataReferenceWithDocumentation { get; set; }
     }
 
 
@@ -34,4 +37,5 @@ namespace Replay.Services
     public delegate string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption);
     public delegate XmlDocumentationProvider CreateDocumentationFromXmlFile(string xmlDocCommentFilePath);
     public delegate string GetFullFileSystemPath(string path);
+    public delegate bool DoesFileExist(string path);
 }

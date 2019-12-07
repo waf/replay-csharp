@@ -5,6 +5,7 @@ using Replay.Model;
 using Replay.UI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -86,7 +87,7 @@ namespace Replay.Services
         };
     }
 
-    public class ColorSpan
+    public sealed class ColorSpan
     {
         public ColorSpan(Color color, int start, int end)
         {

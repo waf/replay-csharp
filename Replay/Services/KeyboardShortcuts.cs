@@ -17,7 +17,8 @@ namespace Replay.Services
         GoToFirstLine,
         GoToLastLine,
         LineDown,
-        LineUp
+        LineUp,
+        ClearScreen,
     }
 
     /// <summary>
@@ -43,6 +44,7 @@ namespace Replay.Services
                 (Control, Down) => GoToLastLine,
                 Up => LineUp,
                 Down => LineDown,
+                (Control, L) => ClearScreen,
                 _ => null
             };
 
@@ -55,6 +57,7 @@ namespace Replay.Services
             @"Ctrl-Space or Tab – Open intellisense.",
             @"PageUp or Ctrl-Up – Go to the first line of the session.",
             @"PageDown or Ctrl-Down – Go to the last line of the session.",
+            @"Ctrl-L – Clear the screen.",
         };
 
         private static object GetPressedKey(KeyEventArgs keyEvent) =>

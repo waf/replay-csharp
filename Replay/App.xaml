@@ -11,6 +11,7 @@
                 <ResourceDictionary Source="UI/ScrollbarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
             <Style x:Key="{x:Type local:IntellisenseWindow }" TargetType="{x:Type local:IntellisenseWindow}">
                 <Setter Property="WindowStyle" Value="None"/>

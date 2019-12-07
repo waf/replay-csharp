@@ -27,8 +27,7 @@ namespace Replay.Services
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
-        public ReplServices()
-        {
+        public ReplServices() =>
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
             initialization = Task.Run(() =>
@@ -50,24 +49,23 @@ namespace Replay.Services
                 {
                     new ExitCommandHandler(),
                     new HelpCommandHandler(),
-                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager),
+                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, io),
                     new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
                 };
             });
-        }
 
         public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(int lineId, string code, int caretIndex)
         {
             await initialization;
-            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
             return await codeCompleter.Complete(submission, caretIndex);
         }
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
             await initialization;
-            var submission = await workspaceManager.CreateOrUpdateSubmissionAsync(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
             return await syntaxHighlighter.HighlightAsync(submission);
         }
 

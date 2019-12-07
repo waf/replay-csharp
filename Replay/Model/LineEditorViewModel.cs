@@ -52,6 +52,13 @@ namespace Replay.Model
             set => SetPropertyChanged(ref output, value);
         }
 
+        bool isVisible = true;
+        public bool IsVisible
+        {
+            get => isVisible;
+            set => SetPropertyChanged(ref isVisible, value);
+        }
+
         public void SetResult(LineEvaluationResult output)
         {
             this.Result = output.Result;
