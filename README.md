@@ -15,6 +15,7 @@ A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval
 - Reference assemblies by `#r path/to/my.dll`
 - Reference nuget packages by `#nuget MyPackage`
 - Pretty-print evaluation results
+- Export your REPL session as C# or Markdown
 - Detect incomplete expressions (e.g. `if (condition) {`), and insert a "soft newline" rather than evaluating the incomplete expression.
 
 ## Running
