@@ -20,9 +20,11 @@ A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval
 
 ## Running
 
-- Requires .NET Core 3.1 on Windows (due to WPF).
-- Download Replay from the [Releases page](https://github.com/waf/replay-csharp/releases).
-- Unzip the archive, run Replay.exe and type `help` to get started!
+Replay requires Windows 10 (due to WPF).
+
+- Download Replay from the [Releases page](https://github.com/waf/replay-csharp/releases) and unzip the archive.
+- Run Replay.exe and type `help` to get started!
+    - The very first run of Replay may be a bit slow, but subsequent starts should be (much!) faster.
 
 ## Building from source
 
