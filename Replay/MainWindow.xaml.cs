@@ -5,7 +5,7 @@ using Replay.Logging;
 using Replay.Model;
 using Replay.Services;
 using Replay.UI;
-using Replay.ViewModel;
+using Replay.ViewModel.Services;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,18 +20,18 @@ namespace Replay
     /// </summary>
     public partial class MainWindow : Window
     {
-        private CompletionWindow completionWindow;
         private readonly WindowViewModel Model;
-        private readonly ReplServices services;
-        private readonly ViewModelService viewModelService;
+        private readonly ViewModelService viewModelService; // "front-end" services that manipulate the viewmodel.
+        private readonly ReplServices replServices; // "back-end" services that handle inspection / evaluation of code.
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = Model = new WindowViewModel();
-            services = new ReplServices();
-            this.viewModelService = new ViewModelService(services);
-            services.UserConfigurationLoaded += ConfigureWindow;
+            this.DataContext = Model = new WindowViewModel();
+            this.replServices = new ReplServices();
+            this.viewModelService = new ViewModelService(replServices);
+
+            replServices.UserConfigurationLoaded += ConfigureWindow;
             Task.Run(BackgroundInitializationAsync);
         }
 
@@ -57,7 +57,7 @@ namespace Replay
             line.TriggerIntellisense = (completions, onClosed) =>
                 new IntellisenseWindow(lineEditor.TextArea, completions, onClosed);
             lineEditor.TextArea.TextView.LineTransformers.Add(
-                new AvalonSyntaxHighlightTransformer(services, line.Id)
+                new AvalonSyntaxHighlightTransformer(replServices, line.Id)
             );
         }
 
@@ -151,9 +151,9 @@ namespace Replay
         {
             const string initializationCode = @"using System; Console.WriteLine(""Hello""); ""World""";
             return Task.WhenAll(
-                services.HighlightAsync(0, initializationCode),
-                services.CompleteCodeAsync(0, initializationCode, initializationCode.Length),
-                services.EvaluateAsync(0, initializationCode, new NullLogger())
+                replServices.HighlightAsync(0, initializationCode),
+                replServices.CompleteCodeAsync(0, initializationCode, initializationCode.Length),
+                replServices.EvaluateAsync(0, initializationCode, new NullLogger())
             );
         }
 

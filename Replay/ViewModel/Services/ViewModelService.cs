@@ -21,72 +21,72 @@ namespace Replay.ViewModel.Services
             this.services = services;
         }
 
-        public async Task HandleKeyDown(WindowViewModel model, LineViewModel lineEditor, KeyEventArgs e)
+        public async Task HandleKeyDown(WindowViewModel windowvm, LineViewModel linevm, KeyEventArgs e)
         {
-            if (model.IsIntellisenseWindowOpen) return;
+            if (windowvm.IsIntellisenseWindowOpen) return;
 
-            int previousHistoryPointer = ResetHistoryCyclePointer(model);
+            int previousHistoryPointer = ResetHistoryCyclePointer(windowvm);
 
             if(KeyboardShortcuts.MapToCommand(e) is ReplCommand command)
             {
-                e.Handled = await HandleCommand(model, lineEditor, command, previousHistoryPointer);
+                e.Handled = await HandleCommand(windowvm, linevm, command, previousHistoryPointer);
             }
         }
 
-        public async Task HandleKeyUp(WindowViewModel model, LineViewModel line, KeyEventArgs e)
+        public async Task HandleKeyUp(WindowViewModel windowvm, LineViewModel linevm, KeyEventArgs e)
         {
-            if (model.IsIntellisenseWindowOpen) return;
+            if (windowvm.IsIntellisenseWindowOpen) return;
 
             if (Keyboard.Modifiers == ModifierKeys.None
                 && e.Key == Key.OemPeriod // complete member accesses
                 && !IsCompletingDigit()) // but don't complete decimal points in numbers
             {
-                await CompleteCode(model, line);
+                await CompleteCode(windowvm, linevm);
             }
 
             bool IsCompletingDigit()
             {
-                string text = line.Document.Text;
+                string text = linevm.Document.Text;
                 return text.Length >= 2 && Char.IsDigit(text[text.Length - 2]);
             }
         }
 
-        private async Task<bool> HandleCommand(WindowViewModel model, LineViewModel lineEditor, ReplCommand cmd, int previousHistoryPointer)
+        private async Task<bool> HandleCommand(WindowViewModel windowvm, LineViewModel linevm, ReplCommand cmd, int previousHistoryPointer)
         {
             switch (cmd)
             {
                 case ReplCommand.EvaluateCurrentLine:
-                    await ReadEvalPrintLoop(model, lineEditor, stayOnCurrentLine: false);
+                    await ReadEvalPrintLoop(windowvm, linevm, stayOnCurrentLine: false);
                     return true;
                 case ReplCommand.ReevaluateCurrentLine:
-                    await ReadEvalPrintLoop(model, lineEditor, stayOnCurrentLine: true);
+                    await ReadEvalPrintLoop(windowvm, linevm, stayOnCurrentLine: true);
                     return true;
                 case ReplCommand.CyclePreviousLine:
-                    CycleThroughHistory(model, lineEditor, previousHistoryPointer, -1);
+                    CycleThroughHistory(windowvm, linevm, previousHistoryPointer, -1);
                     return true;
                 case ReplCommand.CycleNextLine:
-                    CycleThroughHistory(model, lineEditor, previousHistoryPointer, +1);
+                    CycleThroughHistory(windowvm, linevm, previousHistoryPointer, +1);
                     return true;
                 case ReplCommand.OpenIntellisense:
-                    await CompleteCode(model, lineEditor);
+                    await CompleteCode(windowvm, linevm);
                     return true;
                 case ReplCommand.GoToFirstLine:
-                    model.FocusIndex = 0;
+                    windowvm.FocusIndex = 0;
                     return true;
                 case ReplCommand.GoToLastLine:
-                    model.FocusIndex = model.Entries.Count - 1;
+                    windowvm.FocusIndex = windowvm.Entries.Count - 1;
                     return true;
-                case ReplCommand.LineDown when lineEditor.IsCaretOnFinalLine():
-                    model.FocusIndex++;
+                case ReplCommand.LineDown when linevm.IsCaretOnFinalLine():
+                    windowvm.FocusIndex++;
                     return true;
-                case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
-                    model.FocusIndex--;
+                case ReplCommand.LineUp when linevm.IsCaretOnFirstLine():
+                    windowvm.FocusIndex--;
                     return true;
                 case ReplCommand.ClearScreen:
-                    ClearScreen(model);
+                    ClearScreen(windowvm);
                     return true;
                 case ReplCommand.SaveSession:
-                    await new SaveDialog(services).SaveAsync(model.Entries);
+                    await new SaveDialog(services).SaveAsync(windowvm.Entries);
                     return true;
                 case ReplCommand.LineUp:
                 case ReplCommand.LineDown:

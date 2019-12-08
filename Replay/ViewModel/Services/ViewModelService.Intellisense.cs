@@ -6,14 +6,14 @@ namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
-        private async Task CompleteCode(WindowViewModel model, LineViewModel line)
+        private async Task CompleteCode(WindowViewModel windowvm, LineViewModel linevm)
         {
-            var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text, line.CaretOffset);
+            var completions = await services.CompleteCodeAsync(linevm.Id, linevm.Document.Text, linevm.CaretOffset);
 
             if (completions.Any())
             {
-                model.IsIntellisenseWindowOpen = true;
-                line.TriggerIntellisense(completions, () => model.IsIntellisenseWindowOpen = false);
+                windowvm.IsIntellisenseWindowOpen = true;
+                linevm.TriggerIntellisense(completions, () => windowvm.IsIntellisenseWindowOpen = false);
             }
         }
     }

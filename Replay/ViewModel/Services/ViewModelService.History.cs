@@ -5,31 +5,31 @@ namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
-        private void CycleThroughHistory(WindowViewModel model, LineViewModel lineEditorViewModel, int previousLinePointer, int delta)
+        private void CycleThroughHistory(WindowViewModel windowvm, LineViewModel linevm, int previousLinePointer, int delta)
         {
-            var prospectiveLineIndex = model.FocusIndex + previousLinePointer + delta;
+            var prospectiveLineIndex = windowvm.FocusIndex + previousLinePointer + delta;
 
             if (prospectiveLineIndex < 0)
             {
-                model.CycleHistoryLinePointer = 1 - model.Entries.Count;
+                windowvm.CycleHistoryLinePointer = 1 - windowvm.Entries.Count;
             }
-            else if (prospectiveLineIndex >= model.Entries.Count - 1)
+            else if (prospectiveLineIndex >= windowvm.Entries.Count - 1)
             {
-                model.CycleHistoryLinePointer = 0;
-                lineEditorViewModel.Document.Text = string.Empty;
+                windowvm.CycleHistoryLinePointer = 0;
+                linevm.Document.Text = string.Empty;
             }
             else
             {
-                model.CycleHistoryLinePointer = previousLinePointer + delta;
-                lineEditorViewModel.Document.Text = model.Entries[prospectiveLineIndex].Document.Text;
+                windowvm.CycleHistoryLinePointer = previousLinePointer + delta;
+                linevm.Document.Text = windowvm.Entries[prospectiveLineIndex].Document.Text;
             }
         }
 
-        private void ClearScreen(WindowViewModel model)
+        private void ClearScreen(WindowViewModel windowvm)
         {
-            model.MinimumFocusIndex = model.FocusIndex;
-            model.FocusIndex = model.Entries.Count - 1;
-            foreach (var entry in model.Entries.SkipLast(1))
+            windowvm.MinimumFocusIndex = windowvm.FocusIndex;
+            windowvm.FocusIndex = windowvm.Entries.Count - 1;
+            foreach (var entry in windowvm.Entries.SkipLast(1))
             {
                 entry.IsVisible = false;
             }
