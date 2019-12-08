@@ -1,5 +1,9 @@
-﻿using ICSharpCode.AvalonEdit.Document;
+﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Editing;
+using Replay.Services;
 using Replay.Services.Model;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -59,6 +63,16 @@ namespace Replay.Model
             get => isVisible;
             set => SetPropertyChanged(ref isVisible, value);
         }
+
+        // ideally we could databind to these editor properties, but we can't,
+        // so instead we expose them as read-only properties on our view model.
+        private TextEditor editor;
+        public void SetEditor(TextEditor lineEditor) =>
+            this.editor = lineEditor;
+        public int SelectionStart => editor?.SelectionStart ?? 0;
+        public int CaretOffset => editor?.CaretOffset ?? 0;
+
+        public Action<IReadOnlyList<ReplCompletion>, Action> TriggerIntellisense { get; set; }
 
         public void SetResult(LineEvaluationResult output)
         {

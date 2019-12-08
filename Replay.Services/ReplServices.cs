@@ -19,7 +19,8 @@ namespace Replay.Services
     /// </summary>
     public class ReplServices
     {
-        private readonly Task initialization;
+        private readonly Task requiredInitialization;
+        private readonly Task commandInitialization;
         private SyntaxHighlighter syntaxHighlighter;
 
         private ScriptEvaluator scriptEvaluator;
@@ -30,23 +31,33 @@ namespace Replay.Services
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
-        public ReplServices() =>
+        public ReplServices()
+        {
+            var io = new FileIO();
+
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
-            initialization = Task.Run(() =>
+            requiredInitialization = Task.WhenAll(
+                Task.Run(() =>
+                {
+                    this.syntaxHighlighter = new SyntaxHighlighter("Themes/theme.vssettings");
+                    UserConfigurationLoaded?.Invoke(this, new UserConfiguration
+                    (
+                        syntaxHighlighter.BackgroundColor,
+                        syntaxHighlighter.ForegroundColor
+                    ));
+                    this.codeCompleter = new CodeCompleter();
+                }),
+                Task.Run(() =>
+                {
+                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
+                    this.scriptEvaluator = new ScriptEvaluator(assemblies);
+                    this.workspaceManager = new WorkspaceManager(assemblies);
+                })
+            );
+            commandInitialization = Task.Run(async () =>
             {
-                this.syntaxHighlighter = new SyntaxHighlighter("Themes/theme.vssettings");
-                UserConfigurationLoaded?.Invoke(this, new UserConfiguration
-                (
-                    syntaxHighlighter.BackgroundColor,
-                    syntaxHighlighter.ForegroundColor
-                ));
-
-                var io = new FileIO();
-                var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
-                this.codeCompleter = new CodeCompleter();
-                this.scriptEvaluator = new ScriptEvaluator(assemblies);
-                this.workspaceManager = new WorkspaceManager(assemblies);
+                await requiredInitialization;
 
                 this.commandHandlers = new ICommandHandler[]
                 {
@@ -63,29 +74,31 @@ namespace Replay.Services
                     new MarkdownSessionSaver(io),
                 };
             });
+        }
 
         public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(int lineId, string code, int caretIndex)
         {
-            await initialization;
+            await requiredInitialization.ConfigureAwait(false);
             var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
-            return await codeCompleter.Complete(submission, caretIndex);
+            return await codeCompleter.Complete(submission, caretIndex).ConfigureAwait(false);
         }
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
-            await initialization;
+            await requiredInitialization.ConfigureAwait(false);
             var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, persistent: false);
-            return await syntaxHighlighter.HighlightAsync(submission);
+            return await syntaxHighlighter.HighlightAsync(submission).ConfigureAwait(false);
         }
 
         public async Task<LineEvaluationResult> EvaluateAsync(int lineId, string code, IReplLogger logger)
         {
-            await initialization;
+            await commandInitialization.ConfigureAwait(false);
             try
             {
                 return await commandHandlers
                     .First(handler => handler.CanHandle(code))
-                    .HandleAsync(lineId, code, logger);
+                    .HandleAsync(lineId, code, logger)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -95,11 +108,13 @@ namespace Replay.Services
 
         public async Task<string> SaveSessionAsync(string filename, string fileFormat, IReadOnlyCollection<LineToSave> linesToSave)
         {
+            await commandInitialization.ConfigureAwait(false);
             try
             {
                 return await savers
                     .First(saver => saver.SaveFormat == fileFormat)
-                    .SaveAsync(filename, linesToSave);
+                    .SaveAsync(filename, linesToSave)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -13,9 +13,13 @@ namespace Replay.UI
 {
     class IntellisenseWindow : CompletionWindow
     {
-        public IntellisenseWindow(TextArea textArea, IReadOnlyList<ReplCompletion> completions)
+        private readonly Action onClosed;
+
+        public IntellisenseWindow(TextArea textArea, IReadOnlyList<ReplCompletion> completions, Action onClosed)
             : base(textArea)
         {
+            this.onClosed = onClosed;
+
             if (completions.Count == 0) return;
 
             TextSpan span = completions[0].CompletionItem.Span;
@@ -24,6 +28,12 @@ namespace Replay.UI
             SetCompletionBounds(textBeingCompleted, span);
             PopulateCompletionDropDown(completions, textBeingCompleted);
             Show();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            onClosed();
         }
 
         private void PopulateCompletionDropDown(IReadOnlyList<ReplCompletion> completions, string textBeingCompleted)
@@ -55,26 +65,35 @@ namespace Replay.UI
             }
         }
 
+        protected override void OnKeyUp(KeyEventArgs e)
+        {
+            base.OnKeyUp(e);
+
+            // close completion window if there is only 1 fuzzy match that is exactly what the user already typed.
+            string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
+            var matches = this.CompletionList.CompletionData
+                .Where(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase))
+                .ToList();
+
+            if (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCulture))
+            {
+                this.Close();
+            }
+        }
+
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
 
             if (e.Key == Key.OemPeriod)
             {
-                // while autocompleting, the user typed a period. This will trigger a new completion window, so this old one should close
-                this.Hide();
+                // while autocompleting, the user typed a period. This will trigger a new completion window, so this old one should close.
+                this.Close();
             }
-
-            // close completion window if there are no matches, or only 1 match that is exactly what the user already typed.
-            // it seems like this should be handled by the CompletionWindow base class, but it isn't.
-            string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
-            var matches = this.CompletionList.CompletionData
-                .Where(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase))
-                .ToList();
-
-            if (!matches.Any() || (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCultureIgnoreCase)))
+            else if (e.Key == Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                this.Hide();
+                // while autocompleting, the user re-summoned intellisense. Since we're already open, swallow the space and do nothing.
+                e.Handled = true;
             }
         }
     }

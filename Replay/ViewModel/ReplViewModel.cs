@@ -97,6 +97,7 @@ namespace Replay.Model
         /// cycles back through their history.
         /// </summary>
         public int CycleHistoryLinePointer { get; set; }
+        public bool IsIntellisenseWindowOpen { get; internal set; }
 
         #region INotifyPropertyChanged Helpers
         public event PropertyChangedEventHandler PropertyChanged;

@@ -1,14 +1,12 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
-using Microsoft.CodeAnalysis;
 using Replay.Logging;
 using Replay.Model;
 using Replay.Services;
-using Replay.Services.Model;
 using Replay.UI;
+using Replay.ViewModel;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -25,12 +23,14 @@ namespace Replay
         private CompletionWindow completionWindow;
         private readonly ReplViewModel Model;
         private readonly ReplServices services;
+        private readonly ViewModelService viewModelService;
 
         public MainWindow()
         {
             InitializeComponent();
             DataContext = Model = new ReplViewModel();
             services = new ReplServices();
+            this.viewModelService = new ViewModelService(services);
             services.UserConfigurationLoaded += ConfigureWindow;
             Task.Run(BackgroundInitializationAsync);
         }
@@ -47,82 +47,20 @@ namespace Replay
             });
         }
 
-        /// <summary>
-        /// The main REPL loop
-        /// </summary>
-        /// <param name="line">Current line being evaluated</param>
-        /// <param name="stayOnCurrentLine">whether or not to progress to the next line of the REPL</param>
-        private async Task ReadEvalPrintLoop(LineEditorViewModel line, bool stayOnCurrentLine)
-        {
-            ClearPreviousOutput(line);
-            // read
-            string text = line.Document.Text;
-
-            // eval
-            var result = await services.EvaluateAsync(line.Id, text, new Logger(line));
-            if (result == LineEvaluationResult.IncompleteInput)
-            {
-                line.Document.Text += Environment.NewLine;
-                return;
-            }
-            if (!string.IsNullOrEmpty(result.FormattedInput))
-            {
-                line.Document.Text = result.FormattedInput;
-            }
-
-            // print
-            if (result != LineEvaluationResult.NoOutput)
-            {
-                Print(line, result);
-            }
-
-            // loop
-            if (result.Exception == null && !stayOnCurrentLine)
-            {
-                MoveToNextLine(line);
-            }
-        }
-
-        private static void ClearPreviousOutput(LineEditorViewModel line) =>
-            line.StandardOutput = line.Error = line.Result = string.Empty;
-
-        private static void Print(LineEditorViewModel lineEditor, LineEvaluationResult result) =>
-            lineEditor.SetResult(result);
-
-        private void MoveToNextLine(LineEditorViewModel lineEditor)
-        {
-            int currentIndex = Model.Entries.IndexOf(lineEditor);
-            if (currentIndex == Model.Entries.Count - 1)
-            {
-                var newLine = new LineEditorViewModel();
-                Model.Entries.Add(newLine);
-                services.EvaluateAsync(newLine.Id, "", new NullLogger()); // run empty evaluation to create a corresponding compilation in roslyn
-            }
-            Model.FocusIndex = currentIndex + 1;
-        }
-
-        private async Task CompleteCode(TextEditor lineEditor)
-        {
-            var line = lineEditor.ViewModel();
-            var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text, lineEditor.CaretOffset);
-
-            if (completions.Any())
-            {
-                completionWindow = new IntellisenseWindow(lineEditor.TextArea, completions);
-                completionWindow.Closed += delegate { completionWindow = null; };
-            }
-        }
-
         private void TextEditor_Initialized(TextEditor lineEditor, EventArgs e)
         {
             PromptAdorner.AddTo(lineEditor);
             lineEditor.TextArea.MouseWheel += TextArea_MouseWheel;
 
-            var lineNumber = lineEditor.ViewModel().Id;
+            var line = lineEditor.ViewModel();
+            line.SetEditor(lineEditor);
+            line.TriggerIntellisense = (completions, onClosed) =>
+                new IntellisenseWindow(lineEditor.TextArea, completions, onClosed);
             lineEditor.TextArea.TextView.LineTransformers.Add(
-                new AvalonSyntaxHighlightTransformer(services, lineNumber)
+                new AvalonSyntaxHighlightTransformer(services, line.Id)
             );
         }
+
 
         private void TextEditor_Loaded(TextEditor lineEditor, RoutedEventArgs e)
         {
@@ -134,107 +72,12 @@ namespace Replay
 
         private async void TextEditor_PreviewKeyDown(TextEditor lineEditor, KeyEventArgs e)
         {
-            if (completionWindow?.IsVisible ?? false) return;
-
-            int previousHistoryPointer = ResetHistoryCyclePointer();
-            var command = KeyboardShortcuts.MapToCommand(e);
-            if (!command.HasValue) return;
-
-            e.Handled = true;
-            switch (command.Value)
-            {
-                case ReplCommand.EvaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: false);
-                    return;
-                case ReplCommand.ReevaluateCurrentLine:
-                    await ReadEvalPrintLoop(lineEditor.ViewModel(), stayOnCurrentLine: true);
-                    return;
-                case ReplCommand.CyclePreviousLine:
-                    CycleThroughHistory(lineEditor.ViewModel(), previousHistoryPointer, -1);
-                    return;
-                case ReplCommand.CycleNextLine:
-                    CycleThroughHistory(lineEditor.ViewModel(), previousHistoryPointer, +1);
-                    return;
-                case ReplCommand.OpenIntellisense:
-                    await CompleteCode(lineEditor);
-                    return;
-                case ReplCommand.GoToFirstLine:
-                    Model.FocusIndex = 0;
-                    return;
-                case ReplCommand.GoToLastLine:
-                    Model.FocusIndex = Model.Entries.Count - 1;
-                    return;
-                case ReplCommand.LineDown when lineEditor.IsCaretOnFinalLine():
-                    Model.FocusIndex++;
-                    return;
-                case ReplCommand.LineUp when lineEditor.IsCaretOnFirstLine():
-                    Model.FocusIndex--;
-                    return;
-                case ReplCommand.ClearScreen:
-                    ClearScreen();
-                    return;
-                case ReplCommand.SaveSession:
-                    await new SaveDialog(services).SaveAsync(Model.Entries);
-                    return;
-                default:
-                    e.Handled = false;
-                    break;
-            }
-        }
-
-        private void ClearScreen()
-        {
-            Model.MinimumFocusIndex = Model.FocusIndex;
-            Model.FocusIndex = Model.Entries.Count - 1;
-            foreach (var entry in Model.Entries.SkipLast(1))
-            {
-                entry.IsVisible = false;
-            }
-        }
-
-        private int ResetHistoryCyclePointer()
-        {
-            int previousLinePointer = Model.CycleHistoryLinePointer;
-            Model.CycleHistoryLinePointer = 0;
-            return previousLinePointer;
-        }
-
-        private void CycleThroughHistory(LineEditorViewModel lineEditorViewModel, int previousLinePointer, int delta)
-        {
-            var prospectiveLineIndex = Model.FocusIndex + previousLinePointer + delta;
-
-            if (prospectiveLineIndex < 0)
-            {
-                Model.CycleHistoryLinePointer = 1 - Model.Entries.Count;
-            }
-            else if (prospectiveLineIndex >= Model.Entries.Count - 1)
-            {
-                Model.CycleHistoryLinePointer = 0;
-                lineEditorViewModel.Document.Text = string.Empty;
-            }
-            else
-            {
-                Model.CycleHistoryLinePointer = previousLinePointer + delta;
-                lineEditorViewModel.Document.Text = Model.Entries[prospectiveLineIndex].Document.Text;
-            }
+            await viewModelService.HandleKeyDown(Model, lineEditor.ViewModel(), e);
         }
 
         private async void TextEditor_PreviewKeyUp(TextEditor lineEditor, KeyEventArgs e)
         {
-            if (completionWindow?.IsVisible ?? false) return;
-
-            if (Keyboard.Modifiers == ModifierKeys.None
-                && e.Key == Key.OemPeriod // complete member accesses
-                && !IsCompletingDigit()) // but don't complete decimal points in numbers
-            {
-                await CompleteCode(lineEditor);
-            }
-
-            bool IsCompletingDigit()
-            {
-                string text = lineEditor.Document.Text;
-                return text.Length >= 2 && Char.IsDigit(text[text.Length - 2]);
-            }
+            await viewModelService.HandleKeyUp(Model, lineEditor.ViewModel(), e);
         }
 
         private void TextEditor_Unloaded(TextEditor lineEditor, RoutedEventArgs e)

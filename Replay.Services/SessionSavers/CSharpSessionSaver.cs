@@ -57,7 +57,8 @@ namespace Replay.Services.SessionSavers
             // write to file
             await io.WriteAllLinesAsync(fileName, new[] { text.ToString() }, Encoding.UTF8);
 
-            return "Session has been saved as a C# file.";
+            return "Session has been saved as a C# file. Please note that not everything in a REPL "
+                + "translates nicely to a C# file, so you may need to fix up the file.";
         }
 
         private static string CreateStringFromStatements(IEnumerable<SyntaxNode> statementNodes)

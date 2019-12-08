@@ -33,7 +33,6 @@ namespace Replay.Services.CommandHandlers
                 return LineEvaluationResult.IncompleteInput;
             }
             text = (await newTree.GetRootAsync())
-                .NormalizeWhitespace()
                 .ToFullString();
 
             // track the submission in our workspace. We won't need the
