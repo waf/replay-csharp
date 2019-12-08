@@ -12,7 +12,7 @@ namespace Replay.ViewModel.Services
     /// This partial class is the main entry point for input events, and
     /// routes to the other partial classes for specific functionality.
     /// </summary>
-    partial class ViewModelService
+    public partial class ViewModelService
     {
         private readonly ReplServices services;
 

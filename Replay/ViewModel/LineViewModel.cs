@@ -1,6 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
-using ICSharpCode.AvalonEdit.Editing;
 using Replay.Services;
 using Replay.Services.Model;
 using System;
@@ -15,7 +14,7 @@ namespace Replay.Model
     /// ViewModel for a single line of the repl.
     /// Child of <see cref="WindowViewModel"/>
     /// </summary>
-    internal class LineViewModel : INotifyPropertyChanged
+    public class LineViewModel : INotifyPropertyChanged
     {
         private static int incrementingId = 0;
 
@@ -72,7 +71,7 @@ namespace Replay.Model
         public int SelectionStart => editor?.SelectionStart ?? 0;
         public int CaretOffset => editor?.CaretOffset ?? 0;
 
-        public Action<IReadOnlyList<ReplCompletion>, Action> TriggerIntellisense { get; set; }
+        public TriggerIntellisense TriggerIntellisense { get; set; }
 
         public void SetResult(LineEvaluationResult output)
         {
@@ -96,4 +95,6 @@ namespace Replay.Model
         }
         #endregion
     }
+
+    public delegate void TriggerIntellisense(IReadOnlyList<ReplCompletion> completions, Action onClosed);
 }

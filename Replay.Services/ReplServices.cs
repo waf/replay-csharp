@@ -86,7 +86,7 @@ namespace Replay.Services
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
         {
             await requiredInitialization.ConfigureAwait(false);
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, persistent: false);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
             return await syntaxHighlighter.HighlightAsync(submission).ConfigureAwait(false);
         }
 
@@ -95,10 +95,18 @@ namespace Replay.Services
             await commandInitialization.ConfigureAwait(false);
             try
             {
-                return await commandHandlers
+                var result = await commandHandlers
                     .First(handler => handler.CanHandle(code))
                     .HandleAsync(lineId, code, logger)
                     .ConfigureAwait(false);
+
+                // Depending on which command was run (e.g. 'help'), we might not have a
+                // corresponding entry in our workspace. This will create an empty record
+                // if that's the case. Everything's easier to reason about if the
+                // viewmodel and the workspace have the same number of lines.
+                workspaceManager.EnsureRecordForLine(lineId);
+
+                return result;
             }
             catch (Exception ex)
             {

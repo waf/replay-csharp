@@ -58,17 +58,15 @@ namespace Replay.Services
         public ReplSubmission CreateOrUpdateSubmission(
             int lineId,
             string code = "",
-            bool persistent = true,
             params MetadataReference[] assemblyReferences)
         {
-            var replSubmission = EditorToSubmission.TryGetValue(lineId, out var previousSubmission)
+            bool alreadyTracked = EditorToSubmission.TryGetValue(lineId, out var previousSubmission);
+
+            var replSubmission = alreadyTracked
                 ? UpdateSubmission(previousSubmission, code, assemblyReferences)
                 : CreateSubmission(lineId, code, assemblyReferences);
 
-            if(persistent)
-            {
-                EditorToSubmission[lineId] = replSubmission;
-            }
+            EditorToSubmission[lineId] = replSubmission;
             return replSubmission;
         }
 
@@ -100,6 +98,14 @@ namespace Replay.Services
                 .WithCompilationOptions(compilationOptions);
             var project = workspace.AddProject(projectInfo);
             return project;
+        }
+
+        internal void EnsureRecordForLine(int lineId)
+        {
+            if(!EditorToSubmission.TryGetValue(lineId, out _))
+            {
+                EditorToSubmission[lineId] = CreateSubmission(lineId, string.Empty, Array.Empty<MetadataReference>());
+            }
         }
 
         private Document CreateDocument(Project project, string name, string code)

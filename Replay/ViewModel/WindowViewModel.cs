@@ -10,7 +10,7 @@ namespace Replay.Model
     /// <summary>
     /// Root of the ViewModel -- one per repl window.
     /// </summary>
-    internal class WindowViewModel : INotifyPropertyChanged
+    public class WindowViewModel : INotifyPropertyChanged
     {
         public WindowViewModel()
         {
