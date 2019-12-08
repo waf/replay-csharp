@@ -6,13 +6,13 @@ namespace Replay.UI
 {
     static class TextEditorExtensions
     {
-        public static LineEditorViewModel ViewModel(this TextEditor editor) =>
-            (LineEditorViewModel)editor.DataContext;
+        public static LineViewModel ViewModel(this TextEditor editor) =>
+            (LineViewModel)editor.DataContext;
 
-        public static bool IsCaretOnFirstLine(this LineEditorViewModel editor) =>
+        public static bool IsCaretOnFirstLine(this LineViewModel editor) =>
             !editor.Document.Text.Substring(0, editor.SelectionStart).Contains(Environment.NewLine);
 
-        public static bool IsCaretOnFinalLine(this LineEditorViewModel editor) =>
+        public static bool IsCaretOnFinalLine(this LineViewModel editor) =>
             !editor.Document.Text.Substring(editor.SelectionStart).Contains(Environment.NewLine);
     }
 }

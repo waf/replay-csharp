@@ -10,9 +10,9 @@ namespace Replay.Model
     /// <summary>
     /// Root of the ViewModel -- one per repl window.
     /// </summary>
-    internal class ReplViewModel : INotifyPropertyChanged
+    internal class WindowViewModel : INotifyPropertyChanged
     {
-        public ReplViewModel()
+        public WindowViewModel()
         {
             FocusIndex = 0; // trigger focus on application start
         }
@@ -50,8 +50,8 @@ namespace Replay.Model
         /// <summary>
         /// Lines in the REPL. Each line consists of input and output for that line.
         /// </summary>
-        public ObservableCollection<LineEditorViewModel> Entries { get; } =
-            new ObservableCollection<LineEditorViewModel> { new LineEditorViewModel() };
+        public ObservableCollection<LineViewModel> Entries { get; } =
+            new ObservableCollection<LineViewModel> { new LineViewModel() };
 
         /// <summary>
         /// The index of the REPL entry that is currently focused
@@ -97,6 +97,12 @@ namespace Replay.Model
         /// cycles back through their history.
         /// </summary>
         public int CycleHistoryLinePointer { get; set; }
+
+        /// <summary>
+        /// Tracks if the intellisense window is open. Keyboard shortcuts
+        /// behave differently if it's open, because all input is forwarded
+        /// to the intelliense window.
+        /// </summary>
         public bool IsIntellisenseWindowOpen { get; internal set; }
 
         #region INotifyPropertyChanged Helpers

@@ -4,7 +4,7 @@ using Replay.Services.Model;
 using System;
 using System.Threading.Tasks;
 
-namespace Replay.ViewModel
+namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
@@ -13,7 +13,7 @@ namespace Replay.ViewModel
         /// </summary>
         /// <param name="line">Current line being evaluated</param>
         /// <param name="stayOnCurrentLine">whether or not to progress to the next line of the REPL</param>
-        private async Task ReadEvalPrintLoop(ReplViewModel model, LineEditorViewModel line, bool stayOnCurrentLine)
+        private async Task ReadEvalPrintLoop(WindowViewModel model, LineViewModel line, bool stayOnCurrentLine)
         {
             ClearPreviousOutput(line);
             // read
@@ -48,28 +48,28 @@ namespace Replay.ViewModel
             }
         }
 
-        private static void ClearPreviousOutput(LineEditorViewModel line) =>
+        private static void ClearPreviousOutput(LineViewModel line) =>
             line.StandardOutput = line.Error = line.Result = string.Empty;
 
-        private static void Print(LineEditorViewModel lineEditor, LineEvaluationResult result) =>
+        private static void Print(LineViewModel lineEditor, LineEvaluationResult result) =>
             lineEditor.SetResult(result);
 
 
-        private static int ResetHistoryCyclePointer(ReplViewModel model)
+        private static int ResetHistoryCyclePointer(WindowViewModel model)
         {
             int previousLinePointer = model.CycleHistoryLinePointer;
             model.CycleHistoryLinePointer = 0;
             return previousLinePointer;
         }
 
-        private static int? MoveToNextLine(ReplViewModel model, LineEditorViewModel lineEditor)
+        private static int? MoveToNextLine(WindowViewModel model, LineViewModel lineEditor)
         {
             int currentIndex = model.Entries.IndexOf(lineEditor);
 
-            LineEditorViewModel newLine = null;
+            LineViewModel newLine = null;
             if (currentIndex == model.Entries.Count - 1)
             {
-                newLine = new LineEditorViewModel();
+                newLine = new LineViewModel();
                 model.Entries.Add(newLine);
             }
 

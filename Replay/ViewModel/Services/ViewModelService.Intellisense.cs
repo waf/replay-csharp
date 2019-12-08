@@ -1,17 +1,12 @@
-﻿using ICSharpCode.AvalonEdit;
-using Replay.Model;
-using System;
-using System.Collections.Generic;
+﻿using Replay.Model;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Replay.ViewModel
+namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
-
-        private async Task CompleteCode(ReplViewModel model, LineEditorViewModel line)
+        private async Task CompleteCode(WindowViewModel model, LineViewModel line)
         {
             var completions = await services.CompleteCodeAsync(line.Id, line.Document.Text, line.CaretOffset);
 

@@ -21,14 +21,14 @@ namespace Replay
     public partial class MainWindow : Window
     {
         private CompletionWindow completionWindow;
-        private readonly ReplViewModel Model;
+        private readonly WindowViewModel Model;
         private readonly ReplServices services;
         private readonly ViewModelService viewModelService;
 
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = Model = new ReplViewModel();
+            DataContext = Model = new WindowViewModel();
             services = new ReplServices();
             this.viewModelService = new ViewModelService(services);
             services.UserConfigurationLoaded += ConfigureWindow;

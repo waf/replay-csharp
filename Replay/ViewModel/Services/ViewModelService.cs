@@ -5,8 +5,13 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Replay.ViewModel
+namespace Replay.ViewModel.Services
 {
+    /// <summary>
+    /// Handles viewmodel manipulation based on input events.
+    /// This partial class is the main entry point for input events, and
+    /// routes to the other partial classes for specific functionality.
+    /// </summary>
     partial class ViewModelService
     {
         private readonly ReplServices services;
@@ -16,7 +21,7 @@ namespace Replay.ViewModel
             this.services = services;
         }
 
-        public async Task HandleKeyDown(ReplViewModel model, LineEditorViewModel lineEditor, KeyEventArgs e)
+        public async Task HandleKeyDown(WindowViewModel model, LineViewModel lineEditor, KeyEventArgs e)
         {
             if (model.IsIntellisenseWindowOpen) return;
 
@@ -28,8 +33,7 @@ namespace Replay.ViewModel
             }
         }
 
-
-        public async Task HandleKeyUp(ReplViewModel model, LineEditorViewModel line, KeyEventArgs e)
+        public async Task HandleKeyUp(WindowViewModel model, LineViewModel line, KeyEventArgs e)
         {
             if (model.IsIntellisenseWindowOpen) return;
 
@@ -47,7 +51,7 @@ namespace Replay.ViewModel
             }
         }
 
-        private async Task<bool> HandleCommand(ReplViewModel model, LineEditorViewModel lineEditor, ReplCommand cmd, int previousHistoryPointer)
+        private async Task<bool> HandleCommand(WindowViewModel model, LineViewModel lineEditor, ReplCommand cmd, int previousHistoryPointer)
         {
             switch (cmd)
             {

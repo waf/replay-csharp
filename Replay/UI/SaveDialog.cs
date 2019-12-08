@@ -20,7 +20,7 @@ namespace Replay.UI
             this.supportedSaveFormats = replServices.GetSupportedSaveFormats();
         }
 
-        public async Task SaveAsync(IEnumerable<LineEditorViewModel> lines)
+        public async Task SaveAsync(IEnumerable<LineViewModel> lines)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -39,7 +39,7 @@ namespace Replay.UI
             }
         }
 
-        private static IReadOnlyCollection<LineToSave> ConvertToSaveModel(IEnumerable<LineEditorViewModel> lines) => lines
+        private static IReadOnlyCollection<LineToSave> ConvertToSaveModel(IEnumerable<LineViewModel> lines) => lines
             .Select(line => new LineToSave(
                 line.Document.Text,
                 line.Result,

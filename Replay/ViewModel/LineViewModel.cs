@@ -13,9 +13,9 @@ namespace Replay.Model
 {
     /// <summary>
     /// ViewModel for a single line of the repl.
-    /// Child of <see cref="ReplViewModel"/>
+    /// Child of <see cref="WindowViewModel"/>
     /// </summary>
-    internal class LineEditorViewModel : INotifyPropertyChanged
+    internal class LineViewModel : INotifyPropertyChanged
     {
         private static int incrementingId = 0;
 

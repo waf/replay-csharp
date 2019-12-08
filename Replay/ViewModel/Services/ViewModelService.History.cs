@@ -1,14 +1,11 @@
 ﻿using Replay.Model;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-namespace Replay.ViewModel
+namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
-        private void CycleThroughHistory(ReplViewModel model, LineEditorViewModel lineEditorViewModel, int previousLinePointer, int delta)
+        private void CycleThroughHistory(WindowViewModel model, LineViewModel lineEditorViewModel, int previousLinePointer, int delta)
         {
             var prospectiveLineIndex = model.FocusIndex + previousLinePointer + delta;
 
@@ -28,7 +25,7 @@ namespace Replay.ViewModel
             }
         }
 
-        private void ClearScreen(ReplViewModel model)
+        private void ClearScreen(WindowViewModel model)
         {
             model.MinimumFocusIndex = model.FocusIndex;
             model.FocusIndex = model.Entries.Count - 1;
