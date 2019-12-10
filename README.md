@@ -24,7 +24,7 @@ Replay requires Windows 10 (due to WPF).
 
 - Download Replay from the [Releases page](https://github.com/waf/replay-csharp/releases) and unzip the archive.
 - Run Replay.exe and type `help` to get started!
-    - The very first run of Replay may be a bit slow, but subsequent starts should be (much!) faster.
+    - The very first run of Replay will be slow (around 7 or 8 seconds), but subsequent starts should be much faster (1 second or less).
 
 ## Building from source
 
