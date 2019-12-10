@@ -47,6 +47,19 @@ namespace Replay.Tests.Integration
             Assert.NotEmpty(completions);
         }
 
+        [WpfFact]
+        public async Task Execute()
+        {
+            string input = "~Enter~~Enter~\"HELLO\"~Enter~";
+
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(input, vm);
+
+            Assert.Equal("\"HELLO\"", vm.Entries[2].Result);
+        }
+
         private async Task TypeInput(string input, WindowViewModel vm, TriggerIntellisense callback = null)
         {
             var keys = ConvertToKeys(input).ToList();
@@ -64,7 +77,11 @@ namespace Replay.Tests.Integration
                 var currentLine = vm.Entries[vm.FocusIndex];
                 if (!NoOutputKeys.Contains(key))
                 {
-                    currentLine.Document.Text += keyConverter.ConvertToString(key);
+                    currentLine.Document.Text += key switch
+                    {
+                        Key.OemQuotes => "\"",
+                        _ => keyConverter.ConvertToString(key)
+                    };
                 }
 
                 // fire the events
@@ -106,7 +123,8 @@ namespace Replay.Tests.Integration
                 }
                 else
                 {
-                    yield return (Key)keyConverter.ConvertFromString(character.ToString());
+                    if (character == '"') yield return Key.OemQuotes;
+                    else yield return (Key)keyConverter.ConvertFromString(character.ToString());
                 }
             }
         }

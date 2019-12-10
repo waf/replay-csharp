@@ -19,6 +19,7 @@ namespace Replay.Services
         LineDown,
         LineUp,
         ClearScreen,
+        CancelLine,
         SaveSession,
     }
 
@@ -46,6 +47,7 @@ namespace Replay.Services
                 (Control, Down) => GoToLastLine,
                 Up => LineUp,
                 Down => LineDown,
+                (Control, C) => CancelLine,
                 (Control, S) => SaveSession,
                 (Control, L) => ClearScreen,
                 _ => null

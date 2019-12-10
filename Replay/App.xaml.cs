@@ -28,6 +28,10 @@ namespace Replay
 
     public class DebugTraceListener : TraceListener
     {
+        public DebugTraceListener()
+        {
+            this.TraceOutputOptions = TraceOptions.Callstack | TraceOptions.LogicalOperationStack;
+        }
         public override void Write(string message)
         {
         }

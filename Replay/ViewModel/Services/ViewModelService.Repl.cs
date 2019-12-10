@@ -8,37 +8,49 @@ namespace Replay.ViewModel.Services
 {
     partial class ViewModelService
     {
+        private enum LineOperation
+        {
+            NoEvaluate = 0,
+            Evaluate = 1,
+            Reevaluate = 2 | Evaluate,
+        }
         /// <summary>
         /// The main REPL loop
         /// </summary>
         /// <param name="linevm">Current line being evaluated</param>
         /// <param name="stayOnCurrentLine">whether or not to progress to the next line of the REPL</param>
-        private async Task ReadEvalPrintLoop(WindowViewModel windowvm, LineViewModel linevm, bool stayOnCurrentLine)
+        private async Task ReadEvalPrintLoop(WindowViewModel windowvm, LineViewModel linevm, LineOperation mode)
         {
-            ClearPreviousOutput(linevm);
             // read
-            string text = linevm.Document.Text;
+            string text = string.Empty;
+            if(mode.HasFlag(LineOperation.Evaluate))
+            {
+                ClearPreviousOutput(linevm);
+                text = linevm.Document.Text;
+            }
 
             // eval
             var result = await services.EvaluateAsync(linevm.Id, text, new Logger(linevm));
-            if (result == LineEvaluationResult.IncompleteInput)
+            if (mode.HasFlag(LineOperation.Evaluate))
             {
-                linevm.Document.Text += Environment.NewLine;
-                return;
-            }
-            if (!string.IsNullOrEmpty(result.FormattedInput))
-            {
-                linevm.Document.Text = result.FormattedInput;
-            }
-
-            // print
-            if (result != LineEvaluationResult.NoOutput)
-            {
-                Print(linevm, result);
+                if (result == LineEvaluationResult.IncompleteInput)
+                {
+                    linevm.Document.Text += Environment.NewLine;
+                    return;
+                }
+                if (!string.IsNullOrEmpty(result.FormattedInput))
+                {
+                    linevm.Document.Text = result.FormattedInput;
+                }
+                // print
+                if (result != LineEvaluationResult.NoOutput)
+                {
+                    Print(linevm, result);
+                }
             }
 
             // loop
-            if (result.Exception == null && !stayOnCurrentLine)
+            if (!mode.HasFlag(LineOperation.Reevaluate) && result.Exception == null)
             {
                 var newLineId = MoveToNextLine(windowvm, linevm);
                 if(newLineId.HasValue)

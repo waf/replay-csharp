@@ -26,11 +26,12 @@ namespace Replay.UI
             if (line.Length == 0) return;
 
             string text = context.CurrentContext.Document.GetText(line);
-
             var spans = await replServices.HighlightAsync(lineNumber, text);
+
+            int offset = line.Offset;
             foreach (var span in spans)
             {
-                base.ChangeLinePart(line.Offset + span.Start, line.Offset + span.End, elements, context, part =>
+                base.ChangeLinePart(offset + span.Start, offset + span.End, elements, context, part =>
                 {
                     part.TextRunProperties.SetForegroundBrush(new SolidColorBrush(span.Color));
                 });

@@ -18,10 +18,13 @@ namespace Replay.Services
             this.objectFormatter = CSharpObjectFormatter.Instance;
         }
 
-        public async Task<LineEvaluationResult> FormatAsync(Document document, ScriptEvaluationResult evaluationResult = null)
+        public async Task<LineEvaluationResult> FormatAsync(Document document, ScriptEvaluationResult evaluationResult)
         {
+            // format the input
             var formattedDocument = await Formatter.FormatAsync(document);
             var formattedText = await formattedDocument.GetTextAsync();
+
+            // format the output
             return new LineEvaluationResult(
                 formattedText.ToString(),
                 FormatObject(evaluationResult?.ScriptResult?.ReturnValue),
@@ -32,7 +35,7 @@ namespace Replay.Services
 
         private string FormatObject(object obj)
         {
-            if (obj == null)
+            if (obj is null)
             {
                 // right now there's no way to determine the difference between "no value" and "null value"
                 // intercept all nulls and return null, instead of the string "null"

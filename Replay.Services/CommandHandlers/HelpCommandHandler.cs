@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace Replay.Services.CommandHandlers
 {
@@ -47,5 +48,8 @@ namespace Replay.Services.CommandHandlers
             @"exit – exit the application.",
             @"help – this help text :)"
         };
+
+        public static ColorSpan[] SyntaxHighlight { get; } =
+            new[] { new ColorSpan(Color.FromRgb(80, 250, 123), 0, 4) };
     }
 }

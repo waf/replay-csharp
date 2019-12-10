@@ -1,5 +1,4 @@
 ﻿using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Editing;
 using Replay.Logging;
 using Replay.Model;
@@ -7,6 +6,7 @@ using Replay.Services;
 using Replay.UI;
 using Replay.ViewModel.Services;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;

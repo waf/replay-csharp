@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.Classification;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Caching.Memory;
+using Replay.Services.CommandHandlers;
 using Replay.Services.Model;
 using Replay.UI;
 using System;
@@ -37,6 +38,11 @@ namespace Replay.Services
 
         public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(ReplSubmission submission)
         {
+            // note, we use a static here for performance reasons, we want syntax highlighting to not
+            // be dependent on all CommandHandler initialization.
+            if (submission.Code == "help") return HelpCommandHandler.SyntaxHighlight;
+            if (submission.Code == "exit") return ExitCommandHandler.SyntaxHighlight;
+
             IEnumerable<ClassifiedSpan> classified = await Classifier.GetClassifiedSpansAsync(
                 submission.Document,
                 TextSpan.FromBounds(0, submission.Code.Length)

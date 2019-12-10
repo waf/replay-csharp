@@ -29,6 +29,8 @@ namespace Replay.ViewModel.Services
 
             if(KeyboardShortcuts.MapToCommand(e) is ReplCommand command)
             {
+                e.Handled = true; // tricky! we're in an async void event handler. WPF will see this value
+                                  // first, as the event handler will complete before our task is does.
                 e.Handled = await HandleCommand(windowvm, linevm, command, previousHistoryPointer);
             }
         }
@@ -56,10 +58,13 @@ namespace Replay.ViewModel.Services
             switch (cmd)
             {
                 case ReplCommand.EvaluateCurrentLine:
-                    await ReadEvalPrintLoop(windowvm, linevm, stayOnCurrentLine: false);
+                    await ReadEvalPrintLoop(windowvm, linevm, LineOperation.Evaluate);
                     return true;
                 case ReplCommand.ReevaluateCurrentLine:
-                    await ReadEvalPrintLoop(windowvm, linevm, stayOnCurrentLine: true);
+                    await ReadEvalPrintLoop(windowvm, linevm, LineOperation.Reevaluate);
+                    return true;
+                case ReplCommand.CancelLine:
+                    await ReadEvalPrintLoop(windowvm, linevm, LineOperation.NoEvaluate);
                     return true;
                 case ReplCommand.CyclePreviousLine:
                     CycleThroughHistory(windowvm, linevm, previousHistoryPointer, -1);

@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Replay.UI"
-        xmlns:model="clr-namespace:Replay.Model"
         xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
         mc:Ignorable="d"
         x:Name="Window"
@@ -15,7 +14,7 @@
         FontSize="14pt"
         Foreground="{Binding Foreground, Mode=OneWay}"
         BorderThickness="1"
-        BorderBrush="#222"
+        BorderBrush="#3e3f45"
         WindowState="{Binding WindowState, Mode=TwoWay}"
         PreviewMouseWheel="Window_PreviewMouseWheel"
         Title="Replay" Height="512" Width="828">

@@ -3,6 +3,10 @@ using System;
 
 namespace Replay.Services.Model
 {
+    /// <summary>
+    /// The output of a <see cref="ReplSubmission"/>
+    /// <see cref="LineEvaluationResult"/> for a user-friendly view.
+    /// </summary>
     public class ScriptEvaluationResult
     {
         /// <summary>

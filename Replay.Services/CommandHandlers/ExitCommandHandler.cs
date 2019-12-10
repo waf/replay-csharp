@@ -3,6 +3,7 @@ using Replay.Services.Model;
 using System;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 
 namespace Replay.Services.CommandHandlers
 {
@@ -20,5 +21,8 @@ namespace Replay.Services.CommandHandlers
 
             return Task.FromResult(LineEvaluationResult.NoOutput);
         }
+
+        public static ColorSpan[] SyntaxHighlight { get; } =
+            new[] { new ColorSpan(Color.FromRgb(255, 85, 85), 0, 4) };
     }
 }

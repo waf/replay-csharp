@@ -1,5 +1,8 @@
 ﻿namespace Replay.Services.Model
 {
+    /// <summary>
+    /// The result of an evaluation
+    /// </summary>
     public class LineEvaluationResult
     {
         public string FormattedInput { get; }
