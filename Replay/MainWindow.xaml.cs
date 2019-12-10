@@ -118,7 +118,11 @@ namespace Replay
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 double delta = 0.1 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
-                this.Model.Zoom += delta;
+                double potentialZoom = Model.Zoom + delta;
+                if(potentialZoom > 0.25)
+                {
+                    this.Model.Zoom = potentialZoom;
+                }
             }
         }
 
