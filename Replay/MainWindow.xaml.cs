@@ -117,10 +117,8 @@ namespace Replay
             // scale the font size
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                int delta = e.Delta / Math.Abs(e.Delta); // -1 or +1;
-                this.Window.FontSize += delta;
-                Thickness padding = this.ReplEntries.Padding;
-                this.ReplEntries.Padding = new Thickness(padding.Left + delta, padding.Top, padding.Right, padding.Bottom);
+                double delta = 0.1 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
+                this.Model.Zoom += delta;
             }
         }
 

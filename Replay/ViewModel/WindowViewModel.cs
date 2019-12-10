@@ -53,6 +53,13 @@ namespace Replay.Model
         public ObservableCollection<LineViewModel> Entries { get; } =
             new ObservableCollection<LineViewModel> { new LineViewModel() };
 
+        public double Zoom
+        {
+            get => zoom;
+            set => SetField(ref zoom, value);
+        }
+        private double zoom = 1;
+
         /// <summary>
         /// The index of the REPL entry that is currently focused
         /// </summary>

@@ -14,7 +14,7 @@
             <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
-            <Style x:Key="ReplEditor" TargetType="{x:Type avalonedit:TextEditor}">
+            <Style x:Key="{x:Type avalonedit:TextEditor}" TargetType="{x:Type avalonedit:TextEditor}">
                 <Setter Property="Background" Value="Transparent"/>
                 <Setter Property="HorizontalScrollBarVisibility" Value="Hidden" />
                 <Setter Property="VerticalScrollBarVisibility" Value="Hidden" />
@@ -50,10 +50,9 @@
 
 
 
-            <Style x:Key="{x:Type local:IntellisenseWindow }" TargetType="{x:Type local:IntellisenseWindow}">
+            <Style x:Key="{x:Type local:IntellisenseWindow}" TargetType="{x:Type local:IntellisenseWindow}">
                 <Setter Property="WindowStyle" Value="None"/>
                 <Setter Property="ResizeMode" Value="NoResize" />
-                <Setter Property="AllowsTransparency" Value="True"/>
                 <Setter Property="FontSize" Value="12pt" />
                 <Setter Property="BorderThickness" Value="0" />
             </Style>

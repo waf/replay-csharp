@@ -32,10 +32,7 @@ namespace Replay.UI
 
             var prompt = new FormattedText(">",
                 CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
-                typeface, fontSize, foreground, 0)
-            {
-                PixelsPerDip = VisualTreeHelper.GetDpi(this).PixelsPerDip
-            };
+                typeface, fontSize, foreground, VisualTreeHelper.GetDpi(this).PixelsPerDip);
             drawingContext.DrawText(prompt, new Point(PromptOffset * fontSize, 0));
         }
 
