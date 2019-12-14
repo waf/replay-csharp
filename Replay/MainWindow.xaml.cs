@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Replay
 {
@@ -27,12 +28,22 @@ namespace Replay
         public MainWindow()
         {
             InitializeComponent();
+            DataObject.AddPastingHandler(this, OnPaste);
             this.DataContext = Model = new WindowViewModel();
             this.replServices = new ReplServices();
             this.viewModelService = new ViewModelService(replServices);
 
             replServices.UserConfigurationLoaded += ConfigureWindow;
             Task.Run(BackgroundInitializationAsync);
+        }
+
+        private void OnPaste(object sender, DataObjectPastingEventArgs e)
+        {
+            Dispatcher.BeginInvoke(
+                (Action)(() => this.viewModelService.HandlePaste(Model, Model.Entries[Model.FocusIndex], e)),
+                DispatcherPriority.ContextIdle,
+                null
+            ); ;
         }
 
         /// <summary>

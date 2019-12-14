@@ -26,6 +26,7 @@ namespace Replay.Services
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
+        private DataFlowAnalyzer dataFlowAnalyzer;
         private IReadOnlyCollection<ICommandHandler> commandHandlers;
         private IReadOnlyCollection<ISessionSaver> savers;
 
@@ -33,7 +34,6 @@ namespace Replay.Services
 
         public ReplServices()
         {
-            var io = new FileIO();
 
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
@@ -50,7 +50,7 @@ namespace Replay.Services
                 }),
                 Task.Run(() =>
                 {
-                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
+                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), FileIO.RealIO));
                     this.scriptEvaluator = new ScriptEvaluator(assemblies);
                     this.workspaceManager = new WorkspaceManager(assemblies);
                 })
@@ -63,16 +63,18 @@ namespace Replay.Services
                 {
                     new ExitCommandHandler(),
                     new HelpCommandHandler(),
-                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, io),
-                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
+                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, FileIO.RealIO),
+                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(FileIO.RealIO)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
                 };
 
                 this.savers = new ISessionSaver[]
                 {
-                    new CSharpSessionSaver(io, workspaceManager),
-                    new MarkdownSessionSaver(io),
+                    new CSharpSessionSaver(FileIO.RealIO, workspaceManager),
+                    new MarkdownSessionSaver(FileIO.RealIO),
                 };
+
+                this.dataFlowAnalyzer = new DataFlowAnalyzer();
             });
         }
 
@@ -101,9 +103,9 @@ namespace Replay.Services
                     .ConfigureAwait(false);
 
                 // Depending on which command was run (e.g. 'help'), we might not have a
-                // corresponding entry in our workspace. This will create an empty record
-                // if that's the case. Everything's easier to reason about if the
-                // viewmodel and the workspace have the same number of lines.
+                // corresponding entry in our workspace. The following line will create an
+                // empty record if that's the case. Everything's easier to reason about if
+                // the viewmodel and the workspace have the same number of lines.
                 workspaceManager.EnsureRecordForLine(lineId);
 
                 return result;
@@ -130,8 +132,19 @@ namespace Replay.Services
             }
         }
 
-        public IReadOnlyList<string> GetSupportedSaveFormats() =>
-            this.savers.Select(s => s.SaveFormat).ToList();
+        public async Task<IReadOnlyList<string>> GetSupportedSaveFormats()
+        {
+            await commandInitialization.ConfigureAwait(false);
+            return this.savers.Select(s => s.SaveFormat).ToList();
+        }
+
+        public async Task<IReadOnlyCollection<string>> GetUnboundVariables(int lineId, string code)
+        {
+            await commandInitialization.ConfigureAwait(false);
+
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            return await this.dataFlowAnalyzer.GetUnboundVariables(submission);
+        }
 
     }
 }

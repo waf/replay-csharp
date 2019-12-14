@@ -13,7 +13,9 @@ namespace Replay.Services
     /// </summary>
     public class FileIO
     {
-        public FileIO()
+        public static FileIO RealIO = new FileIO();
+
+        private FileIO()
         {
             GetFilesInDirectory = Directory.GetFiles;
             DoesFileExist = File.Exists;

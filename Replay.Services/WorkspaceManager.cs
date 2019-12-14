@@ -62,6 +62,11 @@ namespace Replay.Services
         {
             bool alreadyTracked = EditorToSubmission.TryGetValue(lineId, out var previousSubmission);
 
+            if(alreadyTracked && previousSubmission.Code == code && !assemblyReferences.Any())
+            {
+                return previousSubmission;
+            }
+
             var replSubmission = alreadyTracked
                 ? UpdateSubmission(previousSubmission, code, assemblyReferences)
                 : CreateSubmission(lineId, code, assemblyReferences);

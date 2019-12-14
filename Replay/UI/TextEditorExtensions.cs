@@ -14,5 +14,8 @@ namespace Replay.UI
 
         public static bool IsCaretOnFinalLine(this LineViewModel editor) =>
             !editor.Document.Text.Substring(editor.SelectionStart).Contains(Environment.NewLine);
+
+        public static bool IsTextSelected(this LineViewModel editor) =>
+            editor.SelectionLength != 0;
     }
 }

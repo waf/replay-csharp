@@ -21,6 +21,7 @@ namespace Replay.Services
         ClearScreen,
         CancelLine,
         SaveSession,
+        PasteAndPromptForMissingValues,
     }
 
     /// <summary>
@@ -50,6 +51,7 @@ namespace Replay.Services
                 (Control, C) => CancelLine,
                 (Control, S) => SaveSession,
                 (Control, L) => ClearScreen,
+                (Control, V) => PasteAndPromptForMissingValues,
                 _ => null
             };
 

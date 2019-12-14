@@ -12,16 +12,15 @@ namespace Replay.UI
     class SaveDialog
     {
         private readonly ReplServices replServices;
-        private readonly IReadOnlyList<string> supportedSaveFormats;
 
         public SaveDialog(ReplServices replServices)
         {
             this.replServices = replServices;
-            this.supportedSaveFormats = replServices.GetSupportedSaveFormats();
         }
 
         public async Task SaveAsync(IEnumerable<LineViewModel> lines)
         {
+            var supportedSaveFormats = await replServices.GetSupportedSaveFormats();
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = string.Join("|", supportedSaveFormats)

@@ -64,12 +64,21 @@ namespace Replay.Model
         }
 
         // ideally we could databind to these editor properties, but we can't,
-        // so instead we expose them as read-only properties on our view model.
+        // so instead we expose them as properties on our view model.
         private TextEditor editor;
         public void SetEditor(TextEditor lineEditor) =>
             this.editor = lineEditor;
         public int SelectionStart => editor?.SelectionStart ?? 0;
-        public int CaretOffset => editor?.CaretOffset ?? 0;
+        public int SelectionLength => editor?.SelectionLength ?? 0;
+        public int CaretOffset
+        {
+            get => editor?.CaretOffset ?? 0;
+            set
+            {
+                if (editor is null) return;
+                editor.CaretOffset = value;
+            }
+        }
 
         public TriggerIntellisense TriggerIntellisense { get; set; }
 
