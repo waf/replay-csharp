@@ -18,7 +18,7 @@ namespace Replay.Tests.Services
                 new DefaultAssemblies(
                     new DotNetAssemblyLocator(
                         () => new Process(),
-                        new FileIO()
+                        FileIO.RealIO
                     )
                 )
             );

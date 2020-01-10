@@ -20,13 +20,23 @@ namespace Replay.Services
     /// </summary>
     class WorkspaceManager
     {
-        private readonly ConcurrentDictionary<int, ReplSubmission> EditorToSubmission = new ConcurrentDictionary<int, ReplSubmission>();
+        // our datastructure is a dictionary of "line id" => "LinkedListNodes of submissions"
+        // This is a convenient structure because:
+        //    - We can retrieve repl submissions directly by id, useful when the user updates code on a line.
+        //    - There's a concept of order (via linked list nodes next/prev), which is required for correct code evaluation.
+        // As a side-benefit, both of the above cases are O(1) as well as line insertion/deletion.
+        private readonly ConcurrentDictionary<Guid, LinkedListNode<ReplSubmission>> EditorToSubmission;
+        private readonly LinkedList<ReplSubmission> OrderedSubmissions;
+
+        // dependencies
         private readonly AdhocWorkspace workspace;
         private readonly CSharpCompilationOptions compilationOptions;
         private readonly DefaultAssemblies defaultAssemblies;
 
         public WorkspaceManager(DefaultAssemblies defaultAssemblies)
         {
+            EditorToSubmission = new ConcurrentDictionary<Guid, LinkedListNode<ReplSubmission>>();
+            OrderedSubmissions = new LinkedList<ReplSubmission>();
             var host = MefHostServices.Create(MefHostServices.DefaultAssemblies);
             this.workspace = new AdhocWorkspace(host);
             this.defaultAssemblies = defaultAssemblies;
@@ -56,31 +66,49 @@ namespace Replay.Services
         /// for earlier code submissions will be automatically referenced.
         /// </param>
         public ReplSubmission CreateOrUpdateSubmission(
-            int lineId,
+            Guid lineId,
             string code = "",
+            bool speculative = false,
             params MetadataReference[] assemblyReferences)
         {
             bool alreadyTracked = EditorToSubmission.TryGetValue(lineId, out var previousSubmission);
 
-            if(alreadyTracked && previousSubmission.Code == code && !assemblyReferences.Any())
+            if(alreadyTracked)
             {
-                return previousSubmission;
+                if(previousSubmission.Value.Code == code && !assemblyReferences.Any())
+                {
+                    return previousSubmission.Value;
+                }
+                var updatedSubmission = UpdateSubmission(lineId, previousSubmission.Value, code, assemblyReferences, speculative);
+                if (speculative)
+                {
+                    return updatedSubmission;
+                }
+
+                previousSubmission.Value = updatedSubmission;
+                return updatedSubmission;
             }
 
-            var replSubmission = alreadyTracked
-                ? UpdateSubmission(previousSubmission, code, assemblyReferences)
-                : CreateSubmission(lineId, code, assemblyReferences);
+            var replSubmission = CreateSubmission(lineId, code, assemblyReferences);
 
-            EditorToSubmission[lineId] = replSubmission;
+            if(speculative)
+            {
+                return replSubmission;
+            }
+
+            var node = new LinkedListNode<ReplSubmission>(replSubmission);
+            OrderedSubmissions.AddLast(node);
+            EditorToSubmission[lineId] = node;
+
             return replSubmission;
         }
 
-        private ReplSubmission CreateSubmission(int lineId, string code, MetadataReference[] assemblyReferences)
+        private ReplSubmission CreateSubmission(Guid lineId, string code, MetadataReference[] assemblyReferences)
         {
             var name = "Script" + lineId;
             // we add the previous REPL submission as a project reference, so
             // APIs like Code Completion know about them.
-            var projectReferences = GetPreviousSubmission(lineId);
+            var projectReferences = GetPreviousSubmission(null);
             Project project = CreateProject(name, projectReferences, assemblyReferences);
             Document document = CreateDocument(project, name, code);
 
@@ -105,11 +133,14 @@ namespace Replay.Services
             return project;
         }
 
-        internal void EnsureRecordForLine(int lineId)
+        internal void EnsureRecordForLine(Guid lineId)
         {
             if(!EditorToSubmission.TryGetValue(lineId, out _))
             {
-                EditorToSubmission[lineId] = CreateSubmission(lineId, string.Empty, Array.Empty<MetadataReference>());
+                var replSubmission = CreateSubmission(lineId, string.Empty, Array.Empty<MetadataReference>());
+                var node = new LinkedListNode<ReplSubmission>(replSubmission);
+                OrderedSubmissions.AddLast(node);
+                EditorToSubmission[lineId] = node;
             }
         }
 
@@ -124,27 +155,42 @@ namespace Replay.Services
             return document;
         }
 
-        private ProjectReference[] GetPreviousSubmission(int lineId)
+        private ProjectReference[] GetPreviousSubmission(Guid? lineId)
         {
-            return lineId > 1
-                ? new[] { new ProjectReference(EditorToSubmission[lineId - 1].Document.Project.Id) }
-                : Array.Empty<ProjectReference>();
+            if(!OrderedSubmissions.Any())
+            {
+                return Array.Empty<ProjectReference>();
+            }
+
+            var projectId = lineId is null
+                ? OrderedSubmissions.Last.Value.Document.Project.Id // append
+                : EditorToSubmission[lineId.Value].Previous.Value.Document.Project.Id; // get the previous project
+
+            return new[] { new ProjectReference(projectId) };
         }
 
         private ReplSubmission UpdateSubmission(
+            Guid lineId,
             ReplSubmission replSubmission,
             string code,
-            IReadOnlyCollection<MetadataReference> references)
+            IReadOnlyCollection<MetadataReference> references,
+            bool speculative)
         {
+            var projectReferences = GetPreviousSubmission(lineId);
             var edit = workspace.CurrentSolution
                 .WithDocumentText(replSubmission.Document.Id, SourceText.From(code))
+                .WithProjectReferences(replSubmission.Document.Project.Id, projectReferences)
                 .AddMetadataReferences(replSubmission.Document.Project.Id, references);
 
-            var success = workspace.TryApplyChanges(edit);
+            if(speculative)
+            {
+                var speculativeDocument = edit.GetDocument(replSubmission.Document.Id);
+                return new ReplSubmission(code, speculativeDocument);
+            }
 
+            var success = workspace.TryApplyChanges(edit);
             // document has changed, requery to get the new one
             var document = workspace.CurrentSolution.GetDocument(replSubmission.Document.Id);
-
             return new ReplSubmission(code, document);
         }
 
@@ -158,19 +204,22 @@ namespace Replay.Services
                 .Select(ParseUsing)
                 .ToList();
 
-            return new SessionSnapshot(usings, this.EditorToSubmission);
+            return new SessionSnapshot(usings, this.OrderedSubmissions.ToList());
         }
+
+        public string Debug() =>
+            string.Join("\n------------\n", OrderedSubmissions.Select(sub => sub.Code));
     }
 
     public class SessionSnapshot
     {
-        public SessionSnapshot(IReadOnlyCollection<UsingDirectiveSyntax> initialUsingDirectives, IReadOnlyDictionary<int, ReplSubmission> submissions)
+        public SessionSnapshot(IReadOnlyCollection<UsingDirectiveSyntax> initialUsingDirectives, IReadOnlyList<ReplSubmission> submissions)
         {
             InitialUsingDirectives = initialUsingDirectives;
             Submissions = submissions;
         }
 
         public IReadOnlyCollection<UsingDirectiveSyntax> InitialUsingDirectives { get; }
-        public IReadOnlyDictionary<int, ReplSubmission> Submissions { get; }
+        public IReadOnlyList<ReplSubmission> Submissions { get; }
     }
 }

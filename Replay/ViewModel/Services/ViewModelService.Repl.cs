@@ -30,7 +30,7 @@ namespace Replay.ViewModel.Services
             }
 
             // eval
-            var result = await services.EvaluateAsync(linevm.Id, text, new Logger(linevm));
+            var result = await services.AppendEvaluationAsync(linevm.Id, text, new Logger(linevm));
             if (mode.HasFlag(LineOperation.Evaluate))
             {
                 if (result == LineEvaluationResult.IncompleteInput)
@@ -55,7 +55,7 @@ namespace Replay.ViewModel.Services
                 var newLineId = MoveToNextLine(windowvm, linevm);
                 if(newLineId.HasValue)
                 {
-                    _ = services.EvaluateAsync(newLineId.Value, "", new NullLogger()); // run empty evaluation to create a corresponding compilation in roslyn
+                    _ = services.AppendEvaluationAsync(newLineId.Value, "", new NullLogger()); // run empty evaluation to create a corresponding compilation in roslyn
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace Replay.ViewModel.Services
             return previousLinePointer;
         }
 
-        private static int? MoveToNextLine(WindowViewModel windowvm, LineViewModel linevm)
+        private static Guid? MoveToNextLine(WindowViewModel windowvm, LineViewModel linevm)
         {
             int currentIndex = windowvm.Entries.IndexOf(linevm);
 

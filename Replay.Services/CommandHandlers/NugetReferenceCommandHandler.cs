@@ -1,6 +1,7 @@
 ﻿using Replay.Services.Logging;
 using Replay.Services.Model;
 using Replay.Services.Nuget;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,7 +27,7 @@ namespace Replay.Services.CommandHandlers
 
         public bool CanHandle(string input) => input.StartsWith(CommandPrefix);
 
-        public async Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger)
+        public async Task<LineEvaluationResult> HandleAsync(Guid lineId, string text, IReplLogger logger)
         {
             string package = text.Substring(CommandPrefix.Length).Trim('"');
             var assemblies = (await nugetInstaller.Install(package, logger)).ToArray();

@@ -78,21 +78,21 @@ namespace Replay.Services
             });
         }
 
-        public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(int lineId, string code, int caretIndex)
+        public async Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(Guid lineId, string code, int caretIndex)
         {
             await requiredInitialization.ConfigureAwait(false);
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, speculative: true);
             return await codeCompleter.Complete(submission, caretIndex).ConfigureAwait(false);
         }
 
-        public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(int lineId, string code)
+        public async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(Guid lineId, string code)
         {
             await requiredInitialization.ConfigureAwait(false);
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, speculative: true);
             return await syntaxHighlighter.HighlightAsync(submission).ConfigureAwait(false);
         }
 
-        public async Task<LineEvaluationResult> EvaluateAsync(int lineId, string code, IReplLogger logger)
+        public async Task<LineEvaluationResult> AppendEvaluationAsync(Guid lineId, string code, IReplLogger logger)
         {
             await commandInitialization.ConfigureAwait(false);
             try
@@ -138,11 +138,11 @@ namespace Replay.Services
             return this.savers.Select(s => s.SaveFormat).ToList();
         }
 
-        public async Task<IReadOnlyCollection<string>> GetUnboundVariables(int lineId, string code)
+        public async Task<IReadOnlyCollection<string>> GetUnboundVariables(Guid lineId, string code)
         {
             await commandInitialization.ConfigureAwait(false);
 
-            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code);
+            var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, speculative: true);
             return await this.dataFlowAnalyzer.GetUnboundVariables(submission);
         }
 

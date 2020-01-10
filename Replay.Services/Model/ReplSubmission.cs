@@ -17,5 +17,8 @@ namespace Replay.Services.Model
 
         public string Code { get; }
         public Document Document { get; }
+
+        public override string ToString() =>
+            Document.Id + ": " + Code;
     }
 }

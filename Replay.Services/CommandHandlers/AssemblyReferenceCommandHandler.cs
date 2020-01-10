@@ -28,7 +28,7 @@ namespace Replay.Services.CommandHandlers
 
         public bool CanHandle(string input) => input.StartsWith(CommandPrefix);
 
-        public async Task<LineEvaluationResult> HandleAsync(int lineId, string input, IReplLogger logger)
+        public async Task<LineEvaluationResult> HandleAsync(Guid lineId, string input, IReplLogger logger)
         {
             string assemblyFile = input.Substring(CommandPrefix.Length).Trim('"');
             var assemblies = DotNetAssemblyLocator

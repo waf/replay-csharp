@@ -1,5 +1,6 @@
 ﻿using Replay.Services.Logging;
 using Replay.Services.Model;
+using System;
 using System.Threading.Tasks;
 
 namespace Replay.Services.CommandHandlers
@@ -10,6 +11,6 @@ namespace Replay.Services.CommandHandlers
     interface ICommandHandler
     {
         bool CanHandle(string input);
-        Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger);
+        Task<LineEvaluationResult> HandleAsync(Guid lineId, string text, IReplLogger logger);
     }
 }

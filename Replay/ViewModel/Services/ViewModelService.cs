@@ -1,4 +1,5 @@
-﻿using Replay.Model;
+﻿using Replay.Logging;
+using Replay.Model;
 using Replay.Services;
 using Replay.UI;
 using System;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Replay.ViewModel.Services
 {
@@ -55,16 +57,20 @@ namespace Replay.ViewModel.Services
             }
         }
 
-        public async Task HandlePaste(WindowViewModel windowvm, LineViewModel linevm, DataObjectPastingEventArgs e)
+        public async Task HandleSmartPaste(LineViewModel linevm, string pastedText)
         {
-            var unboundVariables = await services.GetUnboundVariables(linevm.Id, linevm.Document.Text);
-            var declarations = unboundVariables.Select(name => $"var {name} = ;").ToArray();
-            if(declarations.Any())
+            var unboundVariables = await services.GetUnboundVariables(linevm.Id, pastedText);
+            if(!unboundVariables.Any())
             {
-                linevm.Document.Text =
-                    string.Join(Environment.NewLine, declarations)
-                    + Environment.NewLine + Environment.NewLine
-                    + linevm.Document.Text;
+                linevm.Document.Text = pastedText.Trim();
+            }
+            else
+            {
+                var declarations = unboundVariables.Select(name => $"var {name} = ;").ToArray();
+
+                linevm.Document.Text = string.Join(Environment.NewLine, declarations)
+                    + Environment.NewLine
+                    + pastedText.Trim();
                 linevm.CaretOffset = declarations.First().Length - 1;
             }
         }
@@ -94,7 +100,7 @@ namespace Replay.ViewModel.Services
                     await CompleteCode(windowvm, linevm);
                     return true;
                 case ReplCommand.GoToFirstLine:
-                    windowvm.FocusIndex = 0;
+                    windowvm.FocusIndex = windowvm.MinimumFocusIndex;
                     return true;
                 case ReplCommand.GoToLastLine:
                     windowvm.FocusIndex = windowvm.Entries.Count - 1;
@@ -112,9 +118,11 @@ namespace Replay.ViewModel.Services
                 case ReplCommand.LineUp when linevm.IsCaretOnFirstLine():
                     windowvm.FocusIndex--;
                     return true;
+                case ReplCommand.SmartPaste:
+                    await HandleSmartPaste(linevm, Clipboard.GetText());
+                    return true;
                 case ReplCommand.LineUp:
                 case ReplCommand.LineDown:
-                case ReplCommand.PasteAndPromptForMissingValues:
                     // don't intercept keyboard for these commands.
                     return false;
                 default:

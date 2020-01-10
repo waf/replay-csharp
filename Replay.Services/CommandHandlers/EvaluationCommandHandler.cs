@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Replay.Services.Logging;
 using Replay.Services.Model;
+using System;
 using System.Threading.Tasks;
 
 namespace Replay.Services.CommandHandlers
@@ -24,7 +25,7 @@ namespace Replay.Services.CommandHandlers
 
         public bool CanHandle(string input) => true;
 
-        public async Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger)
+        public async Task<LineEvaluationResult> HandleAsync(Guid lineId, string text, IReplLogger logger)
         {
             // bail out if it's not a complete statement, but first try automatic completions
             var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync(text);

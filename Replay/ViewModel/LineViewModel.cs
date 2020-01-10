@@ -16,9 +16,7 @@ namespace Replay.Model
     /// </summary>
     public class LineViewModel : INotifyPropertyChanged
     {
-        private static int incrementingId = 0;
-
-        public int Id { get; } = Interlocked.Increment(ref incrementingId);
+        public Guid Id { get; } = Guid.NewGuid();
 
         bool isFocused;
         public bool IsFocused

@@ -13,7 +13,7 @@ namespace Replay.Services.CommandHandlers
         public bool CanHandle(string input) =>
             "help".Equals(input, StringComparison.OrdinalIgnoreCase);
 
-        public Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger)
+        public Task<LineEvaluationResult> HandleAsync(Guid lineId, string text, IReplLogger logger)
         {
             var help = new[]
             {
@@ -46,7 +46,6 @@ namespace Replay.Services.CommandHandlers
             @"#nuget mypackagename – search for and install a nuget package.",
             @"#r ""path/to/lib.dll"" – reference a DLL.",
             @"exit – exit the application.",
-            @"help – this help text :)"
         };
 
         public static ColorSpan[] SyntaxHighlight { get; } =

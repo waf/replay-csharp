@@ -28,22 +28,12 @@ namespace Replay
         public MainWindow()
         {
             InitializeComponent();
-            DataObject.AddPastingHandler(this, OnPaste);
             this.DataContext = Model = new WindowViewModel();
             this.replServices = new ReplServices();
             this.viewModelService = new ViewModelService(replServices);
 
             replServices.UserConfigurationLoaded += ConfigureWindow;
             Task.Run(BackgroundInitializationAsync);
-        }
-
-        private void OnPaste(object sender, DataObjectPastingEventArgs e)
-        {
-            Dispatcher.BeginInvoke(
-                (Action)(() => this.viewModelService.HandlePaste(Model, Model.Entries[Model.FocusIndex], e)),
-                DispatcherPriority.ContextIdle,
-                null
-            ); ;
         }
 
         /// <summary>
@@ -128,7 +118,7 @@ namespace Replay
             // scale the font size
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
             {
-                double delta = 0.1 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
+                double delta = 0.05 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
                 double potentialZoom = Model.Zoom + delta;
                 if(potentialZoom > 0.25)
                 {
@@ -164,9 +154,9 @@ namespace Replay
         {
             const string initializationCode = @"using System; Console.WriteLine(""Hello""); ""World""";
             return Task.WhenAll(
-                replServices.HighlightAsync(0, initializationCode),
-                replServices.CompleteCodeAsync(0, initializationCode, initializationCode.Length),
-                replServices.EvaluateAsync(0, initializationCode, new NullLogger())
+                replServices.HighlightAsync(Guid.Empty, initializationCode),
+                replServices.CompleteCodeAsync(Guid.Empty, initializationCode, initializationCode.Length),
+                replServices.AppendEvaluationAsync(Guid.Empty, initializationCode, new NullLogger())
             );
         }
 

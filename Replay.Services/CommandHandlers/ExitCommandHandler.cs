@@ -14,7 +14,7 @@ namespace Replay.Services.CommandHandlers
     {
         public bool CanHandle(string input) => "exit".Equals(input, StringComparison.OrdinalIgnoreCase);
 
-        public Task<LineEvaluationResult> HandleAsync(int lineId, string text, IReplLogger logger)
+        public Task<LineEvaluationResult> HandleAsync(Guid lineId, string text, IReplLogger logger)
         {
             // this line exits the application. The subsequent lines don't run.
             Application.Current.Shutdown();

@@ -31,7 +31,7 @@ namespace Replay.Tests.Integration
             for (int i = 0; i < submissions.Count; i++)
             {
                 var submission = submissions[i];
-                var result = await replServices.EvaluateAsync(i, submission.FormattedInput, new NullLogger());
+                var result = await replServices.AppendEvaluationAsync(Guid.NewGuid(), submission.FormattedInput, new NullLogger());
                 Assert.Equal(submission.Exception, result.Exception);
                 Assert.Equal(submission.Result, result.Result);
                 Assert.Equal(submission.StandardOutput, result.StandardOutput);

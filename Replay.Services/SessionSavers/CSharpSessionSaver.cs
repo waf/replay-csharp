@@ -89,8 +89,6 @@ namespace Replay.Services.SessionSavers
         {
             var replHistory = snapshot
                 .Submissions
-                .OrderBy(s => s.Key)
-                .Select(s => s.Value)
                 .Skip(1) //skip the first because it's our warmup
                 .Select(s => s.Document.GetSyntaxRootAsync());
 

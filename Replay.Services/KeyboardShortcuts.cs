@@ -21,7 +21,7 @@ namespace Replay.Services
         ClearScreen,
         CancelLine,
         SaveSession,
-        PasteAndPromptForMissingValues,
+        SmartPaste,
     }
 
     /// <summary>
@@ -51,7 +51,7 @@ namespace Replay.Services
                 (Control, C) => CancelLine,
                 (Control, S) => SaveSession,
                 (Control, L) => ClearScreen,
-                (Control, V) => PasteAndPromptForMissingValues,
+                (Control | Shift, V) => SmartPaste,
                 _ => null
             };
 
@@ -64,8 +64,9 @@ namespace Replay.Services
             @"Ctrl-Space or Tab – Open intellisense.",
             @"PageUp or Ctrl-Up – Go to the first line of the session.",
             @"PageDown or Ctrl-Down – Go to the last line of the session.",
-            @"Ctrl-S – Save your session (as a C# or Markdown file).",
             @"Ctrl-L – Clear the screen.",
+            @"Ctrl-S – Export your session (as a C# or Markdown file).",
+            @"Ctrl-Shift-V – Paste clipboard contents and extract unbound variables.",
         };
 
         private static object GetPressedKey(KeyEventArgs keyEvent) =>

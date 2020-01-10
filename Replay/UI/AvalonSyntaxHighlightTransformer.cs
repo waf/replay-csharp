@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
 using Replay.Services;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -13,9 +14,9 @@ namespace Replay.UI
     class AvalonSyntaxHighlightTransformer : AsyncDocumentColorizingTransformer
     {
         private readonly ReplServices replServices;
-        private readonly int lineNumber;
+        private readonly Guid lineNumber;
 
-        public AvalonSyntaxHighlightTransformer(ReplServices replServices, int lineNumber)
+        public AvalonSyntaxHighlightTransformer(ReplServices replServices, Guid lineNumber)
         {
             this.replServices = replServices;
             this.lineNumber = lineNumber;
