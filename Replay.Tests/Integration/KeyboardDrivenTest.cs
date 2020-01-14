@@ -129,18 +129,4 @@ namespace Replay.Tests.Integration
             }
         }
     }
-
-    /// <summary>
-    /// Building a ReplServices is expensive, this will allow re-use of a single
-    /// across all tests.
-    /// </summary>
-    public class ReplServicesFixture
-    {
-        public ReplServices ReplServices { get; }
-
-        public ReplServicesFixture()
-        {
-            this.ReplServices = new ReplServices();
-        }
-    }
 }

@@ -34,7 +34,6 @@ namespace Replay.Services
 
         public ReplServices()
         {
-
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
             requiredInitialization = Task.WhenAll(
