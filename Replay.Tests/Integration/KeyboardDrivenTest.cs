@@ -1,4 +1,5 @@
-﻿using ICSharpCode.AvalonEdit.Document;
+﻿using ICSharpCode.AvalonEdit;
+using ICSharpCode.AvalonEdit.Document;
 using NSubstitute;
 using Replay.Model;
 using Replay.Services;
@@ -27,6 +28,11 @@ namespace Replay.Tests.Integration
             Key.LeftCtrl, Key.RightCtrl,
             Key.Left, Key.Right, Key.Up, Key.Down
         };
+        private readonly IReadOnlyDictionary<string, Key> CharToKey = new Dictionary<string, Key>
+        {
+            { "\"", Key.OemQuotes },
+            { ".", Key.OemPeriod },
+        };
 
         public KeyboardDrivenTest(ReplServicesFixture replServicesFixture)
         {
@@ -34,7 +40,7 @@ namespace Replay.Tests.Integration
         }
 
         [WpfFact]
-        public async Task ExecuteHelp_ThenTabComplete_ProvidesTabCompletions()
+        public async Task ExecuteHelp_CompletionsViaTab_ProvidesCompletions()
         {
             string input = "help~Enter~~Tab~";
 
@@ -48,43 +54,64 @@ namespace Replay.Tests.Integration
         }
 
         [WpfFact]
-        public async Task Execute()
+        public async Task SystemConsole_CompletionsViaDot_ProvidesCompletions()
         {
-            string input = "~Enter~~Enter~\"HELLO\"~Enter~";
+            string input = "Console.";
+
+            var vm = new WindowViewModel();
+            IReadOnlyCollection<ReplCompletion> completions = null;
+
+            // system under test
+            await TypeInput(input, vm, (c, _) => completions = c);
+
+            var names = completions.Select(c => c.CompletionItem.DisplayText).ToArray();
+
+            Assert.Contains("Write", names);
+            Assert.Contains("WriteLine", names);
+            Assert.DoesNotContain("abstract", names);
+        }
+
+        [WpfFact]
+        public async Task BlankLines_ThenString_ReturnsString()
+        {
+            string input = "~Enter~~Enter~\"Hello World\"~Enter~";
 
             var vm = new WindowViewModel();
 
             // system under test
             await TypeInput(input, vm);
 
-            Assert.Equal("\"HELLO\"", vm.Entries[2].Result);
+            Assert.Equal("\"Hello World\"", vm.Entries[2].Result);
         }
 
         private async Task TypeInput(string input, WindowViewModel vm, TriggerIntellisense callback = null)
         {
-            var keys = ConvertToKeys(input).ToList();
             var keyboard = Keyboard.PrimaryDevice;
             var source = Substitute.For<PresentationSource>();
-            foreach (var key in keys)
+            foreach (var character in ConvertToKeys(input))
             {
-                foreach (var line in vm.Entries)
+                var currentLine = vm.Entries[vm.FocusIndex];
+                if(currentLine.Document is null)
                 {
-                    line.Document ??= new TextDocument(); // this would normally be done by databinding
-                    line.TriggerIntellisense = callback ?? ((items, onClose) => { });
+                    // this would normally be done by databinding
+                    var editor = new TextEditor { Document = new TextDocument() };
+                    currentLine.Document ??= editor.Document;
+                    currentLine.SetEditor(editor);
+                    currentLine.TriggerIntellisense ??= callback ?? ((items, onClose) => { });
                 }
 
-                // type the keys
-                var currentLine = vm.Entries[vm.FocusIndex];
+                // convert a character like '.' to OemPeriod
+                Key key = CharToKey.ContainsKey(character)
+                    ? CharToKey[character]
+                    : (Key)keyConverter.ConvertFromString(character);
+
+                // type the key
                 if (!NoOutputKeys.Contains(key))
                 {
-                    currentLine.Document.Text += key switch
-                    {
-                        Key.OemQuotes => "\"",
-                        _ => keyConverter.ConvertToString(key)
-                    };
+                    currentLine.Document.Text += character;
                 }
+                currentLine.CaretOffset = currentLine.Document.Text.Length;
 
-                // fire the events
                 var keyDown = new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent };
                 await viewModelService.HandleKeyDown(vm, currentLine, keyDown);
                 var keyUp = new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.KeyUpEvent };
@@ -95,36 +122,34 @@ namespace Replay.Tests.Integration
         /// <summary>
         /// Map a string to a series of key presses that would type that string.
         /// If the string contains a sequence like ~Enter~ or ~Tab~ it is mapped to that key.
+        /// e.g. maps "Consol~Tab~" to ["C" "o" "n" "s" "o" "l" "Tab" ]
         /// </summary>
-        private IEnumerable<Key> ConvertToKeys(string input)
+        private IEnumerable<string> ConvertToKeys(string input)
         {
             List<char> specialKey = null;
             foreach (var character in input)
             {
-                if(character == '~')
+                if(character is '~')
                 {
-                    bool hasSpecialKey = specialKey is { };
-                    if(hasSpecialKey)
+                    if(specialKey is null)
                     {
-                        yield return (Key)keyConverter.ConvertFromString(string.Join("", specialKey));
-                        specialKey = null;
-                        continue;
+                        specialKey = new List<char>();
                     }
                     else
                     {
-                        specialKey = new List<char>();
-                        continue;
+                        yield return string.Join("", specialKey);
+                        specialKey = null;
                     }
+                    continue;
                 }
 
-                if (specialKey is { })
+                if (specialKey is null)
                 {
-                    specialKey.Add(character);
+                    yield return character.ToString();
                 }
                 else
                 {
-                    if (character == '"') yield return Key.OemQuotes;
-                    else yield return (Key)keyConverter.ConvertFromString(character.ToString());
+                    specialKey.Add(character);
                 }
             }
         }
