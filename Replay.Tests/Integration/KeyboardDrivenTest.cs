@@ -31,6 +31,7 @@ namespace Replay.Tests.Integration
         private readonly IReadOnlyDictionary<string, Key> CharToKey = new Dictionary<string, Key>
         {
             { "\"", Key.OemQuotes },
+            { "#", Key.D3 },
             { ".", Key.OemPeriod },
         };
 
@@ -51,6 +52,19 @@ namespace Replay.Tests.Integration
             await TypeInput(input, vm, (c, _) => completions = c);
 
             Assert.NotEmpty(completions);
+        }
+
+        [WpfFact]
+        public async Task ExecuteNuget_ValidNugetPackage_InstallsPackage()
+        {
+            string input = "#nuget newtonsoft.json~Enter~";
+
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(input, vm);
+
+            Assert.Contains("Installation complete for Newtonsoft.Json", vm.Entries[0].StandardOutput);
         }
 
         [WpfFact]
