@@ -1,0 +1,33 @@
+name: Master Build
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    
+    - name: Install Dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.100
+        
+    - name: Install Codecov
+      run: dotnet tool install --global Codecov.Tool
+      
+    - name: Build
+      run: dotnet build
+      
+    - name: Test
+      shell: pwsh
+      run: |
+        dotnet test --collect:"XPlat Code Coverage" --settings Replay.Tests\TestCoverageRunSettings.xml
+        $testCoverage = Get-ChildItem Replay.Tests\TestResults\*\*.xml
+        codecov -t ${{ secrets.CODECOV_TOKEN }} -f $testCoverage[0].ToString()
+        
