@@ -59,7 +59,7 @@ namespace Replay.Services.AssemblyLoading
         {
             if (line.Contains(" Base Path:"))
             {
-                int index = line.IndexOf("dotnet") + 6;
+                int index = line.IndexOf(@"\sdk\");
                 var substring = new Range(" Base Path: ".Length, index);
                 path = line[substring].Trim();
                 return true;
