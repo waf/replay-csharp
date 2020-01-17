@@ -3,6 +3,7 @@ using ICSharpCode.AvalonEdit.Document;
 using NSubstitute;
 using Replay.Model;
 using Replay.Services;
+using Replay.Tests.TestHelpers;
 using Replay.ViewModel.Services;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using static System.Windows.Input.Key;
+using static System.Windows.Input.ModifierKeys;
 using Xunit;
 
 namespace Replay.Tests.Integration
@@ -20,6 +23,7 @@ namespace Replay.Tests.Integration
         private readonly ViewModelService viewModelService;
 
         private readonly KeyConverter keyConverter = new KeyConverter();
+        /*
         private readonly IReadOnlyCollection<Key> NoOutputKeys = new[]
         {
             Key.Tab,
@@ -28,11 +32,12 @@ namespace Replay.Tests.Integration
             Key.LeftCtrl, Key.RightCtrl,
             Key.Left, Key.Right, Key.Up, Key.Down
         };
-        private readonly IReadOnlyDictionary<string, Key> CharToKey = new Dictionary<string, Key>
+        */
+        private readonly IReadOnlyDictionary<char, Key> CharToKey = new Dictionary<char, Key>
         {
-            { "\"", Key.OemQuotes },
-            { "#", Key.D3 },
-            { ".", Key.OemPeriod },
+            { '"', OemQuotes },
+            { '#', D3 },
+            { '.', OemPeriod },
         };
 
         public KeyboardDrivenTest(ReplServicesFixture replServicesFixture)
@@ -43,13 +48,14 @@ namespace Replay.Tests.Integration
         [WpfFact]
         public async Task ExecuteHelp_CompletionsViaTab_ProvidesCompletions()
         {
-            string input = "help~Enter~~Tab~";
-
-            var vm = new WindowViewModel();
             IReadOnlyCollection<ReplCompletion> completions = null;
 
             // system under test
-            await TypeInput(input, vm, (c, _) => completions = c);
+            await TypeInput(
+                $"help{Enter}{Tab}",
+                new WindowViewModel(),
+                (c, _) => completions = c
+            );
 
             Assert.NotEmpty(completions);
         }
@@ -57,12 +63,13 @@ namespace Replay.Tests.Integration
         [WpfFact]
         public async Task ExecuteNuget_ValidNugetPackage_InstallsPackage()
         {
-            string input = "#nuget newtonsoft.json~Enter~";
-
             var vm = new WindowViewModel();
 
             // system under test
-            await TypeInput(input, vm);
+            await TypeInput(
+                $"#nuget newtonsoft.json{Enter}",
+                vm
+            );
 
             Assert.Contains("Installation complete for Newtonsoft.Json", vm.Entries[0].StandardOutput);
         }
@@ -70,13 +77,14 @@ namespace Replay.Tests.Integration
         [WpfFact]
         public async Task SystemConsole_CompletionsViaDot_ProvidesCompletions()
         {
-            string input = "Console.";
-
-            var vm = new WindowViewModel();
             IReadOnlyCollection<ReplCompletion> completions = null;
 
             // system under test
-            await TypeInput(input, vm, (c, _) => completions = c);
+            await TypeInput(
+                $"Console.",
+                new WindowViewModel(),
+                (c, _) => completions = c
+            );
 
             var names = completions.Select(c => c.CompletionItem.DisplayText).ToArray();
 
@@ -88,48 +96,100 @@ namespace Replay.Tests.Integration
         [WpfFact]
         public async Task BlankLines_ThenString_ReturnsString()
         {
-            string input = "~Enter~~Enter~\"Hello World\"~Enter~";
-
             var vm = new WindowViewModel();
 
             // system under test
-            await TypeInput(input, vm);
+            await TypeInput(
+                $"{Enter}{Enter}\"Hello World\"{Enter}",
+                vm
+            );
 
             Assert.Equal("\"Hello World\"", vm.Entries[2].Result);
         }
 
-        private async Task TypeInput(string input, WindowViewModel vm, TriggerIntellisense callback = null)
+        [WpfFact]
+        public async Task Content_ThenClearScreen_ClearsTheScreen()
         {
-            var keyboard = Keyboard.PrimaryDevice;
-            var source = Substitute.For<PresentationSource>();
-            foreach (var character in ConvertToKeys(input))
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $"{Enter}{Enter}\"Hello\"{Enter}\"World\"{Control}{L}",
+                vm
+            );
+
+            Assert.Equal(3, vm.MinimumFocusIndex);
+            Assert.Equal(3, vm.FocusIndex);
+            Assert.Equal("\"World\"", vm.Entries[3].Document.Text);
+            // even though cleared, we should still have the earlier history
+            Assert.Equal("\"Hello\"", vm.Entries[2].Document.Text);
+        }
+
+        [WpfFact]
+        public async Task SmartPaste_UndefinedVariable_DefinesVariable()
+        {
+            var vm = new WindowViewModel();
+            const string code = "var myvar = undefined + 5;";
+            Clipboard.SetText($"  {code}  ");
+
+            // system under test
+            await TypeInput(
+                $"{Control}{Shift}{V}",
+                vm
+            );
+
+            Assert.Equal(
+                "var undefined = ;" + Environment.NewLine + code,
+                vm.Entries[0].Document.Text
+            );
+            Assert.Equal("var undefined = ".Length, vm.Entries[0].CaretOffset);
+        }
+
+        private async Task TypeInput(FormattableString inputSequence, WindowViewModel vm, TriggerIntellisense callback = null)
+        {
+            var device = new MockKeyboardDevice(InputManager.Current);
+            ModifierKeys modifier = ModifierKeys.None;
+            foreach (var input in ConvertToKeys(inputSequence))
             {
                 var currentLine = vm.Entries[vm.FocusIndex];
+
+                // set up document state; in the real app this is done by databinding
                 if(currentLine.Document is null)
                 {
-                    // this would normally be done by databinding
                     var editor = new TextEditor { Document = new TextDocument() };
                     currentLine.Document ??= editor.Document;
                     currentLine.SetEditor(editor);
                     currentLine.TriggerIntellisense ??= callback ?? ((items, onClose) => { });
                 }
 
-                // convert a character like '.' to OemPeriod
-                Key key = CharToKey.ContainsKey(character)
-                    ? CharToKey[character]
-                    : (Key)keyConverter.ConvertFromString(character);
-
-                // type the key
-                if (!NoOutputKeys.Contains(key))
+                // convert to input to the appropriate key press
+                Key key;
+                switch (input)
                 {
-                    currentLine.Document.Text += character;
+                    case char ch: // type the character into the editor and set up the key event
+                        currentLine.Document.Text += ch;
+                        currentLine.CaretOffset = currentLine.Document.Text.Length;
+                        key = CharToKey.ContainsKey(ch)
+                            ? CharToKey[ch]
+                            : (Key)keyConverter.ConvertFromString(ch.ToString());
+                        break;
+                    case Key k:
+                        key = k;
+                        break;
+                    case ModifierKeys mod:
+                        modifier |= mod;
+                        continue;
+                    default:
+                        throw new InvalidOperationException("Unhandled type: " + input.GetType());
                 }
-                currentLine.CaretOffset = currentLine.Document.Text.Length;
 
-                var keyDown = new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.KeyDownEvent };
+                device.ModifierKeysImpl = modifier;
+                var keyDown = device.CreateKeyEventArgs(key, Keyboard.KeyDownEvent);
                 await viewModelService.HandleKeyDown(vm, currentLine, keyDown);
-                var keyUp = new KeyEventArgs(keyboard, source, 0, key) { RoutedEvent = Keyboard.KeyUpEvent };
+                var keyUp = device.CreateKeyEventArgs(key, Keyboard.KeyUpEvent);
                 await viewModelService.HandleKeyUp(vm, currentLine, keyUp);
+
+                modifier = ModifierKeys.None;
             }
         }
 
@@ -138,32 +198,23 @@ namespace Replay.Tests.Integration
         /// If the string contains a sequence like ~Enter~ or ~Tab~ it is mapped to that key.
         /// e.g. maps "Consol~Tab~" to ["C" "o" "n" "s" "o" "l" "Tab" ]
         /// </summary>
-        private IEnumerable<string> ConvertToKeys(string input)
+        private IEnumerable<object> ConvertToKeys(FormattableString input)
         {
-            List<char> specialKey = null;
-            foreach (var character in input)
+            for (int i = 0; i < input.Format.Length; i++)
             {
-                if(character is '~')
-                {
-                    if(specialKey is null)
-                    {
-                        specialKey = new List<char>();
-                    }
-                    else
-                    {
-                        yield return string.Join("", specialKey);
-                        specialKey = null;
-                    }
-                    continue;
-                }
+                var ch = input.Format[i];
 
-                if (specialKey is null)
+                if (ch == '{'
+                    && i + 2 < input.Format.Length
+                    && char.IsDigit(input.Format[i + 1])
+                    && input.Format[i + 2] == '}')
                 {
-                    yield return character.ToString();
+                    yield return input.GetArgument((int)char.GetNumericValue(input.Format[i + 1]));
+                    i += 2;
                 }
                 else
                 {
-                    specialKey.Add(character);
+                    yield return ch;
                 }
             }
         }

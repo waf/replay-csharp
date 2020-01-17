@@ -90,7 +90,7 @@ namespace Replay.Tests.Services
 
             // system under test
             await scriptEvaluator.AddReferences(
-                MetadataReference.CreateFromFile("./TestAssemblies/NodaTime.dll")
+                MetadataReference.CreateFromFile("./TestHelpers/NodaTime.dll")
             );
 
             var success = await scriptEvaluator.EvaluateAsync(instantiationRequiringReference);

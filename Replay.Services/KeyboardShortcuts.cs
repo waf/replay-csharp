@@ -70,8 +70,8 @@ namespace Replay.Services
         };
 
         private static object GetPressedKey(KeyEventArgs keyEvent) =>
-            Keyboard.Modifiers == ModifierKeys.None
+            keyEvent.KeyboardDevice.Modifiers == ModifierKeys.None
             ? keyEvent.Key as object
-            : (Keyboard.Modifiers, keyEvent.Key == Key.System ? keyEvent.SystemKey : keyEvent.Key);
+            : (keyEvent.KeyboardDevice.Modifiers, keyEvent.Key == Key.System ? keyEvent.SystemKey : keyEvent.Key);
     }
 }

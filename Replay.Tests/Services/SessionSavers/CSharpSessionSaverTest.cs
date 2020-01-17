@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Replay.Services.SessionSavers;
+using System.Threading;
 
 namespace Replay.Tests.Services.SessionSavers
 {
@@ -18,8 +19,14 @@ namespace Replay.Tests.Services.SessionSavers
         public CSharpSessionSaverTest()
         {
             var io = FileIO.CreateRealIO();
-            io.WriteAllLinesAsync = async (filename, text, _, __) => writtenText = text.Single();
+            io.WriteAllLinesAsync = CaptureWrittenText;
             this.replServices = new ReplServices(io);
+
+            Task CaptureWrittenText(string path, IEnumerable<string> text, Encoding encoding, CancellationToken cancellationToken = default)
+            {
+                writtenText = text.Single();
+                return Task.CompletedTask;
+            }
         }
 
         // warmup, simulating warmup that the actual application does

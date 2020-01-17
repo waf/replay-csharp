@@ -24,16 +24,16 @@ namespace Replay.Tests.UI
         }
 
         [WpfFact]
-        public void Highlight()
+        public void HighlightTransformer_ProvidedLine_TransformsLine()
         {
             var editor = new TextEditor { Document = new TextDocument() };
             editor.TextArea.TextView.LineTransformers.Add(
                 transformer
             );
             editor.Document.Text = @"var x = ""Hello World""";
-            editor.TextArea.TextView.EnsureVisualLines();
             var line = editor.Document.Lines.First();
 
+            // trigger syntax highlighting using the transformer
             var visualLine = editor.TextArea.TextView.GetOrConstructVisualLine(line);
 
             var expectedTokens = new[] { "var", " ", "x", " ", "=", " ", @"""Hello World""" };
@@ -46,7 +46,6 @@ namespace Replay.Tests.UI
                 visualLine.Elements,
                 element => Assert.NotNull(element.TextRunProperties.ForegroundBrush)
             );
-                
         }
     }
 }

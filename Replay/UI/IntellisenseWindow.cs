@@ -29,7 +29,11 @@ namespace Replay.UI
 
             SetCompletionBounds(textBeingCompleted, span);
             PopulateCompletionDropDown(completions, textBeingCompleted);
-            Show();
+
+            if (PresentationSource.CurrentSources.OfType<object>().Any()) // render headless if we have no PresentationSource, for unit tests.
+            {
+                Show();
+            }
         }
 
         protected override void OnClosed(EventArgs e)

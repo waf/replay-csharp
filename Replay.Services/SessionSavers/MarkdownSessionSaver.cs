@@ -10,7 +10,7 @@ namespace Replay.Services.SessionSavers
     /// Saves the user's session as a markdown file, with the REPL lines
     /// as code blocks, and leading comments as plain text.
     /// </summary>
-    class MarkdownSessionSaver : ISessionSaver
+    public class MarkdownSessionSaver : ISessionSaver
     {
         private readonly FileIO io;
 
