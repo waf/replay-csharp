@@ -29,10 +29,11 @@ namespace Replay.Services
         private DataFlowAnalyzer dataFlowAnalyzer;
         private IReadOnlyCollection<ICommandHandler> commandHandlers;
         private IReadOnlyCollection<ISessionSaver> savers;
+        private FileIO io;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
-        public ReplServices()
+        public ReplServices(FileIO injectedIO = null) // defaults to real io
         {
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
@@ -49,7 +50,8 @@ namespace Replay.Services
                 }),
                 Task.Run(() =>
                 {
-                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), FileIO.RealIO));
+                    this.io = injectedIO ?? FileIO.RealIO;
+                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
                     this.scriptEvaluator = new ScriptEvaluator(assemblies);
                     this.workspaceManager = new WorkspaceManager(assemblies);
                 })
@@ -62,15 +64,15 @@ namespace Replay.Services
                 {
                     new ExitCommandHandler(),
                     new HelpCommandHandler(),
-                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, FileIO.RealIO),
-                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(FileIO.RealIO)),
+                    new AssemblyReferenceCommandHandler(scriptEvaluator, workspaceManager, io),
+                    new NugetReferenceCommandHandler(scriptEvaluator, workspaceManager, new NugetPackageInstaller(io)),
                     new EvaluationCommandHandler(scriptEvaluator, workspaceManager, new PrettyPrinter())
                 };
 
                 this.savers = new ISessionSaver[]
                 {
-                    new CSharpSessionSaver(FileIO.RealIO, workspaceManager),
-                    new MarkdownSessionSaver(FileIO.RealIO),
+                    new CSharpSessionSaver(io, workspaceManager),
+                    new MarkdownSessionSaver(io),
                 };
 
                 this.dataFlowAnalyzer = new DataFlowAnalyzer();

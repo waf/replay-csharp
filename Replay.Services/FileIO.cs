@@ -13,20 +13,24 @@ namespace Replay.Services
     /// </summary>
     public class FileIO
     {
-        public static FileIO RealIO = new FileIO();
+        public static FileIO RealIO = CreateRealIO();
 
-        private FileIO()
+        public static FileIO CreateRealIO()
         {
-            GetFilesInDirectory = Directory.GetFiles;
-            DoesFileExist = File.Exists;
-            GetFullFileSystemPath = Path.GetFullPath;
-            WriteAllLinesAsync = File.WriteAllLinesAsync;
-            CreateMetadataReferenceFromFile = MetadataReference.CreateFromFile;
-            CreateDocumentationFromXmlFile = XmlDocumentationProvider.CreateFromFile;
-            CreateMetadataReferenceWithDocumentation =
+            var io = new FileIO
+            {
+                GetFilesInDirectory = Directory.GetFiles,
+                DoesFileExist = File.Exists,
+                GetFullFileSystemPath = Path.GetFullPath,
+                WriteAllLinesAsync = File.WriteAllLinesAsync,
+                CreateMetadataReferenceFromFile = MetadataReference.CreateFromFile,
+                CreateDocumentationFromXmlFile = XmlDocumentationProvider.CreateFromFile,
+            };
+            io.CreateMetadataReferenceWithDocumentation =
                 (AssemblyWithXmlDocumentation assembly) => assembly.FullXmlDocumentationPath is null
-                    ? CreateMetadataReferenceFromFile(assembly.FullAssemblyPath)
-                    : CreateMetadataReferenceFromFile(assembly.FullAssemblyPath, documentation: CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath));
+                    ? io.CreateMetadataReferenceFromFile(assembly.FullAssemblyPath)
+                    : io.CreateMetadataReferenceFromFile(assembly.FullAssemblyPath, documentation: io.CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath));
+            return io;
         }
 
         public GetFilesInDirectory GetFilesInDirectory { get; set; }
