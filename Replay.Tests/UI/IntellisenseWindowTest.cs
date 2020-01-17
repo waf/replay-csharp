@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
+using Replay.Tests.TestHelpers;
 using Replay.UI;
 using System;
 using System.Threading.Tasks;
@@ -27,7 +28,6 @@ namespace Replay.Tests.Services
 
             var editor = new TextEditor { Document = new TextDocument() };
             editor.Document.Text = code;
-            editor.CaretOffset = code.Length;
 
             var window = new IntellisenseWindow(editor.TextArea, completions, () => { });
 

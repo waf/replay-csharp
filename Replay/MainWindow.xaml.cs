@@ -41,7 +41,9 @@ namespace Replay
         /// </summary>
         private void ConfigureWindow(object sender, UserConfiguration configuration)
         {
-            Application.Current.Dispatcher.Invoke(() =>
+            var dispatcher = Application.Current?.Dispatcher
+                ?? Dispatcher.CurrentDispatcher;
+            dispatcher.Invoke(() =>
             {
                 Model.Background = new SolidColorBrush(configuration.BackgroundColor);
                 Model.Foreground = new SolidColorBrush(configuration.ForegroundColor);
