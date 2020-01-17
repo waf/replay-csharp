@@ -28,9 +28,10 @@ jobs:
       run: dotnet build
       
     - name: Test
+      run: dotnet test --collect:"XPlat Code Coverage" --settings Replay.Tests\TestCoverageRunSettings.xml
+
+    - name: Code Coverage
       shell: pwsh
       run: |
-        dotnet test --collect:"XPlat Code Coverage" --settings Replay.Tests\TestCoverageRunSettings.xml
         $testCoverage = Get-ChildItem Replay.Tests\TestResults\*\*.xml
         codecov -t ${{ secrets.CODECOV_TOKEN }} -f $testCoverage[0].ToString()
-        
