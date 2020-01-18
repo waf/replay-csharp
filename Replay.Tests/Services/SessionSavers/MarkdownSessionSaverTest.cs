@@ -49,7 +49,7 @@ namespace Replay.Tests.Services.SessionSavers
 
             var expected = string.Join(Environment.NewLine,
                 "---",
-                "date: January 17, 2020",
+               $"date: {DateTime.Now:MMMM d, yyyy}",
                 "---",
                 "",
                 "# Replay Session",
