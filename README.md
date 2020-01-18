@@ -1,4 +1,5 @@
-# <img align="left" width="46" height="46" src="https://raw.githubusercontent.com/waf/replay-csharp/master/resource/logo_medium.png" />Replay <img align="right" src="https://github.com/waf/replay-csharp/workflows/Master%20Build/badge.svg" /> <img align="right" src="https://codecov.io/gh/waf/replay-csharp/branch/master/graph/badge.svg" />
+# <img align="left" width="46" height="46" src="https://raw.githubusercontent.com/waf/replay-csharp/master/resource/logo_medium.png" />Replay
+<img align="right" src="https://github.com/waf/replay-csharp/workflows/Master%20Build/badge.svg" /> <img align="right" src="https://codecov.io/gh/waf/replay-csharp/branch/master/graph/badge.svg" />
           
 A roslyn-powered editable [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) for C#.
 
