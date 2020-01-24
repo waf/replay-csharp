@@ -8,7 +8,7 @@ namespace Replay.Services.Nuget
     /// Implementation of <see cref="NuGet.Common.ILogger" /> that is passed into the nuget API to collect
     /// nuget output. It forwards the output to our <see cref="IReplLogger" /> for display.
     /// </summary>
-    internal class NugetErrorLogger : ILogger
+    public class NugetErrorLogger : ILogger
     {
         private readonly IReplLogger logger;
 

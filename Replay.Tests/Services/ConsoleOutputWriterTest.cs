@@ -27,12 +27,14 @@ namespace Replay.Tests.Services
         [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { 'A' } })]
         [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { "Hello" } })]
         [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { new[] { 'A', 'B' }, 0, 2 } })]
-        public async Task Foo(string method, object[] args)
+        public async Task Write_WhenInvoked_CapturesInput(string method, object[] args)
         {
             var methodToTest = writer.GetType().GetMethod(
                 method,
                 args.Select(arg => arg.GetType()).ToArray()
             );
+
+            Assert.Null(writer.GetOutputOrNull());
 
             // system under test
             var result = methodToTest.Invoke(writer, args);
