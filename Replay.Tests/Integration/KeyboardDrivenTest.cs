@@ -23,21 +23,22 @@ namespace Replay.Tests.Integration
         private readonly ViewModelService viewModelService;
 
         private readonly KeyConverter keyConverter = new KeyConverter();
-        /*
-        private readonly IReadOnlyCollection<Key> NoOutputKeys = new[]
-        {
-            Key.Tab,
-            Key.LeftAlt, Key.RightAlt,
-            Key.Enter, Key.Return,
-            Key.LeftCtrl, Key.RightCtrl,
-            Key.Left, Key.Right, Key.Up, Key.Down
-        };
-        */
         private readonly IReadOnlyDictionary<char, Key> CharToKey = new Dictionary<char, Key>
         {
             { '"', OemQuotes },
-            { '#', D3 },
             { '.', OemPeriod },
+            { '!', D1 },
+            { '@', D2 },
+            { '#', D3 },
+            { '$', D4 },
+            { '%', D5 },
+            { '^', D6 },
+            { '&', D7 },
+            { '*', D8 },
+            { '(', D9 },
+            { ')', D0 },
+            { '=', OemPlus },
+            { '+', OemPlus },
         };
 
         public KeyboardDrivenTest(ReplServicesFixture replServicesFixture)
@@ -145,7 +146,114 @@ namespace Replay.Tests.Integration
             Assert.Equal("var undefined = ".Length, vm.Entries[0].CaretOffset);
         }
 
-        private async Task TypeInput(FormattableString inputSequence, WindowViewModel vm, TriggerIntellisense callback = null)
+        [WpfFact]
+        public async Task AltUp_CyclesThroughHistory()
+        {
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $@"""Hello""{Enter}""World""{Enter}{Alt}{Up}{Alt}{Up}",
+                vm
+            );
+
+            Assert.Equal(
+                new[] { "\"Hello\"", "\"World\"", "\"Hello\"" },
+                vm.Entries.Select(entry => entry.Document.Text)
+            );
+            Assert.Equal(2, vm.FocusIndex);
+        }
+
+        [WpfFact]
+        public async Task AltUp_ThenAltDown_NavigatesForwardThroughHistory()
+        {
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $@"""Hello""{Enter}""World""{Enter}{Alt}{Up}{Alt}{Up}{Alt}{Down}",
+                vm
+            );
+
+            Assert.Equal(
+                new[] { "\"Hello\"", "\"World\"", "\"World\"" },
+                vm.Entries.Select(entry => entry.Document.Text)
+            );
+            Assert.Equal(2, vm.FocusIndex);
+        }
+
+        [WpfFact]
+        public async Task AltUp_ThenAltDown_StopsHistoryCycle()
+        {
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $@"""Hello""{Enter}""World""{Enter}{Alt}{Up}{Alt}{Down}",
+                vm
+            );
+
+            Assert.Equal(
+                new[] { "\"Hello\"", "\"World\"", "" },
+                vm.Entries.Select(entry => entry.Document.Text)
+            );
+            Assert.Equal(2, vm.FocusIndex);
+        }
+
+        [WpfFact]
+        public async Task EvaluateIncrement_ThenReevaluate_DoubleIncrements()
+        {
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $@"int x = 0{Enter}++x{Enter}{Up}{Control}{Enter}",
+                vm
+            );
+
+            Assert.Equal(
+                new[] { "int x = 0;", "++x", "" },
+                vm.Entries.Select(entry => entry.Document.Text)
+            );
+            Assert.Equal(
+                new[] { null, "2", null },
+                vm.Entries.Select(entry => entry.Result)
+            );
+            Assert.Equal(1, vm.FocusIndex);
+        }
+
+        [WpfFact]
+        public async Task CancelLine_WithPartiallyTypedText_LeavesText()
+        {
+            var vm = new WindowViewModel();
+
+            // system under test
+            await TypeInput(
+                $@"Consol{Control}{C}",
+                vm
+            );
+
+            Assert.Equal(
+                new[] { "Consol", null },
+                vm.Entries.Select(entry => entry.Document?.Text)
+            );
+            Assert.All(
+                vm.Entries.Select(entry => entry.Error),
+                Assert.Null
+            );
+            Assert.Equal(1, vm.FocusIndex);
+        }
+
+        /// <summary>
+        /// Sends the input sequence to the provided viewmodel.
+        /// If the input would cause the intellisense window to trigger, the
+        /// intellisense callback is invoked.
+        /// </summary>
+        /// <param name="inputSequence">A FormattableString (not a string!) that contains keystrokes</param>
+        /// <param name="vm">window view model</param>
+        /// <param name="intellisenseCallback"></param>
+        /// <returns></returns>
+        private async Task TypeInput(FormattableString inputSequence, WindowViewModel vm, TriggerIntellisense intellisenseCallback = null)
         {
             var device = new MockKeyboardDevice(InputManager.Current);
             ModifierKeys modifier = ModifierKeys.None;
@@ -159,7 +267,7 @@ namespace Replay.Tests.Integration
                     var editor = new TextEditor { Document = new TextDocument() };
                     currentLine.Document ??= editor.Document;
                     currentLine.SetEditor(editor);
-                    currentLine.TriggerIntellisense ??= callback ?? ((items, onClose) => { });
+                    currentLine.TriggerIntellisense ??= intellisenseCallback ?? ((items, onClose) => { });
                 }
 
                 // convert to input to the appropriate key press
