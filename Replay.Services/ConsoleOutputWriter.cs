@@ -8,7 +8,7 @@ namespace Replay.Services
     /// A StringWriter than can detect the difference between empty string output vs never being written to.
     /// A normal StringWriter will return empty string in both scenarios.
     /// </summary>
-    class ConsoleOutputWriter : StringWriter
+    public class ConsoleOutputWriter : StringWriter
     {
         private bool hasOutput;
         private readonly TextWriter oldOutputStream;
@@ -16,16 +16,23 @@ namespace Replay.Services
         public string GetOutputOrNull() =>
             hasOutput ? GetStringBuilder().ToString() : null;
 
-        public ConsoleOutputWriter()
+        public ConsoleOutputWriter(bool captureStandardOut = true)
         {
-            oldOutputStream = Console.Out;
-            Console.SetOut(this);
+            if (captureStandardOut)
+            {
+                oldOutputStream = Console.Out;
+                Console.SetOut(this);
+            }
         }
 
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
-            Console.SetOut(oldOutputStream);
+
+            if(oldOutputStream != null)
+            {
+                Console.SetOut(oldOutputStream);
+            }
         }
 
         #region Write Overrides that set hasOutput
