@@ -18,9 +18,9 @@ namespace Replay.ViewModel.Services
     /// </summary>
     public partial class ViewModelService
     {
-        private readonly ReplServices services;
+        private readonly IReplServices services;
 
-        public ViewModelService(ReplServices services)
+        public ViewModelService(IReplServices services)
         {
             this.services = services;
         }

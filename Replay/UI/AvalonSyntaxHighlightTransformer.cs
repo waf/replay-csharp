@@ -13,10 +13,10 @@ namespace Replay.UI
     /// </summary>
     class AvalonSyntaxHighlightTransformer : AsyncDocumentColorizingTransformer
     {
-        private readonly ReplServices replServices;
+        private readonly IReplServices replServices;
         private readonly Guid lineNumber;
 
-        public AvalonSyntaxHighlightTransformer(ReplServices replServices, Guid lineNumber)
+        public AvalonSyntaxHighlightTransformer(IReplServices replServices, Guid lineNumber)
         {
             this.replServices = replServices;
             this.lineNumber = lineNumber;

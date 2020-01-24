@@ -23,7 +23,7 @@ namespace Replay
     {
         private readonly WindowViewModel Model;
         private readonly ViewModelService viewModelService; // "front-end" services that manipulate the viewmodel.
-        private readonly ReplServices replServices; // "back-end" services that handle inspection / evaluation of code.
+        private readonly IReplServices replServices; // "back-end" services that handle inspection / evaluation of code.
 
         public MainWindow()
         {

@@ -245,19 +245,19 @@ namespace Replay.Tests.Integration
         }
 
         /// <summary>
-        /// Sends the input sequence to the provided viewmodel.
-        /// If the input would cause the intellisense window to trigger, the
-        /// intellisense callback is invoked.
+        /// Sends key strokes to the provided viewmodel.
+        /// If the input would cause the intellisense window to
+        /// trigger, the intellisense callback is invoked.
         /// </summary>
-        /// <param name="inputSequence">A FormattableString (not a string!) that contains keystrokes</param>
+        /// <param name="keyStrokes">A FormattableString (not a string!) that contains keystrokes</param>
         /// <param name="vm">window view model</param>
         /// <param name="intellisenseCallback"></param>
         /// <returns></returns>
-        private async Task TypeInput(FormattableString inputSequence, WindowViewModel vm, TriggerIntellisense intellisenseCallback = null)
+        private async Task TypeInput(FormattableString keyStrokes, WindowViewModel vm, TriggerIntellisense intellisenseCallback = null)
         {
             var device = new MockKeyboardDevice(InputManager.Current);
             ModifierKeys modifier = ModifierKeys.None;
-            foreach (var input in ConvertToKeys(inputSequence))
+            foreach (var stroke in ConvertToKeys(keyStrokes))
             {
                 var currentLine = vm.Entries[vm.FocusIndex];
 
@@ -272,7 +272,7 @@ namespace Replay.Tests.Integration
 
                 // convert to input to the appropriate key press
                 Key key;
-                switch (input)
+                switch (stroke)
                 {
                     case char ch: // type the character into the editor and set up the key event
                         currentLine.Document.Text += ch;
@@ -288,7 +288,7 @@ namespace Replay.Tests.Integration
                         modifier |= mod;
                         continue;
                     default:
-                        throw new InvalidOperationException("Unhandled type: " + input.GetType());
+                        throw new InvalidOperationException("Unhandled type: " + stroke.GetType());
                 }
 
                 device.ModifierKeysImpl = modifier;
@@ -304,13 +304,13 @@ namespace Replay.Tests.Integration
         /// <summary>
         /// Map a string to a series of key presses that would type that string.
         /// If the string contains a sequence like ~Enter~ or ~Tab~ it is mapped to that key.
-        /// e.g. maps "Consol~Tab~" to ["C" "o" "n" "s" "o" "l" "Tab" ]
+        /// e.g. maps "Consol{Control}{C}" to ['C', 'o', 'n', 's', 'o', 'l', ModifierKeys.Control, Key.C ]
         /// </summary>
         private IEnumerable<object> ConvertToKeys(FormattableString input)
         {
             for (int i = 0; i < input.Format.Length; i++)
             {
-                var ch = input.Format[i];
+                var ch = input.Format[i]; // Format is a string with placeholders like "Console{0}{1}"
 
                 if (ch == '{'
                     && i + 2 < input.Format.Length

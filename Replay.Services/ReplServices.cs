@@ -12,17 +12,28 @@ using System.Threading.Tasks;
 
 namespace Replay.Services
 {
+    public interface IReplServices
+    {
+        Task<LineEvaluationResult> AppendEvaluationAsync(Guid lineId, string code, IReplLogger logger);
+        Task<IReadOnlyList<ReplCompletion>> CompleteCodeAsync(Guid lineId, string code, int caretIndex);
+        Task<IReadOnlyList<string>> GetSupportedSaveFormats();
+        Task<IReadOnlyCollection<string>> GetUnboundVariables(Guid lineId, string code);
+        Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(Guid lineId, string code);
+        Task<string> SaveSessionAsync(string filename, string fileFormat, IReadOnlyCollection<LineToSave> linesToSave);
+
+        event EventHandler<UserConfiguration> UserConfigurationLoaded;
+    }
+
     /// <summary>
     /// Main access point for editor services.
     /// Manages background initialization for all services in a way that doesn't increase startup time.
     /// This is a stateful service (due to the contained WorkspaceManager) and is one-per-window.
     /// </summary>
-    public class ReplServices
+    public class ReplServices : IReplServices
     {
         private readonly Task requiredInitialization;
         private readonly Task commandInitialization;
         private SyntaxHighlighter syntaxHighlighter;
-
         private ScriptEvaluator scriptEvaluator;
         private CodeCompleter codeCompleter;
         private WorkspaceManager workspaceManager;
