@@ -20,18 +20,18 @@ namespace Replay.Tests.Services.Nuget
         }
 
         [Theory]
-        [InlineData(new object[] { LogLevel.Verbose, LogTestCase.Log })]
-        [InlineData(new object[] { LogLevel.Verbose, LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogLevel.Verbose, LogTestCase.LogAsync })]
-        [InlineData(new object[] { LogLevel.Information, LogTestCase.Log })]
-        [InlineData(new object[] { LogLevel.Information, LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogLevel.Information, LogTestCase.LogAsync })]
-        [InlineData(new object[] { LogLevel.Debug, LogTestCase.Log })]
-        [InlineData(new object[] { LogLevel.Debug, LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogLevel.Debug, LogTestCase.LogAsync })]
-        [InlineData(new object[] { LogLevel.Minimal, LogTestCase.Log })]
-        [InlineData(new object[] { LogLevel.Minimal, LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogLevel.Minimal, LogTestCase.LogAsync })]
+        [InlineData(LogLevel.Verbose, LogTestCase.Log)]
+        [InlineData(LogLevel.Verbose, LogTestCase.LogMessage)]
+        [InlineData(LogLevel.Verbose, LogTestCase.LogAsync)]
+        [InlineData(LogLevel.Information, LogTestCase.Log)]
+        [InlineData(LogLevel.Information, LogTestCase.LogMessage)]
+        [InlineData(LogLevel.Information, LogTestCase.LogAsync)]
+        [InlineData(LogLevel.Debug, LogTestCase.Log)]
+        [InlineData(LogLevel.Debug, LogTestCase.LogMessage)]
+        [InlineData(LogLevel.Debug, LogTestCase.LogAsync)]
+        [InlineData(LogLevel.Minimal, LogTestCase.Log)]
+        [InlineData(LogLevel.Minimal, LogTestCase.LogMessage)]
+        [InlineData(LogLevel.Minimal, LogTestCase.LogAsync)]
         public async Task Log_DetailedLogs_AreNotLogged(LogLevel level, LogTestCase test)
         {
             await LogMethod(level, test, "Hello There!");
@@ -45,9 +45,9 @@ namespace Replay.Tests.Services.Nuget
         }
 
         [Theory]
-        [InlineData(new object[] { LogTestCase.Log })]
-        [InlineData(new object[] { LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogTestCase.LogAsync })]
+        [InlineData(LogTestCase.Log)]
+        [InlineData(LogTestCase.LogMessage)]
+        [InlineData(LogTestCase.LogAsync)]
         public async Task Log_ErrorLogs_AreLogged(LogTestCase test)
         {
             await LogMethod(LogLevel.Error, test, "Computer on fire");
@@ -61,9 +61,9 @@ namespace Replay.Tests.Services.Nuget
         }
 
         [Theory]
-        [InlineData(new object[] { LogTestCase.Log })]
-        [InlineData(new object[] { LogTestCase.LogMessage })]
-        [InlineData(new object[] { LogTestCase.LogAsync })]
+        [InlineData(LogTestCase.Log)]
+        [InlineData(LogTestCase.LogMessage)]
+        [InlineData(LogTestCase.LogAsync)]
         public async Task Log_WarningLogs_AreLogged(LogTestCase test)
         {
             await LogMethod(LogLevel.Warning, test, "Computer is smoldering");

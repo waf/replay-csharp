@@ -91,7 +91,7 @@ namespace Replay.UI
             // This can happen if the user types ctrl-space too carelessly.
             // We get a "space" on KeyUp that never passed through key down and is not reflect in the textarea.
             // Ignore that space and any associated ctrl notifications.
-            if (e.Key == Key.Space || e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            if (e.Key == Key.Space || e.Key == Key.LeftCtrl || e.Key == Key.RightCtrl || e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 return;
             }
@@ -99,15 +99,19 @@ namespace Replay.UI
             // close completion window if there is only 1 match that is exactly what the user already typed,
             // and the cursor is at the end of the match.
             string filter = this.TextArea.Document.Text.Substring(this.StartOffset, this.EndOffset - this.StartOffset);
-            var matches = this.CompletionList.CompletionData
-                .Where(completion => completion.Text.Contains(filter, StringComparison.CurrentCultureIgnoreCase))
+            var matches = this.CompletionList.ListBox.ItemsSource
+                .OfType<RoslynCompletionSuggestion>()
                 .ToList();
 
-            if (matches.Count == 1 && matches[0].Text.Equals(filter, StringComparison.CurrentCulture)
-                && this.TextArea.Caret.VisualColumn == this.EndOffset)
+            if(NoMatches() || OneFullyTypedExactMatch())
             {
                 this.Close();
             }
+
+            bool NoMatches() => matches.Count == 0;
+            bool OneFullyTypedExactMatch() => matches.Count == 1
+                && matches[0].Text.Equals(filter, StringComparison.CurrentCulture)
+                && this.TextArea.Caret.VisualColumn == this.EndOffset;
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -119,7 +123,7 @@ namespace Replay.UI
                 // while autocompleting, the user typed a period. This will trigger a new completion window, so this old one should close.
                 this.Close();
             }
-            else if (e.Key == Key.Space && Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+            else if (e.Key == Key.Space && e.KeyboardDevice.Modifiers.HasFlag(ModifierKeys.Control))
             {
                 // while autocompleting, the user re-summoned intellisense. Since we're already open, swallow the space and do nothing.
                 e.Handled = true;

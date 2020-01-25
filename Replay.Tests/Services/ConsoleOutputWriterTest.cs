@@ -18,15 +18,15 @@ namespace Replay.Tests.Services
         }
 
         [Theory]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.Write), new object[] { 'A' } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.Write), new object[] { new[] { 'A', 'B' }, 0, 2 } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.Write), new object[] { "Hello" } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteAsync), new object[] { 'A' } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteAsync), new object[] { "Hello" } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteAsync), new object[] { new[] { 'A', 'B' }, 0, 2 } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { 'A' } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { "Hello" } })]
-        [InlineData(new object[] { nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { new[] { 'A', 'B' }, 0, 2 } })]
+        [InlineData(nameof(ConsoleOutputWriter.Write), new object[] { 'A' })]
+        [InlineData(nameof(ConsoleOutputWriter.Write), new object[] { new[] { 'A', 'B' }, 0, 2 })]
+        [InlineData(nameof(ConsoleOutputWriter.Write), new object[] { "Hello" })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteAsync), new object[] { 'A' })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteAsync), new object[] { "Hello" })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteAsync), new object[] { new[] { 'A', 'B' }, 0, 2 })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { 'A' })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { "Hello" })]
+        [InlineData(nameof(ConsoleOutputWriter.WriteLineAsync), new object[] { new[] { 'A', 'B' }, 0, 2 })]
         public async Task Write_WhenInvoked_CapturesInput(string method, object[] args)
         {
             var methodToTest = writer.GetType().GetMethod(
