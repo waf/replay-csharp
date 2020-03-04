@@ -105,6 +105,9 @@
                         <ControlTemplate TargetType="{x:Type completion:CompletionList}">
                             <completion:CompletionListBox x:Name="PART_ListBox"
                                 ItemContainerStyle="{StaticResource CompletionListBoxItem}">
+                                <ItemsControl.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding Zoom, Mode=OneTime}" ScaleY="{Binding Zoom, Mode=OneTime}"></ScaleTransform>
+                                </ItemsControl.LayoutTransform>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
@@ -114,6 +117,20 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </completion:CompletionListBox>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style TargetType="ToolTip">
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToolTip}">
+                            <Border x:Name="Border" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                <Border.LayoutTransform>
+                                    <ScaleTransform ScaleX="{Binding Zoom, Mode=OneTime}" ScaleY="{Binding Zoom, Mode=OneTime}"></ScaleTransform>
+                                </Border.LayoutTransform>
+                                <ContentPresenter ContentTemplate="{TemplateBinding ContentTemplate}" Content="{TemplateBinding Content}" ContentStringFormat="{TemplateBinding ContentStringFormat}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>

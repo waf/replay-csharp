@@ -20,6 +20,7 @@ namespace Replay.Services
             var io = new FileIO
             {
                 GetFilesInDirectory = Directory.GetFiles,
+                GetDirectories = Directory.GetDirectories,
                 DoesFileExist = File.Exists,
                 GetFullFileSystemPath = Path.GetFullPath,
                 WriteAllLinesAsync = File.WriteAllLinesAsync,
@@ -40,11 +41,13 @@ namespace Replay.Services
         public CreateMetadataReferenceFromFile CreateMetadataReferenceFromFile { get; set; }
         public CreateDocumentationFromXmlFile CreateDocumentationFromXmlFile { get; set; }
         public CreateMetadataReferenceWithDocumentation CreateMetadataReferenceWithDocumentation { get; set; }
+        public GetDirectories GetDirectories { get; private set; }
     }
 
     public delegate PortableExecutableReference CreateMetadataReferenceFromFile(string filepath, MetadataReferenceProperties properties = default, DocumentationProvider documentation = null);
     public delegate PortableExecutableReference CreateMetadataReferenceWithDocumentation(AssemblyWithXmlDocumentation assembly);
     public delegate string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption);
+    public delegate string[] GetDirectories(string path);
     public delegate XmlDocumentationProvider CreateDocumentationFromXmlFile(string xmlDocCommentFilePath);
     public delegate string GetFullFileSystemPath(string path);
     public delegate bool DoesFileExist(string path);

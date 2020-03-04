@@ -16,6 +16,9 @@ namespace Replay.Services
 
         public async Task<IReadOnlyCollection<string>> GetUnboundVariables(ReplSubmission submission)
         {
+            // originally tried using the dataflow roslyn APIs, but it was not accurate for small
+            // snippets of text. This approach, using declaration diagnostics, is more accurate.
+
             var model = await submission.Document.GetSemanticModelAsync();
             var diags = model.GetDeclarationDiagnostics();
 

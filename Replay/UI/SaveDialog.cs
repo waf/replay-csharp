@@ -1,5 +1,5 @@
 ﻿using Microsoft.Win32;
-using Replay.Model;
+using Replay.ViewModel;
 using Replay.Services;
 using Replay.Services.SessionSavers;
 using System;

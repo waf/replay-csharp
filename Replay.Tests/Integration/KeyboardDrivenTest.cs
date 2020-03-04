@@ -1,7 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
 using NSubstitute;
-using Replay.Model;
+using Replay.ViewModel;
 using Replay.Services;
 using Replay.Tests.TestHelpers;
 using Replay.ViewModel.Services;
@@ -55,7 +55,7 @@ namespace Replay.Tests.Integration
             await TypeInput(
                 $"help{Enter}{Tab}",
                 new WindowViewModel(),
-                (c, _) => completions = c
+                c => completions = c
             );
 
             Assert.NotEmpty(completions);
@@ -84,7 +84,7 @@ namespace Replay.Tests.Integration
             await TypeInput(
                 $"Console.",
                 new WindowViewModel(),
-                (c, _) => completions = c
+                c => completions = c
             );
 
             var names = completions.Select(c => c.CompletionItem.DisplayText).ToArray();
@@ -267,7 +267,7 @@ namespace Replay.Tests.Integration
                     var editor = new TextEditor { Document = new TextDocument() };
                     currentLine.Document ??= editor.Document;
                     currentLine.SetEditor(editor);
-                    currentLine.TriggerIntellisense ??= intellisenseCallback ?? ((items, onClose) => { });
+                    currentLine.TriggerIntellisense ??= intellisenseCallback ?? ((items) => { });
                 }
 
                 // convert to input to the appropriate key press

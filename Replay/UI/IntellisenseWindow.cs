@@ -3,6 +3,7 @@ using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using Microsoft.CodeAnalysis.Text;
 using Replay.Services;
+using Replay.ViewModel;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,12 +16,12 @@ namespace Replay.UI
 {
     class IntellisenseWindow : CompletionWindow
     {
-        private readonly Action onClosed;
+        private IntellisenseViewModel Model;
 
-        public IntellisenseWindow(TextArea textArea, IReadOnlyList<ReplCompletion> completions, Action onClosed)
+        public IntellisenseWindow(IntellisenseViewModel intellisensevm, TextArea textArea, IReadOnlyList<ReplCompletion> completions)
             : base(textArea)
         {
-            this.onClosed = onClosed;
+            this.DataContext = Model = intellisensevm;
 
             if (completions.Count == 0) return;
 
@@ -39,7 +40,7 @@ namespace Replay.UI
         protected override void OnClosed(EventArgs e)
         {
             base.OnClosed(e);
-            onClosed();
+            this.Model.IsOpen = false;
         }
 
         private void PopulateCompletionDropDown(IReadOnlyList<ReplCompletion> completions, string textBeingCompleted)
@@ -61,11 +62,11 @@ namespace Replay.UI
                 maxWord,
                 CultureInfo.CurrentCulture,
                 FlowDirection.LeftToRight,
-                new Typeface(this.FontFamily, this.FontStyle, this.FontWeight, this.FontStretch),
-                this.FontSize + 6, //eh, this seems to be needed to size correctly
+                new Typeface(CompletionList.FontFamily, CompletionList.FontStyle, CompletionList.FontWeight, CompletionList.FontStretch),
+                (this.CompletionList.FontSize + 6) * Model.Zoom, // "6" was unscientifically chosen as a number that isn't too cramped
                 Brushes.Black,
                 new NumberSubstitution(),
-                VisualTreeHelper.GetDpi(this).PixelsPerDip
+                VisualTreeHelper.GetDpi(this.CompletionList).PixelsPerDip
             );
 
         private void SetCompletionBounds(string textBeingCompleted, TextSpan span)
@@ -103,7 +104,7 @@ namespace Replay.UI
                 .OfType<RoslynCompletionSuggestion>()
                 .ToList();
 
-            if(NoMatches() || OneFullyTypedExactMatch())
+            if (NoMatches() || OneFullyTypedExactMatch())
             {
                 this.Close();
             }

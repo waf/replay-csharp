@@ -1,5 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
-using Replay.Model;
+using Replay.ViewModel;
 using System;
 
 namespace Replay.UI

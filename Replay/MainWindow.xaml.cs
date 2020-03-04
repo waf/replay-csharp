@@ -1,7 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Editing;
 using Replay.Logging;
-using Replay.Model;
+using Replay.ViewModel;
 using Replay.Services;
 using Replay.UI;
 using Replay.ViewModel.Services;
@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ICSharpCode.AvalonEdit.Indentation.CSharp;
 
 namespace Replay
 {
@@ -57,8 +58,8 @@ namespace Replay
 
             var line = lineEditor.ViewModel();
             line.SetEditor(lineEditor);
-            line.TriggerIntellisense = (completions, onClosed) =>
-                new IntellisenseWindow(lineEditor.TextArea, completions, onClosed);
+            line.TriggerIntellisense = (completions) =>
+                new IntellisenseWindow(this.Model.Intellisense, lineEditor.TextArea, completions);
             lineEditor.TextArea.TextView.LineTransformers.Add(
                 new AvalonSyntaxHighlightTransformer(replServices, line.Id)
             );
@@ -154,11 +155,13 @@ namespace Replay
         /// </summary>
         private Task BackgroundInitializationAsync()
         {
-            const string initializationCode = @"using System; Console.WriteLine(""Hello""); ""World""";
+            const string usingCode = @"using System;";
+            const string evaluationCode = @"Console.WriteLine(""Hello"");";
+            const string completionCode = @"""World""";
             return Task.WhenAll(
-                replServices.HighlightAsync(Guid.Empty, initializationCode),
-                replServices.CompleteCodeAsync(Guid.Empty, initializationCode, initializationCode.Length),
-                replServices.AppendEvaluationAsync(Guid.Empty, initializationCode, new NullLogger())
+                replServices.HighlightAsync(Guid.Empty, usingCode),
+                replServices.AppendEvaluationAsync(Guid.Empty, evaluationCode, new NullLogger()),
+                replServices.CompleteCodeAsync(Guid.Empty, completionCode, completionCode.Length)
             );
         }
 

@@ -8,7 +8,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Replay.Model
+namespace Replay.ViewModel
 {
     /// <summary>
     /// ViewModel for a single line of the repl.
@@ -103,5 +103,5 @@ namespace Replay.Model
         #endregion
     }
 
-    public delegate void TriggerIntellisense(IReadOnlyList<ReplCompletion> completions, Action onClosed);
+    public delegate void TriggerIntellisense(IReadOnlyList<ReplCompletion> completions);
 }

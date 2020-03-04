@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 
@@ -38,7 +40,17 @@ namespace Replay
 
         public override void WriteLine(string message)
         {
+            if(IgnoredDataBindIssues.Any(message.StartsWith))
+            {
+                return;
+            }
+
             Debugger.Break();
         }
+
+        private IReadOnlyCollection<string> IgnoredDataBindIssues = new[] {
+            // something about scaling the code completion tooltip while it's animating in throws this warning
+            "Cannot find governing FrameworkElement or FrameworkContentElement for target element. BindingExpression:Path=Zoom; DataItem=null; target element is 'ScaleTransform'",
+        };
     }
 }

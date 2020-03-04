@@ -1,4 +1,4 @@
-﻿using Replay.Model;
+﻿using Replay.ViewModel;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -12,8 +12,8 @@ namespace Replay.ViewModel.Services
 
             if (completions.Any())
             {
-                windowvm.IsIntellisenseWindowOpen = true;
-                linevm.TriggerIntellisense(completions, () => windowvm.IsIntellisenseWindowOpen = false);
+                windowvm.Intellisense.IsOpen = true;
+                linevm.TriggerIntellisense(completions);
             }
         }
     }

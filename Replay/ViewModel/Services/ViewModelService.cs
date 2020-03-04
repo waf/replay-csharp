@@ -1,5 +1,5 @@
 ﻿using Replay.Logging;
-using Replay.Model;
+using Replay.ViewModel;
 using Replay.Services;
 using Replay.UI;
 using System;
@@ -27,7 +27,7 @@ namespace Replay.ViewModel.Services
 
         public async Task HandleKeyDown(WindowViewModel windowvm, LineViewModel linevm, KeyEventArgs e)
         {
-            if (windowvm.IsIntellisenseWindowOpen) return;
+            if (windowvm.Intellisense.IsOpen) return;
 
             int previousHistoryPointer = ResetHistoryCyclePointer(windowvm);
 
@@ -41,7 +41,7 @@ namespace Replay.ViewModel.Services
 
         public async Task HandleKeyUp(WindowViewModel windowvm, LineViewModel linevm, KeyEventArgs e)
         {
-            if (windowvm.IsIntellisenseWindowOpen) return;
+            if (windowvm.Intellisense.IsOpen) return;
 
             if (Keyboard.Modifiers == ModifierKeys.None
                 && e.Key == Key.OemPeriod // complete member accesses

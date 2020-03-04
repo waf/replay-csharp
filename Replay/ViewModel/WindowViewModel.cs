@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Replay.ViewModel;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Replay.Model
+namespace Replay.ViewModel
 {
     /// <summary>
     /// Root of the ViewModel -- one per repl window.
@@ -15,6 +16,7 @@ namespace Replay.Model
         public WindowViewModel()
         {
             FocusIndex = 0; // trigger focus on application start
+            Intellisense = new IntellisenseViewModel(this);
         }
 
         /// <summary>
@@ -106,11 +108,9 @@ namespace Replay.Model
         public int CycleHistoryLinePointer { get; set; }
 
         /// <summary>
-        /// Tracks if the intellisense window is open. Keyboard shortcuts
-        /// behave differently if it's open, because all input is forwarded
-        /// to the intelliense window.
+        /// Popup intellisense window
         /// </summary>
-        public bool IsIntellisenseWindowOpen { get; internal set; }
+        public IntellisenseViewModel Intellisense { get; }
 
         #region INotifyPropertyChanged Helpers
         public event PropertyChangedEventHandler PropertyChanged;

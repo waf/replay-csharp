@@ -1,6 +1,6 @@
 ﻿using ICSharpCode.AvalonEdit.Document;
 using NSubstitute;
-using Replay.Model;
+using Replay.ViewModel;
 using Replay.Services;
 using Replay.Services.SessionSavers;
 using Replay.UI;

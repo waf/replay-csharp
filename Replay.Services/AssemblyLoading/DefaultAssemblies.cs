@@ -18,6 +18,5 @@ namespace Replay.Services.AssemblyLoading
 
         public Lazy<IReadOnlyCollection<MetadataReference>> Assemblies { get; }
         public IReadOnlyCollection<string> DefaultUsings { get; }
-
     }
 }

@@ -1,4 +1,4 @@
-﻿using Replay.Model;
+﻿using Replay.ViewModel;
 using System;
 using System.Linq;
 using System.Windows;

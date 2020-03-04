@@ -3,6 +3,7 @@ using ICSharpCode.AvalonEdit.Document;
 using Replay.Services;
 using Replay.Tests.TestHelpers;
 using Replay.UI;
+using Replay.ViewModel;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -66,7 +67,7 @@ namespace Replay.Tests.Services
             var editor = new TextEditor { Document = new TextDocument() };
             editor.Document.Text = text;
             var completions = await this.replServices.CompleteCodeAsync(Guid.NewGuid(), editor.Document.Text, editor.Document.Text.Length);
-            var window = new IntellisenseWindow(editor.TextArea, completions, () => { });
+            var window = new IntellisenseWindow(new WindowViewModel().Intellisense, editor.TextArea, completions);
             return window;
         }
     }
