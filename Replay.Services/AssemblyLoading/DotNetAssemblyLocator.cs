@@ -25,7 +25,12 @@ namespace Replay.Services.AssemblyLoading
             // get SDK DLLs
             var implementationPath = Path.Combine(installation.BasePath, "shared", "Microsoft.NETCore.App", installation.Version);
             // get xml documentation for those DLLs
-            var referencePath = Path.Combine(installation.BasePath, "packs", "Microsoft.NETCore.App.Ref", installation.Version, "ref");
+            var latestRef = io
+                .GetDirectories(
+                    Path.Combine(installation.BasePath, "packs", "Microsoft.NETCore.App.Ref")
+                )
+                .Last();
+            var referencePath = Path.Combine(latestRef, "ref");
 
             return GroupDirectoryContentsIntoAssemblies(
                     io.GetFilesInDirectory(implementationPath, "*.dll", SearchOption.AllDirectories)
