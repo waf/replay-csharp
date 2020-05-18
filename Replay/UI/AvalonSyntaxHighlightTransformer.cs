@@ -27,7 +27,7 @@ namespace Replay.UI
             if (line.Length == 0) return;
 
             string text = context.CurrentContext.Document.GetText(line);
-            var spans = await replServices.HighlightAsync(lineNumber, text);
+            IReadOnlyCollection<ColorSpan> spans = await HighlightAsync(text);
 
             int offset = line.Offset;
             foreach (var span in spans)
@@ -36,6 +36,19 @@ namespace Replay.UI
                 {
                     part.TextRunProperties.SetForegroundBrush(new SolidColorBrush(span.Color));
                 });
+            }
+        }
+
+        private async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(string text)
+        {
+            try
+            {
+                return await replServices.HighlightAsync(lineNumber, text);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return Array.Empty<ColorSpan>();
             }
         }
     }
