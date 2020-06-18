@@ -30,7 +30,7 @@ Replay requires Windows 10 (due to WPF).
 ## Building from source
 
 - To build from source, clone the repository and run `dotnet build`
-- Optionally, build a AOT-compiled version using `dotnet publish -r win-x64 -c Release`
+- Optionally, build a AOT-compiled version using `dotnet publish -r win10-x64 -c Release`
 
 ## Attribution
 
