@@ -17,7 +17,6 @@ namespace Replay.Tests.Services
             this.scriptEvaluator = new ScriptEvaluator(
                 new DefaultAssemblies(
                     new DotNetAssemblyLocator(
-                        () => new Process(),
                         FileIO.RealIO
                     )
                 )

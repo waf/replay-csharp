@@ -2,13 +2,13 @@
 {
     public class DotNetCoreInstallation
     {
-        public DotNetCoreInstallation(string basePath, string version)
+        public DotNetCoreInstallation(string implementationPath, string documentationPath)
         {
-            BasePath = basePath;
-            Version = version;
+            ImplementationPath = implementationPath;
+            DocumentationPath = documentationPath;
         }
 
-        public string BasePath { get; }
-        public string Version { get; }
+        public string ImplementationPath { get; }
+        public string DocumentationPath { get; }
     }
 }

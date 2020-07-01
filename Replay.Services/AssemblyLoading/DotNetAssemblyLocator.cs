@@ -12,9 +12,9 @@ namespace Replay.Services.AssemblyLoading
         private readonly DotNetCoreInstallationLocator dotNetInstallationLocator;
         private readonly FileIO io;
 
-        public DotNetAssemblyLocator(Func<Process> processRunner, FileIO io)
+        public DotNetAssemblyLocator(FileIO io)
         {
-            this.dotNetInstallationLocator = new DotNetCoreInstallationLocator(processRunner);
+            this.dotNetInstallationLocator = new DotNetCoreInstallationLocator(io);
             this.io = io;
         }
 
@@ -22,19 +22,9 @@ namespace Replay.Services.AssemblyLoading
         {
             var installation = dotNetInstallationLocator.GetReferenceAssemblyPath() ?? throw new InvalidOperationException("Could not find dotnet installation");
 
-            // get SDK DLLs
-            var implementationPath = Path.Combine(installation.BasePath, "shared", "Microsoft.NETCore.App", installation.Version);
-            // get xml documentation for those DLLs
-            var latestRef = io
-                .GetDirectories(
-                    Path.Combine(installation.BasePath, "packs", "Microsoft.NETCore.App.Ref")
-                )
-                .Last();
-            var referencePath = Path.Combine(latestRef, "ref");
-
             return GroupDirectoryContentsIntoAssemblies(
-                    io.GetFilesInDirectory(implementationPath, "*.dll", SearchOption.AllDirectories)
-                    .Union(io.GetFilesInDirectory(referencePath, "*.xml", SearchOption.AllDirectories))
+                    io.GetFilesInDirectory(installation.ImplementationPath, "*.dll", SearchOption.AllDirectories)
+                    .Union(io.GetFilesInDirectory(installation.DocumentationPath, "*.xml", SearchOption.AllDirectories))
                 )
                 .Where(assembly => assembly.AssemblyName.StartsWith("System"))
                 .Select(assembly => io.CreateMetadataReferenceWithDocumentation(assembly))

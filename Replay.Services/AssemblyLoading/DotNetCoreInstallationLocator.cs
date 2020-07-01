@@ -1,83 +1,80 @@
 ﻿using System;
-using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Replay.Services.AssemblyLoading
 {
     class DotNetCoreInstallationLocator
     {
-        private readonly Func<Process> process;
+        private FileIO io;
 
-        public DotNetCoreInstallationLocator(Func<Process> process)
+        public DotNetCoreInstallationLocator(FileIO io)
         {
-            this.process = process;
+            this.io = io;
         }
 
         public DotNetCoreInstallation GetReferenceAssemblyPath()
         {
-            // I'm really not happy with this implementation, parsing `dotnet --info` is gross.
-            // However I can't find a better way than this. TRUSTED_PLATFORM_ASSEMBLIES does not return what we want.
+            // This method is highly suspect. It most likely has edge cases that don't work.
+            // We need to get the runtime assemblies and associated xml documentation.
+            //   - runtime path has assemblies needed for execution.
+            //       - example is C:\Program Files\dotnet\shared\Microsoft.NETCore.App\3.1.4
+            //   - documentation path has reference assemblies and xml documentation
+            //       - example is C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\3.1.0\ref\netcoreapp3.1
+            string root = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string framework = GetFrameworkVersion();
 
-            ProcessStartInfo dotnetInfo = new ProcessStartInfo
-            {
-                FileName = "dotnet.exe",
-                Arguments = "--info",
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                CreateNoWindow = true
-            };
-            using var proc = process();
-            proc.StartInfo = dotnetInfo;
-            proc.Start();
-
-            return ReadReferenceAssemblyPath(proc);
+            return new DotNetCoreInstallation(
+                implementationPath: GetRuntimePath(root, framework),
+                documentationPath: GetFrameworkPath(root, framework)
+            );
         }
 
-        private static DotNetCoreInstallation ReadReferenceAssemblyPath(Process process)
+        private string GetRuntimePath(string root, string framework)
         {
-            string basePath = null;
-            while (!process.StandardOutput.EndOfStream)
-            {
-                string line = process.StandardOutput.ReadLine();
-
-                if (TryGetBasePath(line, out string path))
-                {
-                    basePath = path;
-                }
-
-                if (line.StartsWith("Host"))
-                {
-                    string versionLine = process.StandardOutput.ReadLine();
-                    return TryGetHostVersion(versionLine, out string version)
-                        ? new DotNetCoreInstallation(basePath, version)
-                        : null;
-                }
-            }
-            return null;
+            var runtimePath = GetLatestFramework(
+                Path.Combine(root, "dotnet", "shared", "Microsoft.NETCore.App"),
+                framework
+            );
+            return runtimePath;
         }
 
-        private static bool TryGetBasePath(string line, out string path)
+        private string GetFrameworkPath(string root, string framework)
         {
-            if (line.Contains(" Base Path:"))
-            {
-                int index = line.IndexOf(@"\sdk\");
-                var substring = new Range(" Base Path: ".Length, index);
-                path = line[substring].Trim();
-                return true;
-            }
-            path = null;
-            return false;
+            // there are a few ways of getting the current framework name, but not all of them
+            // work under xunit. This approach works both at runtime and under xunit.
+
+            var frameworkPath = Path.Combine(
+                GetLatestFramework(
+                    Path.Combine(root, "dotnet", "packs", "Microsoft.NETCore.App.Ref"),
+                    framework
+                ),
+                "ref"
+            );
+
+            return frameworkPath;
         }
 
-        private static bool TryGetHostVersion(string line, out string version)
+        private string GetLatestFramework(string path, string framework) =>
+            io.GetDirectoriesWithPattern(
+                path,
+                framework + "*"
+            )
+            .Last();
+
+        private static string GetFrameworkVersion()
         {
-            int index = line.IndexOf("Version:");
-            if (index == -1)
-            {
-                version = null;
-                return false;
-            }
-            version = line.Substring(index + 8).Trim();
-            return true;
+            return Assembly
+                .GetExecutingAssembly()
+                .GetCustomAttributes(typeof(TargetFrameworkAttribute), false)
+                .OfType<TargetFrameworkAttribute>()
+                .Single()
+                .FrameworkName
+                .Split("=v")
+                .Last();
         }
     }
 }

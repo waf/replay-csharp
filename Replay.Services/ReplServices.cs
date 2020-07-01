@@ -62,7 +62,7 @@ namespace Replay.Services
                 Task.Run(() =>
                 {
                     this.io = injectedIO ?? FileIO.RealIO;
-                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(() => new Process(), io));
+                    var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(io));
                     this.scriptEvaluator = new ScriptEvaluator(assemblies);
                     this.workspaceManager = new WorkspaceManager(assemblies);
                 })
