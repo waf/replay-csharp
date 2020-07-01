@@ -1,13 +1,10 @@
-﻿using Replay.Logging;
-using Replay.ViewModel;
-using Replay.Services;
+﻿using Replay.Services;
 using Replay.UI;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace Replay.ViewModel.Services
 {

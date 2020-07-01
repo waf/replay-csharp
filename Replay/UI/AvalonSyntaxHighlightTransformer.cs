@@ -26,29 +26,23 @@ namespace Replay.UI
         {
             if (line.Length == 0) return;
 
-            string text = context.CurrentContext.Document.GetText(line);
-            IReadOnlyCollection<ColorSpan> spans = await HighlightAsync(text);
-
-            int offset = line.Offset;
-            foreach (var span in spans)
-            {
-                base.ChangeLinePart(offset + span.Start, offset + span.End, elements, context, part =>
-                {
-                    part.TextRunProperties.SetForegroundBrush(new SolidColorBrush(span.Color));
-                });
-            }
-        }
-
-        private async Task<IReadOnlyCollection<ColorSpan>> HighlightAsync(string text)
-        {
             try
             {
-                return await replServices.HighlightAsync(lineNumber, text);
+                string text = context.CurrentContext.Document.GetText(line);
+                IReadOnlyCollection<ColorSpan> spans = await replServices.HighlightAsync(lineNumber, text);
+
+                int offset = line.Offset;
+                foreach (var span in spans)
+                {
+                    base.ChangeLinePart(offset + span.Start, offset + span.End, elements, context, part =>
+                    {
+                        part.TextRunProperties.SetForegroundBrush(new SolidColorBrush(span.Color));
+                    });
+                }
             }
-            catch (Exception ex)
+            catch (Exception ex) // protect against AvalonEdit library from throwing exceptions
             {
                 Console.Error.WriteLine(ex.Message);
-                return Array.Empty<ColorSpan>();
             }
         }
     }

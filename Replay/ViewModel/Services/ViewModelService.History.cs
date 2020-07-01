@@ -1,7 +1,4 @@
-﻿using Replay.ViewModel;
-using System;
-using System.Linq;
-using System.Windows;
+﻿using System.Linq;
 
 namespace Replay.ViewModel.Services
 {

@@ -1,12 +1,7 @@
 ﻿using ICSharpCode.AvalonEdit;
-using ICSharpCode.AvalonEdit.Document;
 using Replay.UI;
-using System;
-using System.Collections.Generic;
 using System.Windows;
-using System.Text;
 using Xunit;
-using System.Windows.Documents;
 
 namespace Replay.Tests.UI
 {

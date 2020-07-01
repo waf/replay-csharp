@@ -1,5 +1,4 @@
 ﻿using Replay.Logging;
-using Replay.ViewModel;
 using Replay.Services.Model;
 using System;
 using System.Threading.Tasks;

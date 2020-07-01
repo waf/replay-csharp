@@ -11,7 +11,7 @@
             <ResourceDictionary.MergedDictionaries >
                 <ResourceDictionary Source="UI/ScrollbarStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <local:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <SolidColorBrush x:Key="BackgroundHighlightColor" Color="#555555"/>
             <Style x:Key="{x:Type avalonedit:TextEditor}" TargetType="{x:Type avalonedit:TextEditor}">

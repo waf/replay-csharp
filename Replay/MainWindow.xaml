@@ -45,7 +45,7 @@
                             </avalonEdit:TextEditor>
                             <!-- use TextBox instead of TextBlock to allow selection and copy/paste -->
                             <TextBox Text="{Binding Path=StandardOutput, Mode=OneWay}"
-                                     Visibility="{Binding Path=StandardOutput, Converter={StaticResource StringToVisibilityConverter}}"
+                                     Visibility="{Binding Path=StandardOutput, Converter={StaticResource NullToVisibilityConverter}}"
                                      Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.Foreground}"
                                      Background="Transparent"
                                      TextWrapping="Wrap"
@@ -54,7 +54,7 @@
                                      IsReadOnlyCaretVisible="False"
                                      FontStyle="Italic" />
                             <TextBox Text="{Binding Path=Error, Mode=OneWay}"
-                                     Visibility="{Binding Path=Error, Converter={StaticResource StringToVisibilityConverter}}"
+                                     Visibility="{Binding Path=Error, Converter={StaticResource NullToVisibilityConverter}}"
                                      Foreground="#FF5555"
                                      Background="Transparent"
                                      TextWrapping="Wrap"
@@ -62,7 +62,7 @@
                                      IsReadOnly="True"
                                      IsReadOnlyCaretVisible="False" />
                             <TextBox Text="{Binding Path=Result, Mode=OneWay}"
-                                     Visibility="{Binding Path=Result, Converter={StaticResource StringToVisibilityConverter}}"
+                                     Visibility="{Binding Path=Result, Converter={StaticResource NullToVisibilityConverter}}"
                                      Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Path=DataContext.Foreground}"
                                      Background="Transparent"
                                      TextWrapping="Wrap"

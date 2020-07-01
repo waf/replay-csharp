@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Replay.Logging;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,6 +17,7 @@ namespace Replay
         protected override void OnStartup(StartupEventArgs e)
         {
             EnableDebugListeners();
+            ReportFatalExceptionsToGitHub();
             base.OnStartup(e);
         }
 
@@ -23,34 +26,27 @@ namespace Replay
         {
             PresentationTraceSources.Refresh();
             PresentationTraceSources.DataBindingSource.Listeners.Add(new ConsoleTraceListener());
-            PresentationTraceSources.DataBindingSource.Listeners.Add(new DebugTraceListener());
             PresentationTraceSources.DataBindingSource.Switch.Level = SourceLevels.Warning | SourceLevels.Error;
         }
-    }
 
-    public class DebugTraceListener : TraceListener
-    {
-        public DebugTraceListener()
+        [Conditional("RELEASE")]
+        private void ReportFatalExceptionsToGitHub()
         {
-            this.TraceOutputOptions = TraceOptions.Callstack | TraceOptions.LogicalOperationStack;
-        }
-        public override void Write(string message)
-        {
-        }
-
-        public override void WriteLine(string message)
-        {
-            if(IgnoredDataBindIssues.Any(message.StartsWith))
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
-                return;
-            }
+                if (!e.IsTerminating) return;
 
-            Debugger.Break();
+                var userSelection = MessageBox.Show(
+                    "An unrecoverable error has occurred. Please press 'Ok' to send this error to GitHub or 'Cancel' to exit the application", "Unrecoverable Error",
+                    MessageBoxButton.OKCancel,
+                    MessageBoxImage.Error
+                );
+
+                if (userSelection == MessageBoxResult.OK)
+                {
+                    new GitHubExceptionReporter().ReportException(e);
+                }
+            };
         }
-
-        private IReadOnlyCollection<string> IgnoredDataBindIssues = new[] {
-            // something about scaling the code completion tooltip while it's animating in throws this warning
-            "Cannot find governing FrameworkElement or FrameworkContentElement for target element. BindingExpression:Path=Zoom; DataItem=null; target element is 'ScaleTransform'",
-        };
     }
 }

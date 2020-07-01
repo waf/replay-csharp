@@ -1,6 +1,5 @@
 ﻿using ICSharpCode.AvalonEdit;
 using ICSharpCode.AvalonEdit.Document;
-using NSubstitute;
 using Replay.ViewModel;
 using Replay.Services;
 using Replay.Tests.TestHelpers;

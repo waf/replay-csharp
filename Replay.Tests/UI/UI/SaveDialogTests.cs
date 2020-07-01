@@ -4,7 +4,6 @@ using Replay.ViewModel;
 using Replay.Services;
 using Replay.Services.SessionSavers;
 using Replay.UI;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

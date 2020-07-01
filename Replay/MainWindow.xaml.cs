@@ -6,14 +6,12 @@ using Replay.Services;
 using Replay.UI;
 using Replay.ViewModel.Services;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
-using ICSharpCode.AvalonEdit.Indentation.CSharp;
 
 namespace Replay
 {
