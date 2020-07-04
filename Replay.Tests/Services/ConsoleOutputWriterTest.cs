@@ -1,4 +1,5 @@
 ﻿using Replay.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,7 +7,7 @@ using Xunit;
 
 namespace Replay.Tests.Services
 {
-    public class ConsoleOutputWriterTest
+    public class ConsoleOutputWriterTest : IDisposable
     {
         private readonly ConsoleOutputWriter writer;
 
@@ -14,6 +15,9 @@ namespace Replay.Tests.Services
         {
             this.writer = new ConsoleOutputWriter(captureStandardOut: false);
         }
+
+        public void Dispose() =>
+            this.writer.Dispose();
 
         [Theory]
         [InlineData(nameof(ConsoleOutputWriter.Write), new object[] { 'A' })]

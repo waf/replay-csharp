@@ -70,16 +70,15 @@ namespace Replay.Services
                 return new ScriptEvaluationResult();
             }
 
-            using (var stdout = new ConsoleOutputWriter())
+            using var stdout = new ConsoleOutputWriter();
+
+            var evaluated = await EvaluateCapturingError(text);
+            return new ScriptEvaluationResult
             {
-                var evaluated = await EvaluateCapturingError(text);
-                return new ScriptEvaluationResult
-                {
-                    ScriptResult = evaluated.Result,
-                    Exception = evaluated.Exception,
-                    StandardOutput = stdout.GetOutputOrNull()
-                };
-            }
+                ScriptResult = evaluated.Result,
+                Exception = evaluated.Exception,
+                StandardOutput = stdout.GetOutputOrNull()
+            };
         }
 
         public async Task AddReferences(params MetadataReference[] assemblies)

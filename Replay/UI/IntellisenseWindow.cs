@@ -16,7 +16,7 @@ namespace Replay.UI
 {
     class IntellisenseWindow : CompletionWindow
     {
-        private IntellisenseViewModel Model;
+        private readonly IntellisenseViewModel Model;
 
         public IntellisenseWindow(IntellisenseViewModel intellisensevm, TextArea textArea, IReadOnlyList<ReplCompletion> completions)
             : base(textArea)

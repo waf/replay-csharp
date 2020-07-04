@@ -15,7 +15,7 @@ namespace Replay.Tests
 
         public ReplServicesFixture()
         {
-            this.ReplServices = new ReplServices();
+            this.ReplServices = new ReplServices(new RealFileIO());
         }
 
         public Task InitializeAsync() => this.ReplServices.HighlightAsync(Guid.Empty, "");

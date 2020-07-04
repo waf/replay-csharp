@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Replay.Services\Replay.Services.csproj" />
     <ProjectReference Include="..\Replay\Replay.csproj" />
   </ItemGroup>
 

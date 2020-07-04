@@ -28,7 +28,7 @@ namespace Replay
         {
             InitializeComponent();
             this.DataContext = Model = new WindowViewModel();
-            this.replServices = new ReplServices();
+            this.replServices = new ReplServices(new RealFileIO());
             this.viewModelService = new ViewModelService(replServices);
 
             replServices.UserConfigurationLoaded += ConfigureWindow;
@@ -49,7 +49,7 @@ namespace Replay
             });
         }
 
-        private void TextEditor_Initialized(TextEditor lineEditor, EventArgs e)
+        private void TextEditor_Initialized(TextEditor lineEditor, EventArgs _)
         {
             PromptAdorner.AddTo(lineEditor);
             lineEditor.TextArea.MouseWheel += TextArea_MouseWheel;
@@ -64,7 +64,7 @@ namespace Replay
         }
 
 
-        private void TextEditor_Loaded(TextEditor lineEditor, RoutedEventArgs e)
+        private void TextEditor_Loaded(TextEditor lineEditor, RoutedEventArgs _)
         {
             if (lineEditor.ViewModel().IsFocused)
             {
@@ -82,7 +82,7 @@ namespace Replay
             await viewModelService.HandleKeyUp(Model, lineEditor.ViewModel(), e);
         }
 
-        private void TextEditor_Unloaded(TextEditor lineEditor, RoutedEventArgs e)
+        private void TextEditor_Unloaded(TextEditor lineEditor, RoutedEventArgs _)
         {
             lineEditor.TextArea.MouseWheel -= TextArea_MouseWheel;
         }
@@ -104,7 +104,7 @@ namespace Replay
             });
         }
 
-        private void TextEditor_GotFocus(TextEditor lineEditor, RoutedEventArgs e)
+        private void TextEditor_GotFocus(TextEditor lineEditor, RoutedEventArgs _)
         {
             // update our viewmodel if the user manually focuses a lineEditor (e.g. with the mouse).
             int newIndex = Model.Entries.IndexOf(lineEditor.ViewModel());
@@ -114,7 +114,7 @@ namespace Replay
             }
         }
 
-        private void Window_PreviewMouseWheel(Window sender, MouseWheelEventArgs e)
+        private void Window_PreviewMouseWheel(Window _, MouseWheelEventArgs e)
         {
             // scale the font size
             if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))

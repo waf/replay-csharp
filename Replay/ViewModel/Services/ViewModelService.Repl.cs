@@ -13,6 +13,7 @@ namespace Replay.ViewModel.Services
             Evaluate = 1,
             Reevaluate = 2 | Evaluate,
         }
+
         /// <summary>
         /// The main REPL loop
         /// </summary>
@@ -64,7 +65,6 @@ namespace Replay.ViewModel.Services
 
         private static void Print(LineViewModel linevm, LineEvaluationResult result) =>
             linevm.SetResult(result);
-
 
         private static int ResetHistoryCyclePointer(WindowViewModel windowvm)
         {

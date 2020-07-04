@@ -2,16 +2,15 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 namespace Replay.Services.AssemblyLoading
 {
     class DotNetCoreInstallationLocator
     {
-        private FileIO io;
+        private readonly IFileIO io;
 
-        public DotNetCoreInstallationLocator(FileIO io)
+        public DotNetCoreInstallationLocator(IFileIO io)
         {
             this.io = io;
         }
@@ -59,7 +58,7 @@ namespace Replay.Services.AssemblyLoading
         }
 
         private string GetLatestFramework(string path, string framework) =>
-            io.GetDirectoriesWithPattern(
+            io.GetDirectories(
                 path,
                 framework + "*"
             )

@@ -17,7 +17,7 @@ namespace Replay.Tests.Integration
 
         public IntegrationScriptTest()
         {
-            this.replServices = new ReplServices();
+            this.replServices = new ReplServices(new RealFileIO());
         }
 
         [Theory]

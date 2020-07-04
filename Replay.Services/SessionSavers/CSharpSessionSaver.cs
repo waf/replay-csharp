@@ -18,10 +18,10 @@ namespace Replay.Services.SessionSavers
     /// </summary>
     class CSharpSessionSaver : ISessionSaver
     {
-        private readonly FileIO io;
+        private readonly IFileIO io;
         private readonly WorkspaceManager workspaceManager;
 
-        public CSharpSessionSaver(FileIO io, WorkspaceManager workspaceManager)
+        public CSharpSessionSaver(IFileIO io, WorkspaceManager workspaceManager)
         {
             this.io = io;
             this.workspaceManager = workspaceManager;

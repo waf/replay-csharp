@@ -2,7 +2,6 @@
 using Replay.Services;
 using Replay.Services.AssemblyLoading;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -17,7 +16,7 @@ namespace Replay.Tests.Services
             this.scriptEvaluator = new ScriptEvaluator(
                 new DefaultAssemblies(
                     new DotNetAssemblyLocator(
-                        FileIO.RealIO
+                        new RealFileIO()
                     )
                 )
             );
@@ -99,17 +98,19 @@ namespace Replay.Tests.Services
         [Fact]
         public async Task TryCompleteStatementAsync_WithMissingSemicolon_CanComplete()
         {
-            var completion = await scriptEvaluator.TryCompleteStatementAsync("var x = 5");
-            Assert.True(completion.Success);
-            Assert.Equal("var x = 5;", completion.NewTree.ToString());
+            var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync("var x = 5");
+
+            Assert.True(success);
+            Assert.Equal("var x = 5;", newTree.ToString());
         }
 
         [Fact]
         public async Task TryCompleteStatementAsync_WithSemicolon_DoesNotComplete()
         {
-            var completion = await scriptEvaluator.TryCompleteStatementAsync("var x = 5;");
-            Assert.True(completion.Success);
-            Assert.Equal("var x = 5;", completion.NewTree.ToString());
+            var (success, newTree) = await scriptEvaluator.TryCompleteStatementAsync("var x = 5;");
+
+            Assert.True(success);
+            Assert.Equal("var x = 5;", newTree.ToString());
         }
     }
 }

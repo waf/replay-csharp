@@ -12,9 +12,9 @@ namespace Replay.Services.SessionSavers
     /// </summary>
     public class MarkdownSessionSaver : ISessionSaver
     {
-        private readonly FileIO io;
+        private readonly IFileIO io;
 
-        public MarkdownSessionSaver(FileIO io)
+        public MarkdownSessionSaver(IFileIO io)
         {
             this.io = io;
         }

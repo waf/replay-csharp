@@ -16,10 +16,10 @@ namespace Replay.Services.CommandHandlers
     {
         private readonly ScriptEvaluator scriptEvaluator;
         private readonly WorkspaceManager workspaceManager;
-        private readonly FileIO io;
+        private readonly IFileIO io;
         private const string CommandPrefix = "#r ";
 
-        public AssemblyReferenceCommandHandler(ScriptEvaluator scriptEvaluator, WorkspaceManager workspaceManager, FileIO io)
+        public AssemblyReferenceCommandHandler(ScriptEvaluator scriptEvaluator, WorkspaceManager workspaceManager, IFileIO io)
         {
             this.scriptEvaluator = scriptEvaluator;
             this.workspaceManager = workspaceManager;

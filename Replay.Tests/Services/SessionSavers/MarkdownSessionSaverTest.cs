@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Replay.Services.SessionSavers;
 using System.Threading;
+using NSubstitute;
+using NSubstitute.Extensions;
 
 namespace Replay.Tests.Services.SessionSavers
 {
@@ -16,8 +18,18 @@ namespace Replay.Tests.Services.SessionSavers
 
         public MarkdownSessionSaverTest()
         {
-            var io = FileIO.CreateRealIO();
-            io.WriteAllLinesAsync = CaptureWrittenText;
+            var io = Substitute.ForPartsOf<RealFileIO>();
+            io
+                .Configure()
+                .WriteAllLinesAsync(default, default, default, default)
+                .ReturnsForAnyArgs(Task.CompletedTask)
+                .AndDoes(call => CaptureWrittenText(
+                    call.ArgAt<string>(0),
+                    call.ArgAt<IEnumerable<string>>(1),
+                    call.ArgAt<Encoding>(2),
+                    call.ArgAt<CancellationToken>(3)
+                ));
+
             this.markdownSaver = new MarkdownSessionSaver(io);
 
             Task CaptureWrittenText(string path, IEnumerable<string> text, Encoding encoding, CancellationToken cancellationToken = default)

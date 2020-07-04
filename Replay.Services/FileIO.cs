@@ -11,48 +11,50 @@ namespace Replay.Services
     /// <summary>
     /// Quick and dirty way of indirecting File IO for testability
     /// </summary>
-    public class FileIO
+    public interface IFileIO
     {
-        public static FileIO RealIO = CreateRealIO();
-
-        public static FileIO CreateRealIO()
-        {
-            var io = new FileIO
-            {
-                GetFilesInDirectory = Directory.GetFiles,
-                GetDirectories = Directory.GetDirectories,
-                GetDirectoriesWithPattern = Directory.GetDirectories,
-                DoesFileExist = File.Exists,
-                GetFullFileSystemPath = Path.GetFullPath,
-                WriteAllLinesAsync = File.WriteAllLinesAsync,
-                CreateMetadataReferenceFromFile = MetadataReference.CreateFromFile,
-                CreateDocumentationFromXmlFile = XmlDocumentationProvider.CreateFromFile,
-            };
-            io.CreateMetadataReferenceWithDocumentation =
-                (AssemblyWithXmlDocumentation assembly) => assembly.FullXmlDocumentationPath is null
-                    ? io.CreateMetadataReferenceFromFile(assembly.FullAssemblyPath)
-                    : io.CreateMetadataReferenceFromFile(assembly.FullAssemblyPath, documentation: io.CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath));
-            return io;
-        }
-
-        public GetFilesInDirectory GetFilesInDirectory { get; set; }
-        public DoesFileExist DoesFileExist { get; set; }
-        public GetFullFileSystemPath GetFullFileSystemPath { get; set; }
-        public WriteAllLinesAsync WriteAllLinesAsync { get; set; }
-        public CreateMetadataReferenceFromFile CreateMetadataReferenceFromFile { get; set; }
-        public CreateDocumentationFromXmlFile CreateDocumentationFromXmlFile { get; set; }
-        public CreateMetadataReferenceWithDocumentation CreateMetadataReferenceWithDocumentation { get; set; }
-        public GetDirectories GetDirectories { get; private set; }
-        public GetDirectoriesWithPattern GetDirectoriesWithPattern { get; private set; }
+        PortableExecutableReference CreateMetadataReferenceFromFile(string filepath, MetadataReferenceProperties properties = default, DocumentationProvider documentation = null);
+        PortableExecutableReference CreateMetadataReferenceWithDocumentation(AssemblyWithXmlDocumentation assembly);
+        string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption);
+        string[] GetDirectories(string path);
+        string[] GetDirectories(string path, string searchPattern);
+        XmlDocumentationProvider CreateDocumentationFromXmlFile(string xmlDocCommentFilePath);
+        string GetFullFileSystemPath(string path);
+        bool DoesFileExist(string path);
+        Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = default);
     }
 
-    public delegate PortableExecutableReference CreateMetadataReferenceFromFile(string filepath, MetadataReferenceProperties properties = default, DocumentationProvider documentation = null);
-    public delegate PortableExecutableReference CreateMetadataReferenceWithDocumentation(AssemblyWithXmlDocumentation assembly);
-    public delegate string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption);
-    public delegate string[] GetDirectories(string path);
-    public delegate string[] GetDirectoriesWithPattern(string path, string searchPattern);
-    public delegate XmlDocumentationProvider CreateDocumentationFromXmlFile(string xmlDocCommentFilePath);
-    public delegate string GetFullFileSystemPath(string path);
-    public delegate bool DoesFileExist(string path);
-    public delegate Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = default);
+    public class RealFileIO : IFileIO
+    {
+        public virtual XmlDocumentationProvider CreateDocumentationFromXmlFile(string xmlDocCommentFilePath) =>
+            XmlDocumentationProvider.CreateFromFile(xmlDocCommentFilePath);
+
+        public virtual PortableExecutableReference CreateMetadataReferenceFromFile(string filepath, MetadataReferenceProperties properties = default, DocumentationProvider documentation = null) =>
+            MetadataReference.CreateFromFile(filepath, properties, documentation);
+
+        public virtual PortableExecutableReference CreateMetadataReferenceWithDocumentation(AssemblyWithXmlDocumentation assembly) =>
+            assembly.FullXmlDocumentationPath is null
+                ? CreateMetadataReferenceFromFile(assembly.FullAssemblyPath)
+                : CreateMetadataReferenceFromFile(assembly.FullAssemblyPath,
+                    documentation: CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath)
+                  );
+
+        public virtual bool DoesFileExist(string path) =>
+            File.Exists(path);
+
+        public virtual string[] GetDirectories(string path) =>
+            Directory.GetDirectories(path);
+
+        public virtual string[] GetDirectories(string path, string searchPattern) =>
+            Directory.GetDirectories(path, searchPattern);
+
+        public virtual string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption) =>
+            Directory.GetFiles(path, searchPattern, searchOption);
+
+        public virtual string GetFullFileSystemPath(string path) =>
+            Path.GetFullPath(path);
+
+        public virtual Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = default) =>
+            File.WriteAllLinesAsync(path, contents, encoding, cancellationToken);
+    }
 }

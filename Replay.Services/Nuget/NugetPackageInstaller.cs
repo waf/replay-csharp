@@ -35,9 +35,9 @@ namespace Replay.Services.Nuget
         private readonly string globalPackageFolder;
         private readonly FrameworkReducer frameworkReducer;
         private readonly ClientPolicyContext clientPolicy;
-        private readonly FileIO io;
+        private readonly IFileIO io;
 
-        public NugetPackageInstaller(FileIO io)
+        public NugetPackageInstaller(IFileIO io)
         {
             var nugetSettings = Settings.LoadDefaultSettings(root: null);
             var sourceRepositoryProvider = new SourceRepositoryProvider(new PackageSourceProvider(nugetSettings), Repository.Provider.GetCoreV3());
@@ -214,23 +214,24 @@ namespace Replay.Services.Nuget
             ILogger nugetLogger)
         {
             nugetLogger.LogInformationSummary($"Downloading {Display(packageToInstall)}");
+
             var downloadResource = await packageToInstall.Source.GetResourceAsync<DownloadResource>(CancellationToken.None);
-            using (var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
+            using var downloadResult = await downloadResource.GetDownloadResourceResultAsync(
                 packageToInstall,
                 new PackageDownloadContext(nugetCache),
                 globalPackageFolder,
-                nugetLogger, CancellationToken.None))
-            {
-                nugetLogger.LogInformationSummary($"Extracting {Display(packageToInstall)}");
-                await PackageExtractor.ExtractPackageAsync(
-                    downloadResult.PackageSource,
-                    downloadResult.PackageStream,
-                    packagePathResolver,
-                    packageExtractionContext,
-                    CancellationToken.None);
+                nugetLogger, CancellationToken.None);
 
-                return downloadResult.PackageReader;
-            }
+            nugetLogger.LogInformationSummary($"Extracting {Display(packageToInstall)}");
+
+            await PackageExtractor.ExtractPackageAsync(
+                downloadResult.PackageSource,
+                downloadResult.PackageStream,
+                packagePathResolver,
+                packageExtractionContext,
+                CancellationToken.None);
+
+            return downloadResult.PackageReader;
         }
 
         private List<string> FilterByFramework(FrameworkReducer frameworkReducer, IReadOnlyCollection<FrameworkSpecificGroup> libItems)

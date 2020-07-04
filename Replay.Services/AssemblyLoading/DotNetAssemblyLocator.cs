@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Replay.Services.AssemblyLoading
@@ -10,9 +9,9 @@ namespace Replay.Services.AssemblyLoading
     public class DotNetAssemblyLocator
     {
         private readonly DotNetCoreInstallationLocator dotNetInstallationLocator;
-        private readonly FileIO io;
+        private readonly IFileIO io;
 
-        public DotNetAssemblyLocator(FileIO io)
+        public DotNetAssemblyLocator(IFileIO io)
         {
             this.dotNetInstallationLocator = new DotNetCoreInstallationLocator(io);
             this.io = io;

@@ -6,7 +6,7 @@ namespace Replay.Logging
 {
     internal class Logger : IReplLogger
     {
-        private LineViewModel line;
+        private readonly LineViewModel line;
 
         public Logger(LineViewModel line)
         {

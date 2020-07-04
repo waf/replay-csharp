@@ -6,7 +6,6 @@ using Replay.Services.Nuget;
 using Replay.Services.SessionSavers;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -40,11 +39,10 @@ namespace Replay.Services
         private DataFlowAnalyzer dataFlowAnalyzer;
         private IReadOnlyCollection<ICommandHandler> commandHandlers;
         private IReadOnlyCollection<ISessionSaver> savers;
-        private FileIO io;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
 
-        public ReplServices(FileIO injectedIO = null) // defaults to real io
+        public ReplServices(IFileIO io)
         {
             // some of the initialization can be heavy, and causes slow startup time for the UI.
             // run it in a background thread so the UI can render immediately.
@@ -61,7 +59,6 @@ namespace Replay.Services
                 }),
                 Task.Run(() =>
                 {
-                    this.io = injectedIO ?? FileIO.RealIO;
                     var assemblies = new DefaultAssemblies(new DotNetAssemblyLocator(io));
                     this.scriptEvaluator = new ScriptEvaluator(assemblies);
                     this.workspaceManager = new WorkspaceManager(assemblies);

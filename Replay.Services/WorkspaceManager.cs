@@ -188,7 +188,8 @@ namespace Replay.Services
                 return new ReplSubmission(code, speculativeDocument);
             }
 
-            var success = workspace.TryApplyChanges(edit);
+            _ = workspace.TryApplyChanges(edit);
+
             // document has changed, requery to get the new one
             var document = workspace.CurrentSolution.GetDocument(replSubmission.Document.Id);
             return new ReplSubmission(code, document);

@@ -11,9 +11,11 @@ namespace Replay.Tests.UI
         public void PromptAdorner_RendersPrompt_WithoutError()
         {
             var editor = new TextEditor();
-            var adorner = new PromptAdorner(editor);
+            var adorner = new PromptAdorner(editor)
+            {
+                Visibility = Visibility.Visible
+            };
 
-            adorner.Visibility = Visibility.Visible;
             adorner.InvalidateArrange();
 
             // system under test
