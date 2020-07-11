@@ -54,6 +54,20 @@ namespace Replay.ViewModel.Services
             }
         }
 
+        public void HandleWindowScroll(WindowViewModel model, ModifierKeys modifierKeys, MouseWheelEventArgs e)
+        {
+            // scale the font size
+            if (modifierKeys.HasFlag(ModifierKeys.Control))
+            {
+                double delta = 0.05 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
+                double potentialZoom = model.Zoom + delta;
+                if(potentialZoom > 0.25)
+                {
+                    model.Zoom = potentialZoom;
+                }
+            }
+        }
+
         public async Task HandleSmartPaste(LineViewModel linevm, string pastedText)
         {
             var unboundVariables = await services.GetUnboundVariables(linevm.Id, pastedText);

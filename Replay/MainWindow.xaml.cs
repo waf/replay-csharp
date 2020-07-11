@@ -116,16 +116,7 @@ namespace Replay
 
         private void Window_PreviewMouseWheel(Window _, MouseWheelEventArgs e)
         {
-            // scale the font size
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-            {
-                double delta = 0.05 * e.Delta / Math.Abs(e.Delta); // -0.1 or +0.1;
-                double potentialZoom = Model.Zoom + delta;
-                if(potentialZoom > 0.25)
-                {
-                    this.Model.Zoom = potentialZoom;
-                }
-            }
+            viewModelService.HandleWindowScroll(Model, Keyboard.Modifiers, e);
         }
 
         private void Scroll_ScrollChanged(ScrollViewer sender, ScrollChangedEventArgs e)
@@ -134,9 +125,8 @@ namespace Replay
             // set autoscroll mode when user scrolls, and store it in the ScrollViewer's Tag.
             if (e.ExtentHeightChange == 0)
             {
-                sender.Tag = 
-                    shouldAutoScrollToBottom =
-                        sender.VerticalOffset == sender.ScrollableHeight;
+                shouldAutoScrollToBottom = sender.VerticalOffset == sender.ScrollableHeight;
+                sender.Tag = shouldAutoScrollToBottom;
             }
 
             // autoscroll to bottom
