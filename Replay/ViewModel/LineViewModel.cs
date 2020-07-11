@@ -63,8 +63,10 @@ namespace Replay.ViewModel
         // ideally we could databind to these editor properties, but we can't,
         // so instead we expose them as properties on our view model.
         private TextEditor editor;
+
         public void SetEditor(TextEditor lineEditor) =>
             this.editor = lineEditor;
+
         public int SelectionStart => editor?.SelectionStart ?? 0;
         public int SelectionLength => editor?.SelectionLength ?? 0;
         public int CaretOffset

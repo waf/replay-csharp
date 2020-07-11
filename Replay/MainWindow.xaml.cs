@@ -29,24 +29,9 @@ namespace Replay
             InitializeComponent();
             this.DataContext = Model = new WindowViewModel();
             this.replServices = new ReplServices(new RealFileIO());
-            this.viewModelService = new ViewModelService(replServices);
+            this.viewModelService = new ViewModelService(replServices, Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher, Model);
 
-            replServices.UserConfigurationLoaded += ConfigureWindow;
             Task.Run(BackgroundInitializationAsync);
-        }
-
-        /// <summary>
-        /// Callback for when user settings are loaded
-        /// </summary>
-        private void ConfigureWindow(object sender, UserConfiguration configuration)
-        {
-            var dispatcher = Application.Current?.Dispatcher
-                ?? Dispatcher.CurrentDispatcher;
-            dispatcher.Invoke(() =>
-            {
-                Model.Background = new SolidColorBrush(configuration.BackgroundColor);
-                Model.Foreground = new SolidColorBrush(configuration.ForegroundColor);
-            });
         }
 
         private void TextEditor_Initialized(TextEditor lineEditor, EventArgs _)

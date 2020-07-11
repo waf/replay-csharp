@@ -3,10 +3,12 @@ using Replay.Services.CommandHandlers;
 using Replay.Services.Logging;
 using Replay.Services.Model;
 using Replay.Services.Nuget;
+using Replay.Services.Pipes;
 using Replay.Services.SessionSavers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Replay.Services
@@ -21,6 +23,7 @@ namespace Replay.Services
         Task<string> SaveSessionAsync(string filename, string fileFormat, IReadOnlyCollection<LineToSave> linesToSave);
 
         event EventHandler<UserConfiguration> UserConfigurationLoaded;
+        event EventHandler<string> PipeMessageReceived;
     }
 
     /// <summary>
@@ -41,6 +44,7 @@ namespace Replay.Services
         private IReadOnlyCollection<ISessionSaver> savers;
 
         public event EventHandler<UserConfiguration> UserConfigurationLoaded;
+        public event EventHandler<string> PipeMessageReceived;
 
         public ReplServices(IFileIO io)
         {
@@ -84,6 +88,13 @@ namespace Replay.Services
                 };
 
                 this.dataFlowAnalyzer = new DataFlowAnalyzer();
+            });
+            Task.Run(async () =>
+            {
+                await foreach (var line in new SessionPipe().ConnectAsync(CancellationToken.None))
+                {
+                    PipeMessageReceived?.Invoke(null, line);
+                }
             });
         }
 
@@ -154,6 +165,5 @@ namespace Replay.Services
             var submission = workspaceManager.CreateOrUpdateSubmission(lineId, code, speculative: true);
             return await this.dataFlowAnalyzer.GetUnboundVariables(submission);
         }
-
     }
 }

@@ -1,10 +1,15 @@
-﻿using Replay.Services;
+﻿using Replay.Logging;
+using Replay.Services;
+using Replay.Services.Logging;
 using Replay.UI;
 using System;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace Replay.ViewModel.Services
 {
@@ -17,10 +22,43 @@ namespace Replay.ViewModel.Services
     {
         private readonly IReplServices services;
 
-        public ViewModelService(IReplServices services)
+        public ViewModelService(IReplServices services, Dispatcher dispatcher, WindowViewModel windowvm)
         {
             this.services = services;
+            this.services.UserConfigurationLoaded += ConfigureWindow(dispatcher, windowvm);
+            this.services.PipeMessageReceived += AppendLine(dispatcher, windowvm);
         }
+
+        private EventHandler<string> AppendLine(Dispatcher dispatcher, WindowViewModel windowvm) =>
+            (object sender, string line) => dispatcher.Invoke(async () =>
+        {
+            var linevm = (
+                from line in new[] { windowvm.Entries[windowvm.FocusIndex], windowvm.Entries.Last() }
+                where line.Document.TextLength == 0
+                select line
+            )
+            .FirstOrDefault();
+
+            if(linevm is null)
+            {
+                linevm = new LineViewModel();
+                windowvm.Entries.Add(linevm);
+                windowvm.FocusIndex = windowvm.Entries.Count - 1;
+            }
+            dispatcher.Invoke(() => { }, DispatcherPriority.Background); // wait for databinding to finish so linevm.Document is populated.
+            linevm.Document.Text = line;
+            await ReadEvalPrintLoop(windowvm, linevm, LineOperation.Evaluate);
+        });
+
+        /// <summary>
+        /// Callback for when user settings are loaded
+        /// </summary>
+        private EventHandler<UserConfiguration> ConfigureWindow(Dispatcher dispatcher, WindowViewModel windowvm) =>
+            (object sender, UserConfiguration config) => dispatcher.Invoke(() =>
+        {
+            windowvm.Background = new SolidColorBrush(config.BackgroundColor);
+            windowvm.Foreground = new SolidColorBrush(config.ForegroundColor);
+        });
 
         public async Task HandleKeyDown(WindowViewModel windowvm, LineViewModel linevm, KeyEventArgs e)
         {

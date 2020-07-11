@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Replay.Services;
+using System.Linq;
 
 namespace Replay.ViewModel.Services
 {
