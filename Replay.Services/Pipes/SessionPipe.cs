@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Runtime.CompilerServices;
@@ -22,7 +23,7 @@ namespace Replay.Services.Pipes
             while (!cancellationToken.IsCancellationRequested)
             {
                 using var serverPipe = new NamedPipeServerStream(
-                    PipeName,
+                    GetPipeName(),
                     PipeDirection.In,
                     maxNumberOfServerInstances: 1,
                     transmissionMode: PipeTransmissionMode.Message
@@ -39,6 +40,9 @@ namespace Replay.Services.Pipes
                 yield return Encoding.UTF8.GetString(bytes).Trim();
             }
         }
+
+        private string GetPipeName() =>
+            PipeName + @"\" + Process.GetCurrentProcess().Id;
 
         private static async Task<byte[]> ReadBytesAsync(NamedPipeServerStream serverPipe)
         {

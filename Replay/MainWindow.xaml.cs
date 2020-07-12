@@ -139,7 +139,7 @@ namespace Replay
         private Task BackgroundInitializationAsync()
         {
             const string usingCode = @"using System;";
-            const string evaluationCode = @"Console.WriteLine(""Hello"");";
+            const string evaluationCode = @"Console.Write("""");";
             const string completionCode = @"""World""";
             return Task.WhenAll(
                 replServices.HighlightAsync(Guid.Empty, usingCode),

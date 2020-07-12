@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30128.74
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayVisualStudioIntegration", "ReplayVisualStudioIntegration\ReplayVisualStudioIntegration.csproj", "{35E0F273-2F48-4760-83C2-6B6C035923AF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{35E0F273-2F48-4760-83C2-6B6C035923AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35E0F273-2F48-4760-83C2-6B6C035923AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35E0F273-2F48-4760-83C2-6B6C035923AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35E0F273-2F48-4760-83C2-6B6C035923AF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {11945E0F-E32B-4022-ACE1-3B45EA20E862}
+	EndGlobalSection
+EndGlobal
