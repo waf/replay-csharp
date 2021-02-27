@@ -25,7 +25,8 @@ namespace Replay.Services.AssemblyLoading
                     io.GetFilesInDirectory(installation.ImplementationPath, "*.dll", SearchOption.AllDirectories)
                     .Union(io.GetFilesInDirectory(installation.DocumentationPath, "*.xml", SearchOption.AllDirectories))
                 )
-                .Where(assembly => assembly.AssemblyName.StartsWith("System"))
+                // this method needs to be revisited. See https://github.com/dotnet/runtime/issues/47029
+                .Where(assembly => assembly.AssemblyName.StartsWith("System") && !assembly.AssemblyName.Contains("Native"))
                 .Select(assembly => io.CreateMetadataReferenceWithDocumentation(assembly))
                 .ToArray();
         }
