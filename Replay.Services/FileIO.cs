@@ -39,20 +39,15 @@ namespace Replay.Services
                     documentation: CreateDocumentationFromXmlFile(assembly.FullXmlDocumentationPath)
                   );
 
-        public virtual bool DoesFileExist(string path) =>
-            File.Exists(path);
+        public virtual bool DoesFileExist(string path) => File.Exists(path);
 
-        public virtual string[] GetDirectories(string path) =>
-            Directory.GetDirectories(path);
+        public virtual string[] GetDirectories(string path) => Directory.GetDirectories(path);
 
-        public virtual string[] GetDirectories(string path, string searchPattern) =>
-            Directory.GetDirectories(path, searchPattern);
+        public virtual string[] GetDirectories(string path, string searchPattern) => Directory.GetDirectories(path, searchPattern);
 
-        public virtual string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption) =>
-            Directory.GetFiles(path, searchPattern, searchOption);
+        public virtual string[] GetFilesInDirectory(string path, string searchPattern, SearchOption searchOption) => Directory.GetFiles(path, searchPattern, searchOption);
 
-        public virtual string GetFullFileSystemPath(string path) =>
-            Path.GetFullPath(path);
+        public virtual string GetFullFileSystemPath(string path) => Path.GetFullPath(path);
 
         public virtual Task WriteAllLinesAsync(string path, IEnumerable<string> contents, Encoding encoding, CancellationToken cancellationToken = default) =>
             File.WriteAllLinesAsync(path, contents, encoding, cancellationToken);
