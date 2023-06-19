@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -31,7 +31,7 @@
     <PackageReference Include="NuGet.Frameworks" Version="5.5.1" />
     <PackageReference Include="NuGet.Packaging" Version="5.5.1" />
     <PackageReference Include="NuGet.Packaging.Core" Version="5.5.1" />
-    <PackageReference Include="NuGet.Protocol" Version="5.5.1" />
+    <PackageReference Include="NuGet.Protocol" Version="5.11.5" />
     <PackageReference Include="NuGet.Resolver" Version="5.5.1" />
     <PackageReference Include="NuGet.Versioning" Version="5.5.1" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
